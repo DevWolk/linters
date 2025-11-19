@@ -1,8 +1,21 @@
 {
   "name": "devwolk/linters",
-  "description": "A collection of linters configurations for PHP projects.",
+  "description": "Centralized PHP linter configurations and static analysis tools for PHP projects",
   "license": "MIT",
+  "type": "library",
+  "keywords": [
+    "linter",
+    "phpstan",
+    "psalm",
+    "rector",
+    "php-cs-fixer",
+    "phpcs",
+    "phpmd",
+    "static-analysis",
+    "code-quality"
+  ],
   "require": {
+    "php": "^8.2",
     "ext-dom": "*",
     "ext-simplexml": "*",
     "friendsofphp/php-cs-fixer": "^3.89",
@@ -17,10 +30,12 @@
     "roave/security-advisories": "dev-latest",
     "slevomat/coding-standard": "^8.24",
     "squizlabs/php_codesniffer": "^4.0",
-    "thecodingmachine/phpstan-safe-rule": "^1.4"
+    "thecodingmachine/phpstan-safe-rule": "^1.4",
+    "vimeo/psalm": "^5.0"
   },
   "require-dev": {
-    "ergebnis/composer-normalize": "^2.48"
+    "ergebnis/composer-normalize": "^2.48",
+    "phpunit/phpunit": "^11.0"
   },
   "minimum-stability": "stable",
   "autoload": {
@@ -30,7 +45,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Linters\\": "src/"
+      "Linters\\Tests\\": "tests/"
     }
   },
   "config": {
@@ -48,6 +63,14 @@
         ],
         "skip": []
       },
+      "phpstan": {
+        "paths": [
+          "/src"
+        ],
+        "skip": [
+          "/vendor"
+        ]
+      },
       "psalm": {
         "config": {},
         "paths": [
@@ -62,26 +85,56 @@
           "/src"
         ],
         "skip": []
+      },
+      "phpcs": {
+        "paths": [
+          "/src"
+        ],
+        "skip": []
+      },
+      "phpmd": {
+        "paths": [
+          "/src"
+        ],
+        "skip": []
       }
     }
   },
   "scripts": {
+    "rector": [
+      "./vendor/bin/rector process --config=./configs/rector.php --clear-cache"
+    ],
+    "rector-check": [
+      "./vendor/bin/rector process --config=./configs/rector.php --clear-cache --dry-run"
+    ],
     "php-cs-fixer": [
-      "./vendor/bin/php-cs-fixer fix --config=./configs/.php_cs.dist.php --allow-risky=yes --using-cache=no"
+      "./vendor/bin/php-cs-fixer fix --config=./configs/.php-cs-fixer.dist.php --allow-risky=yes --using-cache=no"
     ],
     "php-cs-fixer-check": [
-      "./vendor/bin/php-cs-fixer fix --dry-run --config=./configs/.php_cs.dist.php --diff -vv --allow-risky=yes --using-cache=no"
+      "./vendor/bin/php-cs-fixer fix --dry-run --config=./configs/.php-cs-fixer.dist.php --diff -vv --allow-risky=yes --using-cache=no"
+    ],
+    "phpstan": [
+      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon"
+    ],
+    "phpstan-baseline": [
+      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon --generate-baseline"
     ],
     "psalm": [
-      "php src/psalm_config.php --config=./configs/psalm.php --target=./psalm.xml",
+      "php src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
       "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
       "rm ./psalm.xml"
     ],
-    "rector": [
-      "./vendor/bin/rector process --config=./configs/rector.php  --clear-cache"
+    "phpcs": [
+      "./vendor/bin/phpcs --standard=./configs/phpcs.xml"
     ],
-    "rector-check": [
-      "./vendor/bin/rector process --config=./configs/rector.php  --clear-cache --dry-run"
+    "phpmd": [
+      "./vendor/bin/phpmd src text ./configs/phpmd.ruleset.xml"
+    ],
+    "composer-unused": [
+      "./vendor/bin/composer-unused --configuration=./configs/composer-unused.php"
+    ],
+    "test": [
+      "./vendor/bin/phpunit --configuration=./phpunit.xml"
     ]
   }
 }

@@ -1,0 +1,117 @@
+{
+  "name": "example/symfony-project",
+  "description": "Example Symfony project using devwolk/linters",
+  "type": "project",
+  "require": {
+    "php": "^8.2",
+    "symfony/framework-bundle": "^7.0"
+  },
+  "require-dev": {
+    "devwolk/linters": "dev-main"
+  },
+  "extra": {
+    "linters": {
+      "rector": {
+        "paths": [
+          "/src",
+          "/tests"
+        ],
+        "skip": [
+          "/src/Kernel.php",
+          "/var",
+          "/vendor"
+        ]
+      },
+      "php-cs-fixer": {
+        "paths": [
+          "/src"
+        ],
+        "skip": [
+          "*.twig"
+        ]
+      },
+      "phpstan": {
+        "paths": [
+          "/src",
+          "/tests"
+        ],
+        "skip": [
+          "/vendor",
+          "/var"
+        ],
+        "level": 8
+      },
+      "psalm": {
+        "paths": [
+          "/src"
+        ],
+        "skip": [
+          "/vendor",
+          "/var"
+        ],
+        "config": {
+          "plugins": {
+            "pluginClass": [
+              {"class": "Psalm\\SymfonyPsalmPlugin\\Plugin"}
+            ]
+          }
+        }
+      },
+      "phpcs": {
+        "paths": [
+          "/src"
+        ],
+        "skip": [
+          "*.twig"
+        ]
+      },
+      "phpmd": {
+        "paths": [
+          "/src"
+        ],
+        "skip": []
+      }
+    }
+  },
+  "scripts": {
+    "rector": [
+      "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --clear-cache"
+    ],
+    "rector-check": [
+      "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --clear-cache --dry-run"
+    ],
+    "php-cs-fixer": [
+      "./vendor/bin/php-cs-fixer fix --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --allow-risky=yes"
+    ],
+    "php-cs-fixer-check": [
+      "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff -vv"
+    ],
+    "phpstan": [
+      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon"
+    ],
+    "phpstan-baseline": [
+      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
+    ],
+    "psalm": [
+      "php ./vendor/devwolk/linters/src/psalm_config.php --target=./psalm.xml",
+      "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
+      "rm ./psalm.xml"
+    ],
+    "phpcs": [
+      "./vendor/bin/phpcs --standard=./vendor/devwolk/linters/configs/phpcs.xml"
+    ],
+    "phpmd": [
+      "./vendor/bin/phpmd src,tests text ./vendor/devwolk/linters/configs/phpmd.ruleset.xml"
+    ],
+    "lint": [
+      "@rector-check",
+      "@php-cs-fixer-check",
+      "@phpstan",
+      "@phpcs"
+    ],
+    "lint-fix": [
+      "@rector",
+      "@php-cs-fixer"
+    ]
+  }
+}

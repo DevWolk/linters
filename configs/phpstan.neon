@@ -1,16 +1,60 @@
-#https://phpstan.org/user-guide/getting-started
+# PHPStan Configuration
+# https://phpstan.org/user-guide/getting-started
+# https://phpstan.org/config-reference
 
 parameters:
-    level: max
+    # Analysis level (0-9, or 'max')
+    # Level 8 provides strict type checking without being overly pedantic
+    level: 8
+
+    # Paths to analyze - dynamically loaded from composer.json extra.linters.phpstan.paths
+    # These paths are relative to the project root
     paths:
         - app
-        - config
-        - tests
-        - database
+
+    # Paths to exclude from analysis
     excludePaths:
         - vendor/*
-        - app/Containers/Vendor/*
 
+    # Enable strict rules for better code quality
+    strictRules:
+        allRules: true
+
+    # Additional quality checks
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+
+    # Report all errors, even in baseline
     reportUnmatchedIgnoredErrors: false
+
+    # File extensions to analyze
     fileExtensions:
         - php
+
+    # Symfony-specific settings (if applicable)
+    symfony:
+        container_xml_path: null
+        constant_hassers: false
+
+    # Ignore specific error patterns (use sparingly)
+    ignoreErrors:
+        # Example: Ignore specific deprecation warnings
+        # - '#Call to deprecated method#'
+
+    # Bootstrap file for loading project-specific code
+    # bootstrapFiles:
+    #     - %rootDir%/../../bootstrap.php
+
+    # Bleeding edge features (enable at your own risk)
+    # polluteScopeWithLoopInitialAssignments: false
+    # polluteScopeWithAlwaysIterableForeach: false
+
+    # Baseline file (uncomment to use)
+    # includes:
+    #     - phpstan-baseline.neon

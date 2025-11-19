@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Code\ComposerLoader;
+use Linters\ConfigurationLoader;
 
 /**
  * @link https://mlocati.github.io/php-cs-fixer-configurator/
@@ -13,7 +13,7 @@ $isVSCodeRun = isset($_SERVER['VSCODE_AGENT_FOLDER']);
 $finder = [];
 if ($isVSCodeRun === false) {
     // Get settings from extra section of composer and provide access for them
-    $composerLoader = new ComposerLoader();
+    $composerLoader = new ConfigurationLoader();
 
     $finder = PhpCsFixer\Finder::create()
         ->ignoreVCS(true)

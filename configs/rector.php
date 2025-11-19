@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Linters\Rector\Rules\AssertInstanceToStaticCallRector;
 use Linters\Rector\Rules\MockObjectStaticToInstanceCallRector;
-use Code\ComposerLoader;
+use Linters\ConfigurationLoader;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
@@ -40,7 +40,7 @@ use RectorLaravel\Set\LaravelLevelSetList;
 use RectorLaravel\Set\LaravelSetList;
 
 // Get settings from extra section of composer and provide access for them
-$composerLoader = new ComposerLoader();
+$composerLoader = new ConfigurationLoader();
 
 return RectorConfig::configure()
     ->withCache(

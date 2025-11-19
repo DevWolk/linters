@@ -139,7 +139,7 @@ class ConfigurationLoader
 ```php
 /**
  * CLI-скрипт для динамической генерации psalm.xml
- * Файл: src/psalm_config.php
+ * Файл: src/ConfigGenerator/PsalmConfigGenerator.php
  *
  * Возможности:
  * - Чтение базового шаблона из configs/psalm_default.xml
@@ -151,7 +151,7 @@ class ConfigurationLoader
  * - Предотвращение дублирования элементов через сравнение атрибутов
  *
  * Использование:
- * php src/psalm_config.php --target=./psalm.xml
+ * php src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml
  *
  * Аргументы:
  * --target (-t) - путь для сохранения сгенерированного конфига
@@ -632,6 +632,7 @@ parameters:
 **Требования:**
 - Шаблонный файл для динамической генерации
 - Генератор `PsalmConfigGenerator` (замена `psalm_config.php`)
+- `psalm_config.php` после замены удаляется из библиотеки
 - Уровень строгости: `errorLevel="7"`
 - Динамическое добавление плагинов
 - Поддержка путей из `extra.linters.psalm.paths` и `extra.linters.psalm.skip`
@@ -1012,21 +1013,21 @@ return RectorConfig::configure()
       "./vendor/bin/php-cs-fixer fix --dry-run --config=./configs/.php-cs-fixer.dist.php --diff -vv --allow-risky=yes --using-cache=no"
     ],
     "phpstan": [
-      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon"
+      "./vendor/bin/phpstan src/ConfigGenerator/ analyze --configuration=./configs/phpstan.neon"
     ],
     "phpstan-baseline": [
-      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon --generate-baseline"
+      "./vendor/bin/phpstan src/ConfigGenerator/ analyze --configuration=./configs/phpstan.neon --generate-baseline"
     ],
     "psalm": [
-      "php src/psalm_config.php --target=./psalm.xml",
+      "php src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
       "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
       "rm ./psalm.xml"
     ],
     "phpcs": [
-      "./vendor/bin/phpcs --standard=./configs/phpcs.xml"
+      "./vendor/bin/phpcs src/ConfigGenerator/ --standard=./configs/phpcs.xml"
     ],
     "phpmd": [
-      "./vendor/bin/phpmd src text ./configs/phpmd.ruleset.xml"
+      "./vendor/bin/phpmd src/ConfigGenerator/ src text ./configs/phpmd.ruleset.xml"
     ],
     "composer-unused": [
       "./vendor/bin/composer-unused --configuration=./configs/composer-unused.php"
@@ -1068,7 +1069,7 @@ return RectorConfig::configure()
       "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
     ],
     "psalm": [
-      "php ./vendor/devwolk/linters/src/psalm_config.php --target=./psalm.xml",
+      "php ./vendor/devwolk/linters/src/ConfigGenerator/.php --target=./psalm.xml",
       "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
       "rm ./psalm.xml"
     ],

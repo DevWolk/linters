@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Code;
+namespace Linters;
 
 use Exception;
 use RuntimeException;
@@ -11,7 +11,7 @@ use function file_exists;
 use function file_get_contents;
 use function json_decode;
 
-class ComposerLoader
+class ConfigurationLoader
 {
     /** @var string */
     protected const COMPOSER_FILE = '/composer.json';
