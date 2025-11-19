@@ -1,0 +1,16 @@
+#https://phpstan.org/user-guide/getting-started
+
+parameters:
+    level: max
+    paths:
+        - app
+        - config
+        - tests
+        - database
+    excludePaths:
+        - vendor/*
+        - app/Containers/Vendor/*
+
+    reportUnmatchedIgnoredErrors: false
+    fileExtensions:
+        - php

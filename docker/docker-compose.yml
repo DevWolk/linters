@@ -1,0 +1,27 @@
+services:
+  linters_fpm:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: 1.99
+          memory: 2G
+    restart: unless-stopped
+    container_name: linters_fpm
+    hostname: linters_fpm
+    ports:
+      - '9001:9000'
+    volumes:
+      - ../:/var/www
+    environment:
+      - PHP_IDE_CONFIG=serverName=localhost
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - filter_network
+
+networks:
+  filter_network:
+    driver: bridge
