@@ -112,6 +112,6 @@ CODE_SAMPLE
 
     public function provideMinPhpVersion(): int
     {
-        return PhpVersion::PHP_83;
+        return PhpVersion::PHP_82;
     }
 }
