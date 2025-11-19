@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 
 /**
  * @link https://mlocati.github.io/php-cs-fixer-configurator/

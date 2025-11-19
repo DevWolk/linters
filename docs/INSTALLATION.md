@@ -32,7 +32,8 @@ Add the `extra.linters` configuration to your `composer.json`:
     "linters": {
       "rector": {
         "paths": ["/app", "/src", "/tests"],
-        "skip": ["/vendor", "/storage"]
+        "skip": ["/vendor", "/storage"],
+        "frameworks": ["laravel"]
       },
       "php-cs-fixer": {
         "paths": ["/app", "/src"],
@@ -62,6 +63,8 @@ Add the `extra.linters` configuration to your `composer.json`:
 ```
 
 ### Configuration Explanation
+
+- **frameworks**: Optional list or map enabling framework-specific Rector presets. Examples: `["laravel"]`, `["symfony"]`, or `{"laravel": true, "symfony": false}`.
 
 - **paths**: Directories to analyze (relative to project root)
 - **skip**: Directories or patterns to exclude from analysis
@@ -94,7 +97,7 @@ Add convenient scripts to your `composer.json`:
       "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
     ],
     "psalm": [
-      "php ./vendor/devwolk/linters/src/psalm_config.php --target=./psalm.xml",
+      "php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
       "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
       "rm ./psalm.xml"
     ],

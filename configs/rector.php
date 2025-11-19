@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-use Linters\Rector\Rules\AssertInstanceToStaticCallRector;
-use Linters\Rector\Rules\MockObjectStaticToInstanceCallRector;
-use Linters\ConfigurationLoader;
+use Linters\Rector\Set\AppRectorSetList;
+use Linters\Utils\ConfigurationLoader;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
@@ -15,9 +14,8 @@ use Rector\CodingStyle\Rector\PostInc\PostIncDecToPreIncDecRector;
 use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\StaticCall\RemoveParentCallWithoutParentRector;
-use Rector\Doctrine\Dbal211\Rector\MethodCall\ReplaceFetchAllMethodCallRector;
-use Rector\Doctrine\Orm214\Rector\Param\ReplaceLifecycleEventArgsByDedicatedEventArgsRector;
 use Rector\Doctrine\Set\DoctrineSetList;
+use Rector\Exception\Configuration\InvalidConfigurationException;
 use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\Class_\RenamePropertyToMatchTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
@@ -30,21 +28,82 @@ use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
-use Rector\Privatization\Rector\ClassMethod\PrivatizeFinalClassMethodRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Class_\TypedPropertyFromCreateMockAssignRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddMethodCallBasedStrictParamTypeRector;
 use Rector\ValueObject\PhpVersion;
-use RectorLaravel\Set\LaravelLevelSetList;
-use RectorLaravel\Set\LaravelSetList;
 
-// Get settings from extra section of composer and provide access for them
 $composerLoader = new ConfigurationLoader();
 
+$frameworksValue = $composerLoader->get('rector.frameworks', []);
+$frameworks = [];
+
+$isSymfonyEnabled = false;
+$isLaravelEnabled = false;
+
+if (is_array($frameworksValue)) {
+    if (array_is_list($frameworksValue)) {
+        $frameworks = $frameworksValue;
+    } else {
+        foreach ($frameworksValue as $name => $enabled) {
+            if ($enabled) {
+                $frameworks[] = (string)$name;
+            }
+        }
+    }
+} elseif (is_string($frameworksValue) && $frameworksValue !== '') {
+    $frameworks[] = $frameworksValue;
+}
+
+$frameworks = array_map(
+    static fn(string $framework): string => strtolower($framework),
+    $frameworks
+);
+
+$frameworkSets = [];
+
+if (in_array('laravel', $frameworks, true)) {
+    $frameworkSets[] = AppRectorSetList::LARAVEL;
+    $isLaravelEnabled = true;
+}
+
+if (in_array('symfony', $frameworks, true)) {
+    $frameworkSets[] = AppRectorSetList::SYMFONY;
+    $isSymfonyEnabled = true;
+}
+
+$baseSets = [
+    AppRectorSetList::APP_RULES,
+    AppRectorSetList::STRICT_TYPES,
+
+    PHPUnitSetList::PHPUNIT_90,
+    PHPUnitSetList::PHPUNIT_100,
+    PHPUnitSetList::PHPUNIT_110,
+    PHPUnitSetList::PHPUNIT_CODE_QUALITY,
+    PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
+
+    SetList::CODE_QUALITY,
+    SetList::CODING_STYLE,
+    SetList::TYPE_DECLARATION,
+    SetList::EARLY_RETURN,
+
+    DoctrineSetList::ANNOTATIONS_TO_ATTRIBUTES,
+    DoctrineSetList::GEDMO_ANNOTATIONS_TO_ATTRIBUTES,
+    DoctrineSetList::MONGODB__ANNOTATIONS_TO_ATTRIBUTES,
+    DoctrineSetList::DOCTRINE_CODE_QUALITY,
+
+    LevelSetList::UP_TO_PHP_82,
+];
+
+$configuredSets = array_merge($baseSets, $frameworkSets);
+
+/**
+ * @throws InvalidConfigurationException
+ */
 return RectorConfig::configure()
     ->withCache(
-    // specify a path that works locally as well as on CI job runners
+        // specify a path that works locally as well as on CI job runners
         cacheDirectory: '/tmp/rector',
         // ensure file system caching is used instead of in-memory
         cacheClass: FileCacheStorage::class
@@ -62,18 +121,15 @@ return RectorConfig::configure()
         naming: true,
         instanceOf: true,
         earlyReturn: true,
-        strictBooleans: true,
         carbon: true,
         rectorPreset: true,
         phpunitCodeQuality: true,
-        doctrineCodeQuality: true,
-        symfonyCodeQuality: true,
-        symfonyConfigs: false,
     )
     ->withComposerBased(
         doctrine: true,
         phpunit: true,
-        symfony: true,
+        symfony: $isSymfonyEnabled,
+        laravel: $isLaravelEnabled,
     )
     ->withAttributesSets(
         doctrine: true,
@@ -81,36 +137,7 @@ return RectorConfig::configure()
         gedmo: true,
         phpunit: true,
     )
-    ->withRules([
-        ReplaceFetchAllMethodCallRector::class,
-        ReplaceLifecycleEventArgsByDedicatedEventArgsRector::class,
-        MockObjectStaticToInstanceCallRector::class,
-        AssertInstanceToStaticCallRector::class,
-    ])
-    ->withSets([
-        PHPUnitSetList::PHPUNIT_90,
-        PHPUnitSetList::PHPUNIT_100,
-        PHPUnitSetList::PHPUNIT_110,
-        PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-        PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
-
-        SetList::CODE_QUALITY,
-        SetList::CODING_STYLE,
-        SetList::TYPE_DECLARATION,
-        SetList::EARLY_RETURN,
-        SetList::STRICT_BOOLEANS,
-
-        DoctrineSetList::ANNOTATIONS_TO_ATTRIBUTES,
-        DoctrineSetList::GEDMO_ANNOTATIONS_TO_ATTRIBUTES,
-        DoctrineSetList::MONGODB__ANNOTATIONS_TO_ATTRIBUTES,
-        DoctrineSetList::DOCTRINE_CODE_QUALITY,
-
-        LevelSetList::UP_TO_PHP_83,
-        LaravelLevelSetList::UP_TO_LARAVEL_110,
-        LaravelSetList::LARAVEL_110,
-        LaravelSetList::LARAVEL_CODE_QUALITY,
-        LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
-    ])
+    ->withSets($configuredSets)
     ->withPhpVersion(PhpVersion::PHP_82)
     ->withPaths($composerLoader->getAbsolutePaths('rector.paths'))
     ->withSkip(

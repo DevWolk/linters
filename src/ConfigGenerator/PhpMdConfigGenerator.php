@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Linters\ConfigGenerator;
 
 use DOMDocument;
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 
 /**
  * Generator for PHPMD XML ruleset files

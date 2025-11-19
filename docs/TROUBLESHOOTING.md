@@ -216,7 +216,7 @@ psalm.xml not found
 
 **Solution**: Ensure the full script runs:
 ```bash
-php ./vendor/devwolk/linters/src/psalm_config.php --target=./psalm.xml
+php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml
 ./vendor/bin/psalm --config=./psalm.xml
 rm ./psalm.xml
 ```

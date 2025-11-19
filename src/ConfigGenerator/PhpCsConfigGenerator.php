@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Linters\ConfigGenerator;
 
 use DOMDocument;
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 
 /**
  * Generator for PHP_CodeSniffer XML configuration files

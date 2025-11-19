@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 
 /**
  * Generator for PHPStan NEON configuration files
@@ -43,7 +43,7 @@ class PhpStanConfigGenerator
      */
     protected function buildConfiguration(): array
     {
-        $rootDir = $this->loader->composerDir ?? getcwd();
+        $rootDir = $this->loader->getComposerDir();
 
         $config = [
             'parameters' => [
@@ -89,7 +89,7 @@ class PhpStanConfigGenerator
      */
     protected function getRelativePaths(array $absolutePaths): array
     {
-        $rootDir = $this->loader->composerDir ?? getcwd();
+        $rootDir = $this->loader->getComposerDir();
 
         return array_map(
             static fn(string $path): string => str_replace($rootDir, '', $path),

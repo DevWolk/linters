@@ -53,7 +53,8 @@ Add to your `composer.json`:
     "linters": {
       "rector": {
         "paths": ["/app", "/src", "/tests"],
-        "skip": ["/vendor"]
+        "skip": ["/vendor"],
+        "frameworks": ["laravel"]
       },
       "php-cs-fixer": {
         "paths": ["/app", "/src"],
@@ -180,7 +181,7 @@ See [docs/CUSTOM_RECTOR_RULES.md](docs/CUSTOM_RECTOR_RULES.md) for complete docu
 Dynamic configuration loading through `ConfigurationLoader` class:
 
 ```php
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 
 $loader = new ConfigurationLoader();
 $paths = $loader->getAbsolutePaths('rector.paths'); // ['/app', '/src']
@@ -194,6 +195,10 @@ Automated configuration generation for non-PHP config files:
 - `PhpStanConfigGenerator` - Generates `phpstan.neon`
 - `PhpCsConfigGenerator` - Generates `phpcs.xml`
 - `PhpMdConfigGenerator` - Generates `phpmd.ruleset.xml`
+
+### Framework Presets
+
+Enable opinionated framework rule sets via `extra.linters.rector.frameworks`. Accepts either an array of framework names (e.g., `["laravel"]`, `["symfony"]`, or both) or an object map (`{"laravel": true, "symfony": false}`). Only the frameworks you list are loaded; omitting the key defaults to Laravel for backward compatibility.
 
 ## 🔄 Typical Workflow
 

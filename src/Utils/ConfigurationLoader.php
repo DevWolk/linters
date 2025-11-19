@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Linters;
+namespace Linters\Utils;
 
 use Exception;
 use RuntimeException;
@@ -10,6 +10,7 @@ use function explode;
 use function file_exists;
 use function file_get_contents;
 use function json_decode;
+use function rtrim;
 
 class ConfigurationLoader
 {
@@ -31,8 +32,8 @@ class ConfigurationLoader
             throw new RuntimeException(self::COMPOSER_FILE . ' file not found');
         }
 
-        $content      = file_get_contents($this->composerDir . self::COMPOSER_FILE);
-        $content      = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        $content = file_get_contents($this->composerDir . self::COMPOSER_FILE);
+        $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         $this->config = $content['extra'][$this->extraKey] ?? [];
     }
@@ -40,7 +41,7 @@ class ConfigurationLoader
     /**
      * @return array|string|null
      */
-    public function get(string $keys, mixed $default = null)
+    public function get(string $keys, mixed $default = null): mixed
     {
         $explodedKeys = explode('.', $keys);
         $array = $this->config;
@@ -57,9 +58,17 @@ class ConfigurationLoader
 
     public function getAbsolutePaths(string $key, array $default = []): array
     {
-        $paths = $this->get($key, $default);
-        $root  = $this->composerDir;
+        $paths = (array)$this->get($key, $default);
+        $root  = $this->getComposerDir();
 
-        return array_map(static fn (string $path): string => $root . $path, (array)$paths);
+        return array_map(
+            static fn(string $path): string => rtrim($root, '/') . $path,
+            $paths
+        );
+    }
+
+    public function getComposerDir(): string
+    {
+        return (string)($this->composerDir ?? getcwd());
     }
 }

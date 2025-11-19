@@ -5,10 +5,20 @@ declare(strict_types=1);
 namespace Linters\ConfigGenerator;
 
 use DOMDocument;
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use SimpleXMLElement;
+use function file_exists;
+use function getopt;
+use function iterator_to_array;
+use function realpath;
+use function sprintf;
+use function str_contains;
+use function str_replace;
+use const PHP_SAPI;
+use const STDERR;
+use const STDOUT;
 
 /**
  * Generator for Psalm XML configuration files
@@ -135,4 +145,40 @@ class PsalmConfigGenerator
             }
         }
     }
+}
+
+if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+    (static function (): void {
+        $autoloaderFound = false;
+        $autoloaders = [
+            __DIR__ . '/../../vendor/autoload.php',      // running from repository
+            __DIR__ . '/../../../../autoload.php',       // running from installed package
+        ];
+
+        foreach ($autoloaders as $autoloader) {
+            if (file_exists($autoloader)) {
+                require_once $autoloader;
+                $autoloaderFound = true;
+                break;
+            }
+        }
+
+        if ($autoloaderFound === false) {
+            fwrite(STDERR, "[ERROR] Unable to locate Composer autoloader.\n");
+            exit(1);
+        }
+
+        $options = getopt('t:c::', ['target:', 'config::']);
+        $targetPath = $options['t'] ?? $options['target'] ?? null;
+
+        if ($targetPath === null) {
+            fwrite(STDERR, "Missing required option --target (-t).\n");
+            exit(1);
+        }
+
+        $templatePath = $options['c'] ?? $options['config'] ?? null;
+        $generator = new PsalmConfigGenerator(null, $templatePath ?: null);
+        $generator->generate($targetPath);
+        fwrite(STDOUT, sprintf("Psalm config generated at %s\n", $targetPath));
+    })();
 }

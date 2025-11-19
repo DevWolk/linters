@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit;
 
-use Linters\ConfigurationLoader;
+use Linters\Utils\ConfigurationLoader;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

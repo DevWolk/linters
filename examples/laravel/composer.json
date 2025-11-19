@@ -24,6 +24,9 @@
           "/app/Http/Middleware/TrustHosts.php",
           "/bootstrap",
           "/storage"
+        ],
+        "frameworks": [
+          "laravel"
         ]
       },
       "php-cs-fixer": {
@@ -104,7 +107,7 @@
       "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
     ],
     "psalm": [
-      "php ./vendor/devwolk/linters/src/psalm_config.php --target=./psalm.xml",
+      "php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
       "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
       "rm ./psalm.xml"
     ],

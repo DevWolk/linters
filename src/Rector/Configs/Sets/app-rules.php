@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+use Linters\Rector\Rules\AssertInstanceToStaticCallRector;
+use Linters\Rector\Rules\MockObjectStaticToInstanceCallRector;
+use Rector\Config\RectorConfig;
+
+return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->rules([
+        MockObjectStaticToInstanceCallRector::class,
+        AssertInstanceToStaticCallRector::class,
+    ]);
+};
