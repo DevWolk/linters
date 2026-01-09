@@ -7,14 +7,7 @@ parameters:
     # Level 8 provides strict type checking without being overly pedantic
     level: 8
 
-    # Paths to analyze - dynamically loaded from composer.json extra.linters.phpstan.paths
-    # These paths are relative to the project root
-    paths:
-        - app
-
-    # Paths to exclude from analysis
-    excludePaths:
-        - vendor/*
+    # Paths to analyze/exclude are injected by the generator
 
     # Enable strict rules for better code quality
     strictRules:

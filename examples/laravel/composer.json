@@ -3,11 +3,11 @@
   "description": "Example Laravel project using devwolk/linters",
   "type": "project",
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "laravel/framework": "^11.0"
   },
   "require-dev": {
-    "devwolk/linters": "dev-main"
+    "devwolk/linters": "0.0.1"
   },
   "extra": {
     "linters": {
@@ -51,24 +51,8 @@
           "/storage",
           "/bootstrap/cache"
         ],
-        "level": 8
-      },
-      "psalm": {
-        "paths": [
-          "/app"
-        ],
-        "skip": [
-          "/vendor",
-          "/bootstrap",
-          "/storage"
-        ],
-        "config": {
-          "plugins": {
-            "pluginClass": [
-              {"class": "Psalm\\LaravelPlugin\\Plugin"}
-            ]
-          }
-        }
+        "level": 8,
+        "target": "./phpstan.neon"
       },
       "phpcs": {
         "paths": [
@@ -77,13 +61,16 @@
         ],
         "skip": [
           "*.blade.php"
-        ]
+        ],
+        "target": "./phpcs.xml"
       },
       "phpmd": {
         "paths": [
           "/app"
         ],
-        "skip": []
+        "skip": [],
+        "target": "./phpmd.ruleset.xml",
+        "format": "text"
       }
     }
   },
@@ -101,21 +88,17 @@
       "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff -vv"
     ],
     "phpstan": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon"
+      "./vendor/bin/linters run phpstan"
     ],
     "phpstan-baseline": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
-    ],
-    "psalm": [
-      "php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
-      "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
-      "rm ./psalm.xml"
+      "./vendor/bin/linters generate phpstan",
+      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
     ],
     "phpcs": [
-      "./vendor/bin/phpcs --standard=./vendor/devwolk/linters/configs/phpcs.xml"
+      "./vendor/bin/linters run phpcs"
     ],
     "phpmd": [
-      "./vendor/bin/phpmd app,tests text ./vendor/devwolk/linters/configs/phpmd.ruleset.xml"
+      "./vendor/bin/linters run phpmd"
     ],
     "lint": [
       "@rector-check",

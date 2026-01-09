@@ -24,7 +24,7 @@ class PhpCsConfigGenerator
     public function __construct(?ConfigurationLoader $loader = null, ?string $templatePath = null)
     {
         $this->loader = $loader ?? new ConfigurationLoader();
-        $this->templatePath = $templatePath;
+        $this->templatePath = $templatePath ?? __DIR__ . '/../../configs/phpcs.xml';
     }
 
     /**
@@ -156,10 +156,9 @@ class PhpCsConfigGenerator
      */
     protected function addPaths(DOMDocument $dom): void
     {
-        $paths = $this->loader->getAbsolutePaths('phpcs.paths', ['/src']);
-
-        if (empty($paths)) {
-            return;
+        $paths = $this->loader->getAbsolutePaths('phpcs.paths');
+        if ($paths === []) {
+            throw new \RuntimeException('Missing required config: extra.linters.phpcs.paths');
         }
 
         $ruleset = $dom->documentElement;

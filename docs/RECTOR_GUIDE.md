@@ -60,7 +60,7 @@ If you encounter issues, clear the Rector cache:
 
 ### Available PHP Migrations
 
-The library includes migrations up to PHP 8.3:
+The library includes migrations up to PHP 8.2:
 
 ```bash
 # PHP 8.0 features
@@ -80,10 +80,6 @@ The library includes migrations up to PHP 8.3:
 - Readonly classes
 - DNF types
 - True/false/null standalone types
-
-# PHP 8.3 features
-- Typed class constants
-- Dynamic class constant fetch
 ```
 
 ### Migration Process
@@ -107,7 +103,7 @@ The library includes migrations up to PHP 8.3:
 6. **Commit changes**:
    ```bash
    git add .
-   git commit -m "feat: upgrade to PHP 8.3"
+   git commit -m "feat: upgrade to PHP 8.2"
    ```
 
 ### Gradual Migration
@@ -148,7 +144,7 @@ Changes include:
 
 ### Symfony Migrations
 
-Includes Symfony migrations for modern versions:
+Symfony sets are enabled when `rector.frameworks` includes `symfony` and `rector/rector-symfony` is installed. Sets include:
 - Service definitions
 - Event dispatcher updates
 - Form component changes
@@ -310,13 +306,18 @@ Process only what's necessary:
 
 ### 3. Use Cache
 
-Cache is enabled by default:
+Cache is configurable via `extra.linters.rector.cache_dir`:
 
-```php
-->withCache(
-    cacheDirectory: '/tmp/rector',
-    cacheClass: FileCacheStorage::class
-)
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "cache_dir": "/tmp/rector"
+      }
+    }
+  }
+}
 ```
 
 ## Troubleshooting

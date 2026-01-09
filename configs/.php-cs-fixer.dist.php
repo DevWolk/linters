@@ -20,8 +20,8 @@ if ($isVSCodeRun === false) {
         ->ignoreDotFiles(true)
         ->name('*.php')
         ->notName(['*.blade.php', '_*'])
-        ->exclude($composerLoader->getAbsolutePaths('cs-fixer.skip'))
-        ->in($composerLoader->getAbsolutePaths('cs-fixer.paths'));
+        ->exclude($composerLoader->getAbsolutePaths('php-cs-fixer.skip'))
+        ->in($composerLoader->getAbsolutePaths('php-cs-fixer.paths'));
 }
 $config = new PhpCsFixer\Config();
 

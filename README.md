@@ -2,284 +2,112 @@
 
 Centralized PHP linter configurations and static analysis tools for PHP projects.
 
-## 📋 Overview
+## Target Standard (Spec)
 
-`devwolk/linters` provides a unified, opinionated set of configurations for the most popular PHP code quality tools. Instead of maintaining separate configurations across multiple projects, install this package and configure everything through your `composer.json`.
+- Single CLI entrypoint: `./vendor/bin/linters generate <tool>` and `./vendor/bin/linters run <tool>`
+- Templates for every check live under `configs/`
+- No project-specific paths or defaults inside the package
+- All settings come from `extra.linters` in the consuming `composer.json`
+- Framework flexibility via `rector.frameworks` and tool-specific `*.config`
 
-## ✨ Features
+## Current Status (Snapshot)
 
-- **Centralized Configuration**: Single source of truth for all linter settings
-- **Dynamic Path Configuration**: Configure paths through `composer.json` extra section
-- **Production-Ready Configs**: Battle-tested configurations for PHP 8.2+
-- **Framework Support**: Optimized for Laravel and Symfony
-- **Custom Rector Rules**: Additional code quality rules
-- **Comprehensive Documentation**: Detailed guides for each tool
+- Implemented: Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused
+- Generators and runners: PHPStan/PHPCS/PHPMD via `linters generate` and `linters run`
+- Templates: `configs/phpstan.neon`, `configs/phpcs.xml`, `configs/phpmd.ruleset.xml`,
+  plus dynamic configs for Rector and PHP-CS-Fixer
+- Pending: verification/tests
 
-## 🛠 Supported Tools
+## Supported Tools
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| [Rector](https://getrector.com/) | ^2.2 | Automated code refactoring and upgrades |
-| [PHP-CS-Fixer](https://cs.symfony.com/) | ^3.89 | Code style formatting |
-| [PHPStan](https://phpstan.org/) | ^2.1 | Static type analysis |
-| [Psalm](https://psalm.dev/) | ^5.0 | Alternative static analyzer |
-| [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) | ^4.0 | Coding standards validation |
-| [PHPMD](https://phpmd.org/) | ^2.15 | Mess detection |
-| [composer-unused](https://github.com/composer-unused/composer-unused) | ^0.9 | Unused dependency detection |
+| Tool                                                                  | Version | Status |
+|-----------------------------------------------------------------------|---------|--------|
+| [Rector](https://getrector.com/)                                      | ^2.2    | Working (dynamic config) |
+| [PHP-CS-Fixer](https://cs.symfony.com/)                               | ^3.89   | Working (dynamic config) |
+| [PHPStan](https://phpstan.org/)                                       | ^2.1    | Working (generated config, not verified) |
+| [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)       | ^4.0    | Working (generated config, not verified) |
+| [PHPMD](https://phpmd.org/)                                           | ^2.15   | Working (generated config, not verified) |
+| [composer-unused](https://github.com/composer-unused/composer-unused) | ^0.9    | Working |
+## Configuration (Target Schema)
 
-## 📦 Requirements
-
-| Requirement | Version |
-|------------|---------|
-| PHP | ^8.2 |
-| Composer | ^2.0 |
-| OS | Unix/Linux/macOS |
-
-## 🚀 Quick Start
-
-### 1. Install
-
-```bash
-composer require --dev devwolk/linters
-```
-
-### 2. Configure
-
-Add to your `composer.json`:
+All tool settings live in `extra.linters`:
 
 ```json
 {
   "extra": {
     "linters": {
-      "rector": {
-        "paths": ["/app", "/src", "/tests"],
-        "skip": ["/vendor"],
-        "frameworks": ["laravel"]
-      },
       "php-cs-fixer": {
-        "paths": ["/app", "/src"],
+        "paths": ["/src"],
         "skip": []
       },
       "phpstan": {
-        "paths": ["/app", "/src"],
-        "level": 8
-      }
-    }
-  }
-}
-```
-
-### 3. Add Scripts
-
-```json
-{
-  "scripts": {
-    "rector": "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php",
-    "phpstan": "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon",
-    "php-cs-fixer": "./vendor/bin/php-cs-fixer fix --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php"
-  }
-}
-```
-
-### 4. Run
-
-```bash
-composer rector
-composer phpstan
-composer php-cs-fixer
-```
-
-## 📚 Documentation
-
-- **[Installation Guide](docs/INSTALLATION.md)** - Detailed installation and setup
-- **[Configuration Guide](docs/CONFIGURATION.md)** - Complete configuration reference
-- **[Rector Guide](docs/RECTOR_GUIDE.md)** - Using Rector for code upgrades
-- **[PHPStan Guide](docs/PHPSTAN_GUIDE.md)** - Static analysis with PHPStan
-- **[Custom Rector Rules](docs/CUSTOM_RECTOR_RULES.md)** - Library's custom rules
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-
-## 🎯 Framework Examples
-
-### Laravel
-
-See [examples/laravel](examples/laravel/) for complete Laravel integration.
-
-```json
-{
-  "extra": {
-    "linters": {
-      "rector": {
-        "paths": ["/app", "/config", "/database", "/tests"],
-        "skip": ["/bootstrap", "/storage"]
-      },
-      "php-cs-fixer": {
-        "paths": ["/app", "/config"],
-        "skip": ["*.blade.php"]
-      }
-    }
-  }
-}
-```
-
-### Symfony
-
-See [examples/symfony](examples/symfony/) for complete Symfony integration.
-
-```json
-{
-  "extra": {
-    "linters": {
-      "rector": {
-        "paths": ["/src", "/tests"],
-        "skip": ["/src/Kernel.php", "/var"]
-      },
-      "php-cs-fixer": {
         "paths": ["/src"],
-        "skip": ["*.twig"]
+        "skip": ["/vendor"],
+        "target": "./phpstan.neon"
+      },
+      "phpcs": {
+        "paths": ["/src"],
+        "skip": [],
+        "target": "./phpcs.xml"
+      },
+      "phpmd": {
+        "paths": ["/src"],
+        "skip": ["/vendor"],
+        "target": "./phpmd.ruleset.xml",
+        "format": "text"
       }
     }
   }
 }
 ```
 
-## 🎨 Custom Rector Rules
+Other tools (`rector`, `phpcs`, `composer-unused`) follow the same `extra.linters.<tool>` shape.
+See `TODO.md` for the active plan and checks.
 
-This library includes custom Rector rules:
-
-### AssertInstanceToStaticCallRector
-
-Converts PHPUnit assertions from `$this->assert*()` to `self::assert*()`:
-
-```php
-// Before
-$this->assertInstanceOf(User::class, $user);
-$this->assertTrue($value);
-
-// After
-self::assertInstanceOf(User::class, $user);
-self::assertTrue($value);
-```
-
-### MockObjectStaticToInstanceCallRector
-
-Converts mock expectations from `self::once()` to `$this->once()`:
-
-```php
-// Before
-$mock->expects(self::once())->method('send');
-
-// After
-$mock->expects($this->once())->method('send');
-```
-
-See [docs/CUSTOM_RECTOR_RULES.md](docs/CUSTOM_RECTOR_RULES.md) for complete documentation.
-
-## 🏗️ Architecture
-
-### Configuration Loader
-
-Dynamic configuration loading through `ConfigurationLoader` class:
-
-```php
-use Linters\Utils\ConfigurationLoader;
-
-$loader = new ConfigurationLoader();
-$paths = $loader->getAbsolutePaths('rector.paths'); // ['/app', '/src']
-```
-
-### Config Generators
-
-Automated configuration generation for non-PHP config files:
-
-- `PsalmConfigGenerator` - Generates `psalm.xml`
-- `PhpStanConfigGenerator` - Generates `phpstan.neon`
-- `PhpCsConfigGenerator` - Generates `phpcs.xml`
-- `PhpMdConfigGenerator` - Generates `phpmd.ruleset.xml`
-
-### Framework Presets
-
-Enable opinionated framework rule sets via `extra.linters.rector.frameworks`. Accepts either an array of framework names (e.g., `["laravel"]`, `["symfony"]`, or both) or an object map (`{"laravel": true, "symfony": false}`). Only the frameworks you list are loaded; omitting the key defaults to Laravel for backward compatibility.
-
-## 🔄 Typical Workflow
+## CLI (Single Standard)
 
 ```bash
-# 1. Check what would change (dry-run)
-composer rector -- --dry-run
-composer php-cs-fixer -- --dry-run
-
-# 2. Review and apply changes
-composer rector
-composer php-cs-fixer
-
-# 3. Run static analysis
-composer phpstan
-composer psalm
-
-# 4. Check coding standards
-composer phpcs
+./vendor/bin/linters generate phpstan
+./vendor/bin/linters generate phpcs
+./vendor/bin/linters generate phpmd
+./vendor/bin/linters run phpstan
+./vendor/bin/linters run phpcs
+./vendor/bin/linters run phpmd
 ```
 
-## 🛡️ CI/CD Integration
+`linters run <tool>` regenerates the config on each run using `extra.linters.<tool>`.
+The `--target` and `--config` options override `extra.linters.<tool>.target` and
+`extra.linters.<tool>.template`; `--format` overrides `extra.linters.phpmd.format`.
 
-### GitHub Actions
+## Framework Support
 
-```yaml
-name: Code Quality
+Framework-specific Rector rules are controlled by `rector.frameworks`:
 
-on: [push, pull_request]
-
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-      - run: composer install
-      - run: composer rector -- --dry-run
-      - run: composer phpstan
-      - run: composer php-cs-fixer -- --dry-run
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "frameworks": ["laravel", "symfony"]
+      }
+    }
+  }
+}
 ```
 
-## 🤝 Contributing
+For PHPStan/PHPMD, use `extra.linters.<tool>.config` and `extra.linters.phpmd.rulesets`
+to add framework-specific settings without hardcoding paths in the package.
 
-Contributions are welcome! Please:
+## Templates
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+`configs/` provides the shared templates used by generators:
 
-## 📄 License
+- `configs/phpstan.neon`
+- `configs/phpcs.xml`
+- `configs/phpmd.ruleset.xml`
+- `configs/rector.php`
+- `configs/.php-cs-fixer.dist.php`
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## Roadmap
 
-## 🙏 Acknowledgments
-
-This library builds upon excellent tools created by:
-
-- [Rector](https://getrector.com/) team
-- [PHPStan](https://phpstan.org/) team
-- [PHP-CS-Fixer](https://cs.symfony.com/) team
-- [Psalm](https://psalm.dev/) team
-- And many other open-source contributors
-
-## 📞 Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/devwolk/linters/issues)
-- **Examples**: [examples/](examples/)
-
-## 🗺️ Roadmap
-
-- [ ] Add PHPUnit configuration
-- [ ] Create web-based configuration generator
-- [ ] Add more custom Rector rules
-- [ ] Support for additional frameworks (CakePHP, CodeIgniter)
-- [ ] IDE integration guides
-
----
-
-Made with ❤️ for the PHP community
+See `TODO.md` for the active plan and gap list.

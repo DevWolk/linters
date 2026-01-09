@@ -28,17 +28,6 @@ Copy the `composer.json` configuration from this example to your Symfony project
    "skip": ["*.twig"]
    ```
 
-4. **Psalm plugin**: Symfony-specific type checking
-   ```json
-   "config": {
-     "plugins": {
-       "pluginClass": [
-         {"class": "Psalm\\SymfonyPsalmPlugin\\Plugin"}
-       ]
-     }
-   }
-   ```
-
 ## Usage
 
 ### Run All Linters (Check)

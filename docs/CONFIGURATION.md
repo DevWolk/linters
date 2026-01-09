@@ -9,7 +9,6 @@ Complete guide for configuring `devwolk/linters` in your project.
 - [Rector Configuration](#rector-configuration)
 - [PHP-CS-Fixer Configuration](#php-cs-fixer-configuration)
 - [PHPStan Configuration](#phpstan-configuration)
-- [Psalm Configuration](#psalm-configuration)
 - [PHP_CodeSniffer Configuration](#php_codesniffer-configuration)
 - [PHPMD Configuration](#phpmd-configuration)
 - [Advanced Configuration](#advanced-configuration)
@@ -57,6 +56,8 @@ The basic structure for `extra.linters`:
 
 - **paths** (array): Directories to process
 - **skip** (array): Paths to exclude from processing
+- **frameworks** (array|string|object): Enable framework presets (`laravel`, `symfony`)
+- **cache_dir** (string): Optional cache directory for Rector
 
 ### Laravel Projects
 
@@ -100,7 +101,7 @@ The basic structure for `extra.linters`:
 {
   "extra": {
     "linters": {
-      "cs-fixer": {
+      "php-cs-fixer": {
         "paths": ["/app", "/src"],
         "skip": ["*.blade.php", "*.twig"]
       }
@@ -120,7 +121,7 @@ The basic structure for `extra.linters`:
 {
   "extra": {
     "linters": {
-      "cs-fixer": {
+      "php-cs-fixer": {
         "paths": ["/app", "/config", "/database"],
         "skip": [
           "*.blade.php",
@@ -143,7 +144,8 @@ The basic structure for `extra.linters`:
       "phpstan": {
         "paths": ["/app", "/src"],
         "skip": ["/vendor", "/tests"],
-        "level": 8
+        "level": 8,
+        "target": "./phpstan.neon"
       }
     }
   }
@@ -152,10 +154,13 @@ The basic structure for `extra.linters`:
 
 ### Available Options
 
-- **paths** (array): Directories to analyze
+- **paths** (array, required): Directories to analyze
 - **skip** (array): Paths to exclude
 - **level** (int|string): Analysis level (0-9 or 'max')
 - **baseline** (string): Path to baseline file (optional)
+- **config** (object): Additional configuration merged into the generated NEON
+- **target** (string): Output file for `linters generate phpstan` or `linters run phpstan`
+- **template** (string): Template file for `linters generate phpstan`
 
 ### Analysis Levels
 
@@ -178,7 +183,8 @@ For existing projects with many errors:
       "phpstan": {
         "paths": ["/app"],
         "level": 8,
-        "baseline": "phpstan-baseline.neon"
+        "baseline": "phpstan-baseline.neon",
+        "target": "./phpstan.neon"
       }
     }
   }
@@ -188,52 +194,6 @@ For existing projects with many errors:
 Generate baseline:
 ```bash
 composer phpstan-baseline
-```
-
-## Psalm Configuration
-
-### Basic Configuration
-
-```json
-{
-  "extra": {
-    "linters": {
-      "psalm": {
-        "paths": ["/app", "/src"],
-        "skip": ["/vendor"],
-        "config": {}
-      }
-    }
-  }
-}
-```
-
-### Available Options
-
-- **paths** (array): Directories to analyze
-- **skip** (array): Paths to exclude
-- **config** (object): Additional XML configuration
-
-### Laravel Projects with Plugin
-
-```json
-{
-  "extra": {
-    "linters": {
-      "psalm": {
-        "paths": ["/app"],
-        "skip": ["/vendor", "/bootstrap"],
-        "config": {
-          "plugins": {
-            "pluginClass": [
-              {"class": "Psalm\\LaravelPlugin\\Plugin"}
-            ]
-          }
-        }
-      }
-    }
-  }
-}
 ```
 
 ## PHP_CodeSniffer Configuration
@@ -246,7 +206,8 @@ composer phpstan-baseline
     "linters": {
       "phpcs": {
         "paths": ["/app", "/src"],
-        "skip": []
+        "skip": [],
+        "target": "./phpcs.xml"
       }
     }
   }
@@ -255,8 +216,10 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array): Directories to check
+- **paths** (array, required): Directories to check
 - **skip** (array): Patterns to exclude
+- **target** (string): Output file for `linters generate phpcs` or `linters run phpcs`
+- **template** (string): Template file for `linters generate phpcs`
 
 ## PHPMD Configuration
 
@@ -268,7 +231,9 @@ composer phpstan-baseline
     "linters": {
       "phpmd": {
         "paths": ["/app", "/src"],
-        "skip": []
+        "skip": [],
+        "target": "./phpmd.ruleset.xml",
+        "format": "text"
       }
     }
   }
@@ -277,8 +242,12 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array): Directories to analyze
+- **paths** (array, required): Directories to analyze
 - **skip** (array): Paths to exclude
+- **rulesets** (array): Override default PHPMD rulesets
+- **format** (string): Output format passed to phpmd (text, xml, html)
+- **target** (string): Output file for `linters generate phpmd` or `linters run phpmd`
+- **template** (string): Template file for `linters generate phpmd`
 
 ## Advanced Configuration
 
@@ -293,7 +262,8 @@ Use different configurations for development and CI:
     "linters": {
       "phpstan": {
         "paths": ["/app"],
-        "level": 6
+        "level": 6,
+        "target": "./phpstan.neon"
       }
     }
   }
@@ -315,17 +285,24 @@ Use different configurations for development and CI:
 
 ### Extending Base Configurations
 
-Create project-specific config files that extend the library configs:
+Use `extra.linters.phpstan.config` to merge additional PHPStan settings:
 
-**phpstan.neon:**
-```neon
-includes:
-    - ./vendor/devwolk/linters/configs/phpstan.neon
-
-parameters:
-    # Your custom overrides
-    ignoreErrors:
-        - '#Call to deprecated#'
+```json
+{
+  "extra": {
+    "linters": {
+      "phpstan": {
+        "config": {
+          "parameters": {
+            "ignoreErrors": [
+              "#Call to deprecated#"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
 ```
 
 ### Per-Directory Configuration
@@ -334,42 +311,7 @@ Analyze different directories with different settings by running commands multip
 
 ## Default Values
 
-If not specified, these defaults are used:
-
-```json
-{
-  "extra": {
-    "linters": {
-      "rector": {
-        "paths": ["/src"],
-        "skip": []
-      },
-      "cs-fixer": {
-        "paths": ["/src"],
-        "skip": []
-      },
-      "phpstan": {
-        "paths": ["/src"],
-        "skip": ["/vendor"],
-        "level": 8
-      },
-      "psalm": {
-        "paths": ["/src"],
-        "skip": ["/vendor"],
-        "config": {}
-      },
-      "phpcs": {
-        "paths": ["/src"],
-        "skip": []
-      },
-      "phpmd": {
-        "paths": ["/src"],
-        "skip": []
-      }
-    }
-  }
-}
-```
+No implicit defaults are applied for `*.paths`, `*.target`, or `phpmd.format`.
 
 ## Configuration Examples
 
@@ -403,7 +345,8 @@ Start with low strictness and gradually increase:
       "phpstan": {
         "paths": ["/app"],
         "level": 4,
-        "baseline": "phpstan-baseline.neon"
+        "baseline": "phpstan-baseline.neon",
+        "target": "./phpstan.neon"
       },
       "rector": {
         "paths": ["/app/Services"],

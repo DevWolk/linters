@@ -28,6 +28,7 @@ composer phpstan-baseline
 ```
 
 This creates `phpstan-baseline.neon` with all current errors, allowing you to fix them gradually.
+Add `extra.linters.phpstan.baseline` to include it in the generated config.
 
 ## Analysis Levels
 
@@ -55,7 +56,31 @@ Configure in `composer.json`:
         "paths": ["/app", "/src"],
         "skip": ["/vendor"],
         "level": 8,
-        "baseline": "phpstan-baseline.neon"
+        "baseline": "phpstan-baseline.neon",
+        "target": "./phpstan.neon"
+      }
+    }
+  }
+}
+```
+
+The `phpstan.neon` file is generated from `extra.linters.phpstan` on each run; avoid editing it manually.
+Ensure `paths` is set in `extra.linters.phpstan` (it's required).
+
+Additional PHPStan settings can be merged via `extra.linters.phpstan.config`:
+
+```json
+{
+  "extra": {
+    "linters": {
+      "phpstan": {
+        "config": {
+          "parameters": {
+            "ignoreErrors": [
+              "#Call to deprecated#"
+            ]
+          }
+        }
       }
     }
   }

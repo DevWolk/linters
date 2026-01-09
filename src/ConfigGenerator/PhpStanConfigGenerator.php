@@ -24,7 +24,7 @@ class PhpStanConfigGenerator
     public function __construct(?ConfigurationLoader $loader = null, ?string $templatePath = null)
     {
         $this->loader = $loader ?? new ConfigurationLoader();
-        $this->templatePath = $templatePath;
+        $this->templatePath = $templatePath ?? __DIR__ . '/../../configs/phpstan.neon';
     }
 
     /**
@@ -43,12 +43,15 @@ class PhpStanConfigGenerator
      */
     protected function buildConfiguration(): array
     {
-        $rootDir = $this->loader->getComposerDir();
+        $paths = $this->loader->getAbsolutePaths('phpstan.paths');
+        if ($paths === []) {
+            throw new \RuntimeException('Missing required config: extra.linters.phpstan.paths');
+        }
 
         $config = [
             'parameters' => [
                 'level' => $this->loader->get('phpstan.level', 8),
-                'paths' => $this->getRelativePaths($this->loader->getAbsolutePaths('phpstan.paths', ['/src'])),
+                'paths' => $this->getRelativePaths($paths),
             ],
         ];
 
@@ -58,12 +61,19 @@ class PhpStanConfigGenerator
             $config['parameters']['excludePaths'] = $this->getRelativePaths($excludePaths);
         }
 
+        $includes = [];
+        if ($this->templatePath) {
+            $includes[] = $this->templatePath;
+        }
+
         // Add baseline if specified
         $baseline = $this->loader->get('phpstan.baseline');
         if ($baseline) {
-            $config['includes'] = [(string)$baseline];
-        } elseif (file_exists($rootDir . '/phpstan-baseline.neon')) {
-            $config['includes'] = ['phpstan-baseline.neon'];
+            $includes[] = (string)$baseline;
+        }
+
+        if ($includes !== []) {
+            $config['includes'] = $includes;
         }
 
         // Add strict rules configuration
@@ -85,14 +95,20 @@ class PhpStanConfigGenerator
     }
 
     /**
-     * Convert absolute paths to relative paths from project root
+     * Convert absolute paths to paths relative to project root when possible
      */
     protected function getRelativePaths(array $absolutePaths): array
     {
-        $rootDir = $this->loader->getComposerDir();
+        $rootDir = rtrim($this->loader->getComposerDir(), '/');
 
         return array_map(
-            static fn(string $path): string => str_replace($rootDir, '', $path),
+            static function (string $path) use ($rootDir): string {
+                if ($rootDir !== '' && str_starts_with($path, $rootDir . '/')) {
+                    return substr($path, strlen($rootDir) + 1);
+                }
+
+                return $path;
+            },
             $absolutePaths
         );
     }

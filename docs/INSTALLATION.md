@@ -42,20 +42,19 @@ Add the `extra.linters` configuration to your `composer.json`:
       "phpstan": {
         "paths": ["/app", "/src"],
         "skip": ["/vendor"],
-        "level": 8
-      },
-      "psalm": {
-        "paths": ["/app", "/src"],
-        "skip": ["/vendor"],
-        "config": {}
+        "level": 8,
+        "target": "./phpstan.neon"
       },
       "phpcs": {
         "paths": ["/app", "/src"],
-        "skip": []
+        "skip": [],
+        "target": "./phpcs.xml"
       },
       "phpmd": {
         "paths": ["/app", "/src"],
-        "skip": []
+        "skip": [],
+        "target": "./phpmd.ruleset.xml",
+        "format": "text"
       }
     }
   }
@@ -69,7 +68,8 @@ Add the `extra.linters` configuration to your `composer.json`:
 - **paths**: Directories to analyze (relative to project root)
 - **skip**: Directories or patterns to exclude from analysis
 - **level**: (PHPStan only) Analysis strictness level (0-9 or 'max')
-- **config**: (Psalm only) Additional XML configuration options
+- **target**: Output file for generated configs (phpstan/phpcs/phpmd)
+- **format**: (PHPMD only) Output format passed to phpmd (text, xml, html)
 
 ## Step 3: Add Composer Scripts
 
@@ -91,21 +91,17 @@ Add convenient scripts to your `composer.json`:
       "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff -vv"
     ],
     "phpstan": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon"
+      "./vendor/bin/linters run phpstan"
     ],
     "phpstan-baseline": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
-    ],
-    "psalm": [
-      "php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
-      "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
-      "rm ./psalm.xml"
+      "./vendor/bin/linters generate phpstan",
+      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
     ],
     "phpcs": [
-      "./vendor/bin/phpcs --standard=./vendor/devwolk/linters/configs/phpcs.xml"
+      "./vendor/bin/linters run phpcs"
     ],
     "phpmd": [
-      "./vendor/bin/phpmd app,src text ./vendor/devwolk/linters/configs/phpmd.ruleset.xml"
+      "./vendor/bin/linters run phpmd"
     ]
   }
 }
@@ -133,9 +129,6 @@ composer php-cs-fixer
 # Run PHPStan
 composer phpstan
 
-# Run Psalm
-composer psalm
-
 # Run PHP_CodeSniffer
 composer phpcs
 
@@ -151,7 +144,6 @@ For a complete code quality check:
 composer rector-check && \
 composer php-cs-fixer-check && \
 composer phpstan && \
-composer psalm && \
 composer phpcs
 ```
 

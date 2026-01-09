@@ -42,23 +42,8 @@
           "/vendor",
           "/var"
         ],
-        "level": 8
-      },
-      "psalm": {
-        "paths": [
-          "/src"
-        ],
-        "skip": [
-          "/vendor",
-          "/var"
-        ],
-        "config": {
-          "plugins": {
-            "pluginClass": [
-              {"class": "Psalm\\SymfonyPsalmPlugin\\Plugin"}
-            ]
-          }
-        }
+        "level": 8,
+        "target": "./phpstan.neon"
       },
       "phpcs": {
         "paths": [
@@ -66,13 +51,16 @@
         ],
         "skip": [
           "*.twig"
-        ]
+        ],
+        "target": "./phpcs.xml"
       },
       "phpmd": {
         "paths": [
           "/src"
         ],
-        "skip": []
+        "skip": [],
+        "target": "./phpmd.ruleset.xml",
+        "format": "text"
       }
     }
   },
@@ -90,21 +78,17 @@
       "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff -vv"
     ],
     "phpstan": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon"
+      "./vendor/bin/linters run phpstan"
     ],
     "phpstan-baseline": [
-      "./vendor/bin/phpstan analyze --configuration=./vendor/devwolk/linters/configs/phpstan.neon --generate-baseline"
-    ],
-    "psalm": [
-      "php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
-      "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
-      "rm ./psalm.xml"
+      "./vendor/bin/linters generate phpstan",
+      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
     ],
     "phpcs": [
-      "./vendor/bin/phpcs --standard=./vendor/devwolk/linters/configs/phpcs.xml"
+      "./vendor/bin/linters run phpcs"
     ],
     "phpmd": [
-      "./vendor/bin/phpmd src,tests text ./vendor/devwolk/linters/configs/phpmd.ruleset.xml"
+      "./vendor/bin/linters run phpmd"
     ],
     "lint": [
       "@rector-check",

@@ -38,7 +38,6 @@ $composerLoader = new ConfigurationLoader();
 
 $frameworksValue = $composerLoader->get('rector.frameworks', []);
 $frameworks = [];
-
 $isSymfonyEnabled = false;
 $isLaravelEnabled = false;
 
@@ -75,7 +74,7 @@ if (in_array('symfony', $frameworks, true)) {
 
 $baseSets = [
     AppRectorSetList::APP_RULES,
-    AppRectorSetList::STRICT_TYPES,
+    AppRectorSetList::DOCTRINE,
 
     PHPUnitSetList::PHPUNIT_90,
     PHPUnitSetList::PHPUNIT_100,
@@ -101,13 +100,17 @@ $configuredSets = array_merge($baseSets, $frameworkSets);
 /**
  * @throws InvalidConfigurationException
  */
-return RectorConfig::configure()
-    ->withCache(
-        // specify a path that works locally as well as on CI job runners
-        cacheDirectory: '/tmp/rector',
-        // ensure file system caching is used instead of in-memory
+$rectorConfig = RectorConfig::configure();
+
+$cacheDir = $composerLoader->get('rector.cache_dir');
+if (is_string($cacheDir) && $cacheDir !== '') {
+    $rectorConfig = $rectorConfig->withCache(
+        cacheDirectory: $cacheDir,
         cacheClass: FileCacheStorage::class
-    )
+    );
+}
+
+return $rectorConfig
     ->withRootFiles()
     // https://getrector.com/documentation/troubleshooting-parallel
     ->withParallel(360, 2, 40)

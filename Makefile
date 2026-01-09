@@ -5,4 +5,4 @@
 MAKEFLAGS += --no-print-directory # Forced blocking of directory printing
 
 ## HELPERS
-include ./make/helpers.mk
+include ./make/helpers-with-docker.mk

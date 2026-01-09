@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Linters\Console\Application;
+
+$autoloaders = [
+    __DIR__ . '/../vendor/autoload.php', // running from repository
+    __DIR__ . '/../autoload.php',        // running from vendor/bin copy
+    __DIR__ . '/../../../autoload.php',  // running from installed package
+];
+
+$autoloaderFound = false;
+foreach ($autoloaders as $autoloader) {
+    if (file_exists($autoloader)) {
+        require_once $autoloader;
+        $autoloaderFound = true;
+        break;
+    }
+}
+
+if ($autoloaderFound === false) {
+    fwrite(STDERR, "[ERROR] Unable to locate Composer autoloader.\n");
+    exit(1);
+}
+
+$application = new Application();
+$application->setAutoExit(false);
+try {
+    $application->run();
+} catch (Exception $exception) {
+    fwrite(STDERR, '[ERROR] ' . $exception->getMessage() . "\n");
+    exit(1);
+}

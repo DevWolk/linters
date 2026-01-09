@@ -10,7 +10,7 @@ final class AppRectorSetList
     public const APP_RULES = __DIR__ . '/../Configs/Sets/app-rules.php';
 
     /** @var string */
-    public const STRICT_TYPES = __DIR__ . '/../Configs/Sets/strict-types.php';
+    public const DOCTRINE = __DIR__ . '/../Configs/Sets/doctrine.php';
 
     /** @var string */
     public const LARAVEL = __DIR__ . '/../Configs/Sets/laravel.php';

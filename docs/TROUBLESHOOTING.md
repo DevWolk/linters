@@ -155,12 +155,23 @@ return RectorConfig::configure()
    }
    ```
 
-3. Ignore specific errors:
-   ```neon
-   # phpstan.neon
-   parameters:
-       ignoreErrors:
-           - '#Method .* has no return type#'
+3. Ignore specific errors via `extra.linters.phpstan.config`:
+   ```json
+   {
+     "extra": {
+       "linters": {
+         "phpstan": {
+           "config": {
+             "parameters": {
+               "ignoreErrors": [
+                 "#Method .* has no return type#"
+               ]
+             }
+           }
+         }
+       }
+     }
+   }
    ```
 
 ### "Class not found" Errors
@@ -173,12 +184,23 @@ return RectorConfig::configure()
    composer dump-autoload
    ```
 
-2. Add bootstrap file:
-   ```neon
-   # phpstan.neon
-   parameters:
-       bootstrapFiles:
-           - vendor/autoload.php
+2. Add bootstrap file via `extra.linters.phpstan.config`:
+   ```json
+   {
+     "extra": {
+       "linters": {
+         "phpstan": {
+           "config": {
+             "parameters": {
+               "bootstrapFiles": [
+                 "vendor/autoload.php"
+               ]
+             }
+           }
+         }
+       }
+     }
+   }
    ```
 
 ## PHP-CS-Fixer Issues
@@ -201,55 +223,6 @@ return RectorConfig::configure()
 **Solution:**
 ```bash
 chmod -R 755 src/
-```
-
-## Psalm Issues
-
-### Configuration Not Generated
-
-**Error:**
-```
-psalm.xml not found
-```
-
-**Cause**: Psalm uses a generator script
-
-**Solution**: Ensure the full script runs:
-```bash
-php ./vendor/devwolk/linters/src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml
-./vendor/bin/psalm --config=./psalm.xml
-rm ./psalm.xml
-```
-
-### Plugin Not Loaded
-
-**Error:**
-```
-Plugin class not found
-```
-
-**Solution**: Install plugin first:
-```bash
-composer require --dev psalm/plugin-laravel
-```
-
-Then configure:
-```json
-{
-  "extra": {
-    "linters": {
-      "psalm": {
-        "config": {
-          "plugins": {
-            "pluginClass": [
-              {"class": "Psalm\\LaravelPlugin\\Plugin"}
-            ]
-          }
-        }
-      }
-    }
-  }
-}
 ```
 
 ## Performance Issues

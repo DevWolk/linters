@@ -31,17 +31,6 @@ Copy the `composer.json` configuration from this example to your Laravel project
    "skip": ["*.blade.php"]
    ```
 
-4. **Psalm plugin**: Laravel-specific type checking
-   ```json
-   "config": {
-     "plugins": {
-       "pluginClass": [
-         {"class": "Psalm\\LaravelPlugin\\Plugin"}
-       ]
-     }
-   }
-   ```
-
 ## Usage
 
 ### Run All Linters (Check)
@@ -86,7 +75,7 @@ composer phpmd
 
 ### 1. Eloquent Models
 
-PHPStan and Psalm understand Eloquent models with proper docblocks:
+PHPStan understands Eloquent models with proper docblocks:
 
 ```php
 /**

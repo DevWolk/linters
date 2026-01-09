@@ -9,18 +9,6 @@
         PHPMD rulesets
     </description>
 
-    <exclude-pattern>_ide_helper.php</exclude-pattern>
-    <exclude-pattern>node_modules/*</exclude-pattern>
-    <exclude-pattern>phpstan_cache/*</exclude-pattern>
-    <exclude-pattern>vendor/*</exclude-pattern>
-    <exclude-pattern>app/Containers/Vendor/*</exclude-pattern>
-    <exclude-pattern>app/Containers/AppSection/*/Tests/*</exclude-pattern>
-    <exclude-pattern>app/Ship/Tests/Unit/*</exclude-pattern>
-    <exclude-pattern>app/Containers/AppSection/*/Data/Seeders/*</exclude-pattern>
-    <exclude-pattern>app/Containers/AppSection/*/Data/DTO/*</exclude-pattern>
-    <exclude-pattern>database/migrations/*</exclude-pattern>
-    <exclude-pattern>database/seeders/*</exclude-pattern>
-
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateField"/>
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateMethod"/>
 

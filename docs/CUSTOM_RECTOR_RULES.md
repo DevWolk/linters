@@ -16,15 +16,15 @@ This library provides custom Rector rules designed to improve code quality and e
 #### Supported Methods
 
 - `assertInstanceOf`, `assertNotInstanceOf`
-- `assertTrue`, `assertFalse`
-- `assertSame`, `assertEquals`, `assertNotSame`, `assertNotEquals`
-- `assertCount`, `assertNotCount`
+- `assertContains`, `assertNotContains`
+- `markTestSkipped`
+- `assertFalse`, `assertTrue`
+- `assertSame`, `assertEquals`
+- `assertCount`
 - `assertNull`, `assertNotNull`
 - `assertEmpty`, `assertNotEmpty`
-- `assertIsString`, `assertIsArray`, `assertIsInt`, `assertIsFloat`
+- `assertIsString`, `assertIsArray`
 - `assertArrayHasKey`, `assertArrayNotHasKey`
-- `assertContains`, `assertNotContains`
-- `markTestSkipped`, `markTestIncomplete`
 - `assertDatabaseTable` (Laravel)
 
 #### Examples
@@ -172,17 +172,17 @@ Both custom rules require PHP 8.2+. They won't be applied if your project uses a
 
 ### Rule Registration
 
-Custom rules are registered in `configs/rector.php`:
+Custom rules are registered via the `AppRectorSetList::APP_RULES` set in `configs/rector.php`:
 
 ```php
-use Linters\Rector\Rules\AssertInstanceToStaticCallRector;
-use Linters\Rector\Rules\MockObjectStaticToInstanceCallRector;
+use Linters\Rector\Set\AppRectorSetList;
+use Rector\Config\RectorConfig;
 
-return RectorConfig::configure()
-    ->withRules([
-        AssertInstanceToStaticCallRector::class,
-        MockObjectStaticToInstanceCallRector::class,
+return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->sets([
+        AppRectorSetList::APP_RULES,
     ]);
+};
 ```
 
 ### Rule Execution

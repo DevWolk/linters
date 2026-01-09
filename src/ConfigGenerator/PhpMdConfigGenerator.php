@@ -34,7 +34,7 @@ class PhpMdConfigGenerator
     public function __construct(?ConfigurationLoader $loader = null, ?string $templatePath = null)
     {
         $this->loader = $loader ?? new ConfigurationLoader();
-        $this->templatePath = $templatePath;
+        $this->templatePath = $templatePath ?? __DIR__ . '/../../configs/phpmd.ruleset.xml';
     }
 
     /**
@@ -58,6 +58,13 @@ class PhpMdConfigGenerator
         if ($this->templatePath && file_exists($this->templatePath)) {
             $dom = new DOMDocument('1.0', 'UTF-8');
             $dom->load($this->templatePath);
+
+            $ruleset = $dom->documentElement;
+            if ($ruleset instanceof \DOMElement) {
+                $this->addExcludes($dom, $ruleset);
+            }
+
+            return $dom;
         } else {
             $dom = $this->createDefaultConfiguration();
         }

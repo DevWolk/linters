@@ -1,12 +1,12 @@
 {
   "name": "devwolk/linters",
   "description": "Centralized PHP linter configurations and static analysis tools for PHP projects",
+  "version": "0.0.1",
   "license": "MIT",
   "type": "library",
   "keywords": [
     "linter",
     "phpstan",
-    "psalm",
     "rector",
     "php-cs-fixer",
     "phpcs",
@@ -17,7 +17,6 @@
   "require": {
     "php": "^8.2",
     "ext-dom": "*",
-    "ext-simplexml": "*",
     "friendsofphp/php-cs-fixer": "^3.89",
     "icanhazstring/composer-unused": "^0.9.5",
     "phpmd/phpmd": "^2.15",
@@ -31,11 +30,15 @@
     "slevomat/coding-standard": "^8.24",
     "squizlabs/php_codesniffer": "^4.0",
     "thecodingmachine/phpstan-safe-rule": "^1.4",
-    "vimeo/psalm": "^5.0"
+    "symfony/console": "^7.3"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.48",
     "phpunit/phpunit": "^11.0"
+  },
+  "suggest": {
+    "rector/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel.",
+    "rector/rector-symfony": "Enable Symfony Rector sets when rector.frameworks includes symfony."
   },
   "minimum-stability": "stable",
   "autoload": {
@@ -48,56 +51,14 @@
       "Linters\\Tests\\": "tests/"
     }
   },
+  "bin": [
+    "bin/linters"
+  ],
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "ergebnis/composer-normalize": true,
       "phpstan/extension-installer": true
-    }
-  },
-  "extra": {
-    "linters": {
-      "cs-fixer": {
-        "paths": [
-          "/src"
-        ],
-        "skip": []
-      },
-      "phpstan": {
-        "paths": [
-          "/src"
-        ],
-        "skip": [
-          "/vendor"
-        ]
-      },
-      "psalm": {
-        "config": {},
-        "paths": [
-          "/src"
-        ],
-        "skip": [
-          "/vendor"
-        ]
-      },
-      "rector": {
-        "paths": [
-          "/src"
-        ],
-        "skip": []
-      },
-      "phpcs": {
-        "paths": [
-          "/src"
-        ],
-        "skip": []
-      },
-      "phpmd": {
-        "paths": [
-          "/src"
-        ],
-        "skip": []
-      }
     }
   },
   "scripts": {
@@ -114,21 +75,17 @@
       "./vendor/bin/php-cs-fixer fix --dry-run --config=./configs/.php-cs-fixer.dist.php --diff -vv --allow-risky=yes --using-cache=no"
     ],
     "phpstan": [
-      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon"
+      "./bin/linters run phpstan"
     ],
     "phpstan-baseline": [
-      "./vendor/bin/phpstan analyze --configuration=./configs/phpstan.neon --generate-baseline"
-    ],
-    "psalm": [
-      "php src/ConfigGenerator/PsalmConfigGenerator.php --target=./psalm.xml",
-      "./vendor/bin/psalm --threads=4 --no-cache --config=./psalm.xml",
-      "rm ./psalm.xml"
+      "./bin/linters generate phpstan",
+      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
     ],
     "phpcs": [
-      "./vendor/bin/phpcs --standard=./configs/phpcs.xml"
+      "./bin/linters run phpcs"
     ],
     "phpmd": [
-      "./vendor/bin/phpmd src text ./configs/phpmd.ruleset.xml"
+      "./bin/linters run phpmd"
     ],
     "composer-unused": [
       "./vendor/bin/composer-unused --configuration=./configs/composer-unused.php"
