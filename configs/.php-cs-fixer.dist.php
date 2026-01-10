@@ -11,24 +11,58 @@ use Linters\Utils\ConfigurationLoader;
 /** Don't use finder for vscode. It will be slow. */
 $isVSCodeRun = isset($_SERVER['VSCODE_AGENT_FOLDER']);
 $finder = [];
+$composerLoader = null;
 if ($isVSCodeRun === false) {
     // Get settings from extra section of composer and provide access for them
     $composerLoader = new ConfigurationLoader();
+    $skipDirs = $composerLoader->getAbsolutePaths('php-cs-fixer.skip_dirs', []);
+    $skipFiles = $composerLoader->get('php-cs-fixer.skip_files', []);
+
+    if (is_array($skipFiles) === false) {
+        $skipFiles = [$skipFiles];
+    }
+
+    $skipNames = [];
+    $skipPaths = [];
+    foreach ($skipFiles as $pattern) {
+        if (is_string($pattern) === false || $pattern === '') {
+            continue;
+        }
+
+        $pattern = ltrim($pattern, '/');
+        if (str_contains($pattern, '/')) {
+            $skipPaths[] = $pattern;
+        } else {
+            $skipNames[] = $pattern;
+        }
+    }
+
+    $notNames = ['*.blade.php', '_*'];
+    if ($skipNames !== []) {
+        $notNames = array_values(array_unique(array_merge($notNames, $skipNames)));
+    }
 
     $finder = PhpCsFixer\Finder::create()
         ->ignoreVCS(true)
         ->ignoreDotFiles(true)
         ->name('*.php')
-        ->notName(['*.blade.php', '_*'])
-        ->exclude($composerLoader->getAbsolutePaths('php-cs-fixer.skip'))
+        ->notName($notNames)
+        ->exclude($skipDirs)
         ->in($composerLoader->getAbsolutePaths('php-cs-fixer.paths'));
+
+    if ($skipPaths !== []) {
+        $finder->notPath($skipPaths);
+    }
 }
+
 $config = new PhpCsFixer\Config();
+
+if ($composerLoader?->get('php-cs-fixer.parallel', false)) {
+    $config->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect());
+}
 
 return $config
     ->setRiskyAllowed(true)
-    //add parallel only via composer extra config conditionally
-    //->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
         // Global:
         '@PSR12'                                      => true,

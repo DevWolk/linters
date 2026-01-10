@@ -244,7 +244,7 @@ chmod -R 755 src/
    }
    ```
 
-2. **Use parallel processing** (already enabled by default)
+2. **Use parallel processing** (enable via the PHPStan CLI flag if needed)
 
 3. **Increase memory**:
    ```bash

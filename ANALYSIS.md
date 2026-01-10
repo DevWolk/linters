@@ -17,14 +17,9 @@
 - поддержка Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused;
 - генерация и запуск через `linters generate`/`linters run` для PHPStan/PHPCS/PHPMD;
 - шаблоны: `configs/phpstan.neon`, `configs/phpcs.xml`, `configs/phpmd.ruleset.xml`;
-- динамические конфиги: `configs/rector.php`, `configs/.php-cs-fixer.dist.php`;
-- дефолтных `extra.linters` в пакете больше нет;
-- framework переключение для Rector реализовано (`rector.frameworks`).
-
-Что отсутствует:
-
-- тесты генераторов и подтверждение запуска команд;
-- финальная проверка отсутствия hardcoded путей/дефолтов.
+- динамические конфиги: `configs/rector.php`, `configs/.php-cs-fixer.dist.php`, `configs/composer-unused.php`;
+- документация и примеры синхронизированы с текущими опциями;
+- добавлены тесты генераторов, ToolRunner и кастомных Rector правил.
 
 ## 2. Архитектура (кратко)
 
@@ -32,17 +27,14 @@
 - `ConfigGenerator` для PHPStan/PHPCS/PHPMD строят конфиги из шаблонов.
 - CLI на Symfony Console: `generate`, `run`.
 
-## 3. Несоответствия целевому стандарту
+## 3. Оставшиеся пробелы
 
-1. Требуется финальная проверка "без хардкода" и отсутствие project-specific путей.
-2. Отсутствуют тесты генераторов и проверки команд (`composer`/`make`).
+- требуется финальный аудит отсутствия hardcoded путей/дефолтов;
+- опционально: унифицировать CLI через Tool enum (добавить rector/php-cs-fixer/composer-unused);
+- нужен прогон тестов и `make` целей.
 
-## 4. Приоритеты
+## 4. Следующие шаги
 
-- Стандартизация: закрепить единый CLI и отсутствие hardcoded путей.
-- Гибкость под Laravel/Symfony: описать настройки через `extra.linters.*.config`.
-- Валидация: прогон `composer`/`make`, тесты генераторов, улучшение `ConfigurationLoader`.
-
-## 5. Итог
-
-База уже собрана: единый CLI, генераторы и шаблоны для PHPStan/PHPCS/PHPMD, динамические конфиги для Rector/PHP-CS-Fixer. До целевого стандарта не хватает финальной проверки на отсутствие hardcoded путей и валидации команд/тестов.
+- прогнать `make` цели и тесты;
+- выполнить финальный аудит на отсутствие хардкода;
+- отдельно решить, нужна ли унификация CLI через Tool enum.

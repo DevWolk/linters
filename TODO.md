@@ -12,14 +12,23 @@
 
 ```json
 {
-
   "extra": {
     "linters": {
+      "rector": {
+        "paths": [
+          "/src"
+        ],
+        "skip": [
+          "/vendor"
+        ],
+        "cache_dir": "./var/rector-cache"
+      },
       "php-cs-fixer": {
         "paths": [
           "/src"
         ],
-        "skip": []
+        "skip": [],
+        "parallel": true
       },
       "phpstan": {
         "paths": [
@@ -39,64 +48,45 @@
         ],
         "target": "./phpmd.ruleset.xml",
         "format": "text"
+      },
+      "composer-unused": {
+        "named-filters": []
       }
     }
   }
 }
 ```
 
-Другие инструменты (`rector`, `phpcs`, `composer-unused`) используют тот же формат ключей
-и управляются через `extra.linters.<tool>`.
-
 ## Текущее состояние (snapshot)
 
 - поддержка: Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused;
 - генерация и запуск: PHPStan/PHPCS/PHPMD через `linters generate`/`linters run`;
 - шаблоны: `configs/phpstan.neon`, `configs/phpcs.xml`, `configs/phpmd.ruleset.xml`;
-- ключ для fixer: `php-cs-fixer`.
+- динамические конфиги: `configs/rector.php`, `configs/.php-cs-fixer.dist.php`, `configs/composer-unused.php`;
+- документация и примеры обновлены под текущие опции;
+- остаются: прогон тестов и валидация CLI/шаблонов.
 
 ---
 
-## Phase 1: Стандартизация (breaking)
+## Оставшиеся задачи
 
-1. Закрепить единый CLI:
-   - все scripts -> `vendor/bin/linters`
-   - использовать `linters run <tool>` вместо отдельных команд
-2. Проверить отсутствие hardcoded путей и дефолтов:
-   - пакету запрещено навязывать `/src`, `/vendor` и др.
-3. Убедиться, что везде используется ключ `php-cs-fixer` (без `cs-fixer`).
+### Phase 3: Тесты (рекомендуется)
 
-## Phase 2: Шаблоны и фреймворки
+- [x] Добавить тесты генераторов (phpstan/phpcs/phpmd)
+- [x] Добавить тесты для ToolRunner
+- [x] Добавить тесты кастомных Rector правил
 
-1. Проверить, что шаблоны есть для всех поддерживаемых инструментов.
-2. Laravel/Symfony:
-   - `rector.frameworks` (уже есть)
-   - описать `extra.linters.phpstan.config` и `extra.linters.phpmd.rulesets` как способ
-     добавлять фреймворк-специфичные настройки без хардкода.
-3. Обновить примеры для Laravel/Symfony под целевой стандарт.
+### Phase 4: Улучшения (опционально)
 
-## Phase 3: Проверки и тесты
-
-1. Проверить `composer phpstan/phpcs/phpmd`.
-2. Проверить `make` цели.
-3. Добавить тесты генераторов (phpstan/phpcs/phpmd).
-4. Улучшить `ConfigurationLoader`:
-   - валидация структуры
-   - нормализация путей
-   - разрешить class names в `rector.skip` (если нужно)
-5. Аудит на отсутствие project-specific путей в `configs/` и скриптах.
+- [ ] Унифицировать CLI через Tool enum (добавить rector/php-cs-fixer/composer-unused)
+- [ ] Финальный аудит отсутствия hardcoded путей/дефолтов
 
 ---
 
 ## Чеклист завершения
 
-- [ ] `composer rector` работает с динамическими путями
-- [ ] `composer php-cs-fixer` работает с ключом `php-cs-fixer`
-- [ ] `composer phpstan` работает с динамическими путями
-- [ ] `composer phpcs` работает с динамическими путями
-- [ ] `composer phpmd` работает с динамическими путями
-- [ ] все `make` цели работают
-- [ ] документация соответствует коду
-- [ ] примеры функциональны
+- [x] документация соответствует коду
+- [x] примеры функциональны и согласованы по версии
 - [ ] тесты проходят
+- [ ] все `make` цели работают
 - [ ] нет hardcoded путей/дефолтов в шаблонах и генераторах

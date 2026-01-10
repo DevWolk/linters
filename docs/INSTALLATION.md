@@ -33,11 +33,14 @@ Add the `extra.linters` configuration to your `composer.json`:
       "rector": {
         "paths": ["/app", "/src", "/tests"],
         "skip": ["/vendor", "/storage"],
-        "frameworks": ["laravel"]
+        "frameworks": "laravel",
+        "cache_dir": "./var/rector-cache"
       },
       "php-cs-fixer": {
         "paths": ["/app", "/src"],
-        "skip": ["*.blade.php"]
+        "skip_dirs": ["/resources/views"],
+        "skip_files": ["*.generated.php"],
+        "parallel": true
       },
       "phpstan": {
         "paths": ["/app", "/src"],
@@ -55,6 +58,9 @@ Add the `extra.linters` configuration to your `composer.json`:
         "skip": [],
         "target": "./phpmd.ruleset.xml",
         "format": "text"
+      },
+      "composer-unused": {
+        "named-filters": []
       }
     }
   }
@@ -63,13 +69,18 @@ Add the `extra.linters` configuration to your `composer.json`:
 
 ### Configuration Explanation
 
-- **frameworks**: Optional list or map enabling framework-specific Rector presets. Examples: `["laravel"]`, `["symfony"]`, or `{"laravel": true, "symfony": false}`.
+- **frameworks**: Optional list/map enabling Rector presets. Examples: `["laravel"]`, `"symfony"`, or `{"laravel": true, "symfony": true}`.
+- **cache_dir**: Optional cache directory for Rector.
 
-- **paths**: Directories to analyze (relative to project root)
-- **skip**: Directories or patterns to exclude from analysis
+- **paths**: Directories to analyze (must start with `/`, relative to project root)
+- **skip**: Paths to exclude for tools like Rector/PHPStan/PHPCS/PHPMD (must start with `/`)
+- **skip_dirs**: Directories to exclude for PHP-CS-Fixer (must start with `/`)
+- **skip_files**: File name globs or path patterns to exclude for PHP-CS-Fixer
+- **parallel**: (PHP-CS-Fixer only) Enable parallel runner
 - **level**: (PHPStan only) Analysis strictness level (0-9 or 'max')
 - **target**: Output file for generated configs (phpstan/phpcs/phpmd)
 - **format**: (PHPMD only) Output format passed to phpmd (text, xml, html)
+- **named-filters**: (composer-unused only) Package names to ignore
 
 ## Step 3: Add Composer Scripts
 
@@ -102,6 +113,9 @@ Add convenient scripts to your `composer.json`:
     ],
     "phpmd": [
       "./vendor/bin/linters run phpmd"
+    ],
+    "composer-unused": [
+      "./vendor/bin/composer-unused --configuration=./vendor/devwolk/linters/configs/composer-unused.php"
     ]
   }
 }
@@ -134,6 +148,9 @@ composer phpcs
 
 # Run PHPMD
 composer phpmd
+
+# Run composer-unused
+composer composer-unused
 ```
 
 ### Run All Tools in Sequence
@@ -144,7 +161,9 @@ For a complete code quality check:
 composer rector-check && \
 composer php-cs-fixer-check && \
 composer phpstan && \
-composer phpcs
+composer phpcs && \
+composer phpmd && \
+composer composer-unused
 ```
 
 ## Step 5: Verify Installation
@@ -160,6 +179,9 @@ composer phpstan
 
 # Verify PHP-CS-Fixer configuration
 composer php-cs-fixer-check
+
+# Verify composer-unused configuration
+composer composer-unused
 ```
 
 If you see analysis results without configuration errors, the installation is successful!

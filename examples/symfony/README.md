@@ -23,10 +23,11 @@ Copy the `composer.json` configuration from this example to your Symfony project
    - `/var` directory (cache, logs)
    - `/vendor` directory
 
-3. **Twig templates**: Excluded from linters
+3. **Twig templates**: Exclude the templates directory for tools that scan PHP files
    ```json
-   "skip": ["*.twig"]
+   "skip": ["/templates"]
    ```
+   For PHP-CS-Fixer, use `php-cs-fixer.skip_dirs` when you need directory-level exclusions.
 
 ## Usage
 
@@ -219,7 +220,7 @@ lint:
 
 ### Issue: Twig syntax errors
 
-**Solution**: Twig templates are automatically excluded. Ensure `*.twig` is in skip patterns.
+**Solution**: Exclude `/templates` in `skip` for PHPCS/PHPMD (and any PHP-only tools).
 
 ## Additional Tools for Symfony
 

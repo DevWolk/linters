@@ -11,6 +11,7 @@ Complete guide for configuring `devwolk/linters` in your project.
 - [PHPStan Configuration](#phpstan-configuration)
 - [PHP_CodeSniffer Configuration](#php_codesniffer-configuration)
 - [PHPMD Configuration](#phpmd-configuration)
+- [Composer-unused Configuration](#composer-unused-configuration)
 - [Advanced Configuration](#advanced-configuration)
 
 ## Overview
@@ -45,7 +46,8 @@ The basic structure for `extra.linters`:
     "linters": {
       "rector": {
         "paths": ["/app", "/src", "/tests"],
-        "skip": ["/app/legacy", "/vendor"]
+        "skip": ["/app/legacy", "/vendor"],
+        "cache_dir": "./var/rector-cache"
       }
     }
   }
@@ -56,8 +58,54 @@ The basic structure for `extra.linters`:
 
 - **paths** (array): Directories to process
 - **skip** (array): Paths to exclude from processing
-- **frameworks** (array|string|object): Enable framework presets (`laravel`, `symfony`)
+- **frameworks** (array|string|map): Enable framework presets (`laravel`, `symfony`)
 - **cache_dir** (string): Optional cache directory for Rector
+
+### Framework Presets
+
+Use `rector.frameworks` to load framework-specific rule sets in one of these formats:
+
+**String**
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "frameworks": "laravel"
+      }
+    }
+  }
+}
+```
+
+**Array**
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "frameworks": ["laravel", "symfony"]
+      }
+    }
+  }
+}
+```
+
+**Map**
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "frameworks": {
+          "laravel": true,
+          "symfony": true
+        }
+      }
+    }
+  }
+}
+```
 
 ### Laravel Projects
 
@@ -103,7 +151,8 @@ The basic structure for `extra.linters`:
     "linters": {
       "php-cs-fixer": {
         "paths": ["/app", "/src"],
-        "skip": ["*.blade.php", "*.twig"]
+        "skip_dirs": ["/resources/views", "/templates"],
+        "skip_files": ["*.generated.php"]
       }
     }
   }
@@ -112,8 +161,13 @@ The basic structure for `extra.linters`:
 
 ### Available Options
 
-- **paths** (array): Directories to analyze
-- **skip** (array): File patterns to exclude
+- **paths** (array): Directories to analyze (must start with `/`)
+- **skip_dirs** (array): Directories to exclude (must start with `/`)
+- **skip_files** (array): File name globs or path patterns to exclude
+- **parallel** (bool): Enable PHP-CS-Fixer parallel mode
+
+Note: the bundled PHP-CS-Fixer config already ignores `*.blade.php` by filename.
+If a `skip_files` entry contains `/`, it is treated as a path pattern relative to the project root.
 
 ### Laravel Projects
 
@@ -123,10 +177,8 @@ The basic structure for `extra.linters`:
     "linters": {
       "php-cs-fixer": {
         "paths": ["/app", "/config", "/database"],
-        "skip": [
-          "*.blade.php",
-          "/app/Http/Middleware/TrustProxies.php"
-        ]
+        "skip_dirs": ["/resources/views", "/storage"],
+        "skip_files": ["*.generated.php"]
       }
     }
   }
@@ -216,8 +268,8 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array, required): Directories to check
-- **skip** (array): Patterns to exclude
+- **paths** (array, required): Directories to check (must start with `/`)
+- **skip** (array): Paths/patterns to exclude (must start with `/`)
 - **target** (string): Output file for `linters generate phpcs` or `linters run phpcs`
 - **template** (string): Template file for `linters generate phpcs`
 
@@ -242,12 +294,38 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array, required): Directories to analyze
-- **skip** (array): Paths to exclude
-- **rulesets** (array): Override default PHPMD rulesets
+- **paths** (array, required): Directories to analyze (must start with `/`)
+- **skip** (array): Paths to exclude (must start with `/`)
+- **rulesets** (array): Select ruleset categories (filters template entries and adds missing ones)
 - **format** (string): Output format passed to phpmd (text, xml, html)
 - **target** (string): Output file for `linters generate phpmd` or `linters run phpmd`
 - **template** (string): Template file for `linters generate phpmd`
+
+Note: when a template is used (default), `phpmd.rulesets` filters ruleset categories
+inside the template and adds any missing ones. Use `phpmd.template` (or `--config`)
+if you need full control over the XML.
+
+## Composer-unused Configuration
+
+### Basic Configuration
+
+```json
+{
+  "extra": {
+    "linters": {
+      "composer-unused": {
+        "named-filters": [
+          "wikimedia/composer-merge-plugin"
+        ]
+      }
+    }
+  }
+}
+```
+
+### Available Options
+
+- **named-filters** (array): Filter package names to ignore in composer-unused
 
 ## Advanced Configuration
 

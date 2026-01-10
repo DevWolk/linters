@@ -61,15 +61,14 @@ class PhpMdConfigGenerator
 
             $ruleset = $dom->documentElement;
             if ($ruleset instanceof \DOMElement) {
+                $this->applyRulesets($dom, $ruleset);
                 $this->addExcludes($dom, $ruleset);
             }
 
             return $dom;
-        } else {
-            $dom = $this->createDefaultConfiguration();
         }
 
-        return $dom;
+        return $this->createDefaultConfiguration();
     }
 
     /**
@@ -114,7 +113,6 @@ class PhpMdConfigGenerator
         $rule->setAttribute('ref', "rulesets/{$rulesetName}.xml");
         $ruleset->appendChild($rule);
 
-        // Add specific exclusions based on ruleset
         $this->addRulesetExclusions($dom, $rule, $rulesetName);
     }
 
@@ -123,20 +121,9 @@ class PhpMdConfigGenerator
      */
     protected function addRulesetExclusions(DOMDocument $dom, \DOMElement $rule, string $rulesetName): void
     {
-        $exclusions = [
-            'controversial' => [
-                'Superglobals', // Often needed in frameworks
-            ],
-            'naming' => [
-                'ShortVariable', // Too strict for common variables like $id, $key
-                'LongVariable',  // Often unavoidable for descriptive names
-            ],
-            'codesize' => [
-                'TooManyPublicMethods', // DTOs and services often need many methods
-            ],
-        ];
+        $exclusions = [];
 
-        if (!isset($exclusions[$rulesetName])) {
+        if (isset($exclusions[$rulesetName]) === false) {
             return;
         }
 
@@ -162,5 +149,83 @@ class PhpMdConfigGenerator
             $excludeElement = $dom->createElement('exclude-pattern', $exclude);
             $ruleset->appendChild($excludeElement);
         }
+    }
+
+    /**
+     * Apply configured rulesets to a template while keeping other template rules.
+     */
+    protected function applyRulesets(DOMDocument $dom, \DOMElement $ruleset): void
+    {
+        $configured = $this->loader->get('phpmd.rulesets');
+        if ($configured === null) {
+            return;
+        }
+
+        $desired = [];
+        foreach ((array)$configured as $rulesetName) {
+            if (!is_string($rulesetName) || $rulesetName === '') {
+                continue;
+            }
+
+            $rulesetName = trim($rulesetName);
+            if ($rulesetName === '') {
+                continue;
+            }
+
+            $desired[] = strtolower($rulesetName);
+        }
+
+        if ($desired === []) {
+            return;
+        }
+
+        $desired = array_values(array_unique($desired));
+
+        $existing = [];
+        $removeNodes = [];
+
+        foreach ($ruleset->childNodes as $child) {
+            if (!$child instanceof \DOMElement || $child->tagName !== 'rule') {
+                continue;
+            }
+
+            $ref = $child->getAttribute('ref');
+            $rulesetName = $this->extractRulesetName($ref);
+            if ($rulesetName === null) {
+                continue;
+            }
+
+            $existing[$rulesetName] = true;
+            if (!in_array($rulesetName, $desired, true)) {
+                $removeNodes[] = $child;
+            }
+        }
+
+        foreach ($removeNodes as $node) {
+            $ruleset->removeChild($node);
+        }
+
+        foreach ($desired as $rulesetName) {
+            if (isset($existing[$rulesetName])) {
+                continue;
+            }
+
+            $rule = $dom->createElement('rule');
+            $rule->setAttribute('ref', "rulesets/{$rulesetName}.xml");
+            $ruleset->appendChild($rule);
+        }
+    }
+
+    private function extractRulesetName(string $ref): ?string
+    {
+        if ($ref === '') {
+            return null;
+        }
+
+        if (preg_match('#^rulesets/([^/]+)\.xml#', $ref, $matches) !== 1) {
+            return null;
+        }
+
+        return strtolower($matches[1]);
     }
 }

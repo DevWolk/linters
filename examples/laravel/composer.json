@@ -7,7 +7,7 @@
     "laravel/framework": "^11.0"
   },
   "require-dev": {
-    "devwolk/linters": "0.0.1"
+    "devwolk/linters": "^0.0.1"
   },
   "extra": {
     "linters": {
@@ -25,9 +25,7 @@
           "/bootstrap",
           "/storage"
         ],
-        "frameworks": [
-          "laravel"
-        ]
+        "frameworks": "laravel"
       },
       "php-cs-fixer": {
         "paths": [
@@ -36,10 +34,13 @@
           "/database",
           "/routes"
         ],
-        "skip": [
-          "*.blade.php",
-          "/app/Http/Middleware/TrustProxies.php"
-        ]
+        "skip_dirs": [
+          "/resources/views"
+        ],
+        "skip_files": [
+          "*.generated.php"
+        ],
+        "parallel": true
       },
       "phpstan": {
         "paths": [
@@ -60,7 +61,7 @@
           "/config"
         ],
         "skip": [
-          "*.blade.php"
+          "/resources/views"
         ],
         "target": "./phpcs.xml"
       },
@@ -71,6 +72,9 @@
         "skip": [],
         "target": "./phpmd.ruleset.xml",
         "format": "text"
+      },
+      "composer-unused": {
+        "named-filters": []
       }
     }
   },

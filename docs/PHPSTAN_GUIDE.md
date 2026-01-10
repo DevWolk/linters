@@ -244,7 +244,7 @@ PHPStan caches results automatically. Clear when needed:
 
 ### 3. Parallel Processing
 
-Enabled by default in the configuration.
+Parallel processing is available; enable it via the PHPStan CLI flag (e.g., `--parallel`) if desired.
 
 ## CI/CD Integration
 

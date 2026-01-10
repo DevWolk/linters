@@ -26,10 +26,11 @@ Copy the `composer.json` configuration from this example to your Laravel project
    - Bootstrap files
    - Storage directory
 
-3. **Blade templates**: Excluded from PHP-CS-Fixer and PHPCS
+3. **Blade templates**: Exclude the views directory for tools that scan PHP files
    ```json
-   "skip": ["*.blade.php"]
+   "skip": ["/resources/views"]
    ```
+   For PHP-CS-Fixer, use `php-cs-fixer.skip_dirs` if you want to exclude directories beyond the default.
 
 ## Usage
 
@@ -171,7 +172,7 @@ composer phpstan-baseline
 
 ### Issue: Blade syntax errors
 
-**Solution**: Blade templates are automatically excluded. If you see errors, ensure `*.blade.php` is in skip patterns.
+**Solution**: Exclude `/resources/views` in `skip` for PHPCS/PHPMD. PHP-CS-Fixer already ignores `*.blade.php` by default.
 
 ## Learn More
 

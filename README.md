@@ -15,8 +15,8 @@ Centralized PHP linter configurations and static analysis tools for PHP projects
 - Implemented: Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused
 - Generators and runners: PHPStan/PHPCS/PHPMD via `linters generate` and `linters run`
 - Templates: `configs/phpstan.neon`, `configs/phpcs.xml`, `configs/phpmd.ruleset.xml`,
-  plus dynamic configs for Rector and PHP-CS-Fixer
-- Pending: verification/tests
+  plus dynamic configs for Rector, PHP-CS-Fixer, and composer-unused
+- Pending: run test/make targets
 
 ## Supported Tools
 
@@ -28,6 +28,7 @@ Centralized PHP linter configurations and static analysis tools for PHP projects
 | [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)       | ^4.0    | Working (generated config, not verified) |
 | [PHPMD](https://phpmd.org/)                                           | ^2.15   | Working (generated config, not verified) |
 | [composer-unused](https://github.com/composer-unused/composer-unused) | ^0.9    | Working |
+
 ## Configuration (Target Schema)
 
 All tool settings live in `extra.linters`:
@@ -36,9 +37,17 @@ All tool settings live in `extra.linters`:
 {
   "extra": {
     "linters": {
+      "rector": {
+        "paths": ["/src"],
+        "skip": ["/vendor"],
+        "frameworks": "laravel",
+        "cache_dir": "./var/rector-cache"
+      },
       "php-cs-fixer": {
         "paths": ["/src"],
-        "skip": []
+        "skip_dirs": [],
+        "skip_files": [],
+        "parallel": true
       },
       "phpstan": {
         "paths": ["/src"],
@@ -55,13 +64,18 @@ All tool settings live in `extra.linters`:
         "skip": ["/vendor"],
         "target": "./phpmd.ruleset.xml",
         "format": "text"
+      },
+      "composer-unused": {
+        "named-filters": [
+          "wikimedia/composer-merge-plugin"
+        ]
       }
     }
   }
 }
 ```
 
-Other tools (`rector`, `phpcs`, `composer-unused`) follow the same `extra.linters.<tool>` shape.
+All tool configs live under `extra.linters.<tool>`.
 See `TODO.md` for the active plan and checks.
 
 ## CLI (Single Standard)
@@ -95,8 +109,9 @@ Framework-specific Rector rules are controlled by `rector.frameworks`:
 }
 ```
 
-For PHPStan/PHPMD, use `extra.linters.<tool>.config` and `extra.linters.phpmd.rulesets`
-to add framework-specific settings without hardcoding paths in the package.
+For PHPStan, use `extra.linters.phpstan.config` to merge additional settings.
+For PHPMD, `phpmd.rulesets` filters rulesets inside the template and adds missing ones;
+use `phpmd.template` (or `--config`) when you need full control.
 
 ## Templates
 
@@ -107,6 +122,7 @@ to add framework-specific settings without hardcoding paths in the package.
 - `configs/phpmd.ruleset.xml`
 - `configs/rector.php`
 - `configs/.php-cs-fixer.dist.php`
+- `configs/composer-unused.php`
 
 ## Roadmap
 
