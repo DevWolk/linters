@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Linters\Tests\Unit\ConfigGenerator;
 
 use Linters\ConfigGenerator\PhpStanConfigGenerator;
+use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use InvalidArgumentException;
 
 final class PhpStanConfigGeneratorTest extends TestCase
 {
@@ -16,26 +16,21 @@ final class PhpStanConfigGeneratorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->testDir = sys_get_temp_dir() . '/linters-phpstan-' . uniqid('', true);
-        mkdir($this->testDir);
+        $this->testDir = $this->createTempDir('linters-phpstan-');
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->testDir)) {
-            $this->removeDirectory($this->testDir);
-        }
+        $this->removeDirectory($this->testDir);
     }
 
     public function testGenerateWritesConfigurationWithIncludesAndExcludes(): void
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths' => ['/src', '/tests'],
-                'skip' => ['/vendor'],
+                'paths' => ['src', 'tests'],
+                'skip_dirs' => ['vendor'],
             ],
         ]);
 
@@ -59,17 +54,36 @@ final class PhpStanConfigGeneratorTest extends TestCase
     {
         $this->createComposerJson([
             'phpstan' => [
-                'skip' => ['/vendor'],
+                'skip_dirs' => ['vendor'],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
         $generator = new PhpStanConfigGenerator($loader);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Missing required config: extra.linters.phpstan.paths');
 
         $generator->generate($this->testDir . '/phpstan.neon');
+    }
+
+    public function testGenerateAddsCacheDir(): void
+    {
+        $this->createComposerJson([
+            'phpstan' => [
+                'paths' => ['src'],
+                'cache_dir' => '.cache/phpstan',
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $generator = new PhpStanConfigGenerator($loader);
+        $targetPath = $this->testDir . '/phpstan.neon';
+
+        $generator->generate($targetPath);
+
+        $contents = file_get_contents($targetPath);
+        self::assertStringContainsString('tmpDir: .cache/phpstan', $contents);
     }
 
     private function createComposerJson(array $lintersConfig): void
@@ -81,28 +95,5 @@ final class PhpStanConfigGeneratorTest extends TestCase
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($this->testDir . '/composer.json', $json);
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
     }
 }

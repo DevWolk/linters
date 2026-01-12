@@ -9,13 +9,8 @@ use Linters\Utils\ConfigurationLoader;
 return static function (Configuration $config): Configuration {
     $composerLoader = new ConfigurationLoader();
 
-    $namedFilters = $composerLoader->get('composer-unused.named-filters', []);
-    if (is_array($namedFilters)) {
-        foreach ($namedFilters as $filter) {
-            if (is_string($filter) && $filter !== '') {
-                $config->addNamedFilter(NamedFilter::fromString($filter));
-            }
-        }
+    foreach ($composerLoader->getComposerUnusedConfig()->namedFilters as $filter) {
+        $config->addNamedFilter(NamedFilter::fromString($filter));
     }
 
     return $config;

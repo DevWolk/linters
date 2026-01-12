@@ -11,22 +11,24 @@ $autoloaders = [
     __DIR__ . '/../../../autoload.php',  // running from installed package
 ];
 
-$autoloaderFound = false;
-foreach ($autoloaders as $autoloader) {
-    if (file_exists($autoloader)) {
-        require_once $autoloader;
-        $autoloaderFound = true;
+$autoloader = null;
+foreach ($autoloaders as $path) {
+    if (file_exists($path)) {
+        $autoloader = $path;
         break;
     }
 }
 
-if ($autoloaderFound === false) {
+if ($autoloader === null) {
     fwrite(STDERR, "[ERROR] Unable to locate Composer autoloader.\n");
     exit(1);
 }
 
+require_once $autoloader;
+
 $application = new Application();
 $application->setAutoExit(false);
+
 try {
     $application->run();
 } catch (Exception $exception) {

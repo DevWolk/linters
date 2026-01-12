@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Linters\Tests\Unit\ConfigGenerator;
 
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
+use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use PHPUnit\Framework\TestCase;
 
 final class PhpMdConfigGeneratorTest extends TestCase
 {
@@ -15,25 +15,21 @@ final class PhpMdConfigGeneratorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->testDir = sys_get_temp_dir() . '/linters-phpmd-' . uniqid('', true);
-        mkdir($this->testDir);
+        $this->testDir = $this->createTempDir('linters-phpmd-');
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->testDir)) {
-            $this->removeDirectory($this->testDir);
-        }
+        $this->removeDirectory($this->testDir);
     }
 
     public function testGenerateAddsExcludes(): void
     {
         $this->createComposerJson([
             'phpmd' => [
-                'skip' => ['/vendor'],
+                'paths' => ['src'],
+                'skip_dirs' => ['vendor'],
             ],
         ]);
 
@@ -51,7 +47,7 @@ final class PhpMdConfigGeneratorTest extends TestCase
             $excludes[] = $node->nodeValue;
         }
 
-        self::assertContains($this->testDir . '/vendor', $excludes);
+        self::assertContains('vendor', $excludes);
     }
 
     private function createComposerJson(array $lintersConfig): void
@@ -63,28 +59,5 @@ final class PhpMdConfigGeneratorTest extends TestCase
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($this->testDir . '/composer.json', $json);
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
     }
 }

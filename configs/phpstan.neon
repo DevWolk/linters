@@ -30,23 +30,10 @@ parameters:
     fileExtensions:
         - php
 
-    # Symfony-specific settings (if applicable)
-    symfony:
-        container_xml_path: null
-        constant_hassers: false
-
     # Ignore specific error patterns (use sparingly)
     ignoreErrors:
         # Example: Ignore specific deprecation warnings
         # - '#Call to deprecated method#'
-
-    # Bootstrap file for loading project-specific code
-    # bootstrapFiles:
-    #     - %rootDir%/../../bootstrap.php
-
-    # Bleeding edge features (enable at your own risk)
-    # polluteScopeWithLoopInitialAssignments: false
-    # polluteScopeWithAlwaysIterableForeach: false
 
     # Baseline file (uncomment to use)
     # includes:

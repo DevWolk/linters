@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Linters\Tests\Unit\ConfigGenerator;
 
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
+use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use InvalidArgumentException;
 
 final class PhpCsConfigGeneratorTest extends TestCase
 {
@@ -16,26 +16,21 @@ final class PhpCsConfigGeneratorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->testDir = sys_get_temp_dir() . '/linters-phpcs-' . uniqid('', true);
-        mkdir($this->testDir);
+        $this->testDir = $this->createTempDir('linters-phpcs-');
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->testDir)) {
-            $this->removeDirectory($this->testDir);
-        }
+        $this->removeDirectory($this->testDir);
     }
 
     public function testGenerateAddsFilesAndExcludes(): void
     {
         $this->createComposerJson([
             'phpcs' => [
-                'paths' => ['/src', '/tests'],
-                'skip' => ['/vendor'],
+                'paths' => ['src', 'tests'],
+                'skip_dirs' => ['vendor'],
             ],
         ]);
 
@@ -58,26 +53,55 @@ final class PhpCsConfigGeneratorTest extends TestCase
             $excludes[] = $node->nodeValue;
         }
 
-        self::assertContains($this->testDir . '/src', $files);
-        self::assertContains($this->testDir . '/tests', $files);
-        self::assertContains($this->testDir . '/vendor', $excludes);
+        self::assertContains('src', $files);
+        self::assertContains('tests', $files);
+        self::assertContains('vendor', $excludes);
     }
 
     public function testGenerateThrowsWhenPathsMissing(): void
     {
         $this->createComposerJson([
             'phpcs' => [
-                'skip' => ['/vendor'],
+                'skip_dirs' => ['vendor'],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
         $generator = new PhpCsConfigGenerator($loader);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Missing required config: extra.linters.phpcs.paths');
 
         $generator->generate($this->testDir . '/phpcs.xml');
+    }
+
+    public function testGenerateSetsCachePath(): void
+    {
+        $this->createComposerJson([
+            'phpcs' => [
+                'paths' => ['src'],
+                'cache_dir' => '.cache/phpcs',
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $generator = new PhpCsConfigGenerator($loader);
+        $targetPath = $this->testDir . '/phpcs.xml';
+
+        $generator->generate($targetPath);
+
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->load($targetPath);
+
+        $cacheValue = null;
+        foreach ($dom->getElementsByTagName('arg') as $arg) {
+            if ($arg->getAttribute('name') === 'cache') {
+                $cacheValue = $arg->getAttribute('value');
+                break;
+            }
+        }
+
+        self::assertSame('.cache/phpcs/.phpcs-cache', $cacheValue);
     }
 
     private function createComposerJson(array $lintersConfig): void
@@ -89,28 +113,5 @@ final class PhpCsConfigGeneratorTest extends TestCase
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($this->testDir . '/composer.json', $json);
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
     }
 }

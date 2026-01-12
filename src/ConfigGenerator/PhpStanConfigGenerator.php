@@ -12,23 +12,30 @@ use Linters\Utils\ConfigurationLoader;
  * This class generates phpstan.neon dynamically from:
  * - Base template
  * - Paths from composer.json extra.linters.phpstan.paths
- * - Skip patterns from extra.linters.phpstan.skip
+ * - Skip patterns from extra.linters.phpstan.skip_dirs/skip_files
  * - Baseline from extra.linters.phpstan.baseline
  */
-class PhpStanConfigGenerator
+class PhpStanConfigGenerator implements ConfigGeneratorInterface
 {
+    private const TEMPLATE_PATH = __DIR__ . '/../../configs/phpstan.neon';
+
+    private const KEY_PARAMETERS = 'parameters';
+
+    private const KEY_PATHS = 'paths';
+
+    private const KEY_EXCLUDE_PATHS = 'excludePaths';
+
+    private const KEY_TMP_DIR = 'tmpDir';
+
+    private const KEY_INCLUDES = 'includes';
+
     protected ConfigurationLoader $loader;
-    protected string $templatePath;
 
     public function __construct(?ConfigurationLoader $loader = null)
     {
         $this->loader = $loader ?? new ConfigurationLoader();
-        $this->templatePath = __DIR__ . '/../../configs/phpstan.neon';
     }
 
-    /**
-     * Generate PHPStan configuration and save to target file
-     */
     public function generate(string $targetPath): void
     {
         $config = $this->buildConfiguration();
@@ -37,107 +44,68 @@ class PhpStanConfigGenerator
         file_put_contents($targetPath, $neonContent);
     }
 
-    /**
-     * Build configuration array from loader settings
-     */
     protected function buildConfiguration(): array
     {
-        $paths = $this->loader->getAbsolutePaths('phpstan.paths');
-        if ($paths === []) {
-            throw new \RuntimeException('Missing required config: extra.linters.phpstan.paths');
-        }
+        $config = $this->loader->getPhpStanConfig();
 
-        $config = [];
-
-        // Add exclude paths if specified
-        $excludePaths = $this->loader->getAbsolutePaths('phpstan.skip', []);
         $parameters = [
-            'paths' => $this->getRelativePaths($paths),
+            self::KEY_PATHS => $config->paths,
         ];
+
+        $excludePaths = array_merge($config->skipDirs, $config->skipFiles);
         if ($excludePaths !== []) {
-            $parameters['excludePaths'] = $this->getRelativePaths($excludePaths);
+            $parameters[self::KEY_EXCLUDE_PATHS] = $excludePaths;
         }
 
-        $config['parameters'] = $parameters;
-        $includes[] = $this->templatePath;
-
-        $baseline = $this->loader->get('phpstan.baseline');
-        if ($baseline) {
-            $includes[] = (string)$baseline;
+        $cacheDir = $config->cacheDir;
+        if ($cacheDir !== null && $cacheDir !== '') {
+            $parameters[self::KEY_TMP_DIR] = $cacheDir;
         }
 
-        $config['includes'] = $includes;
+        $includes = [self::TEMPLATE_PATH];
 
-        return $config;
+        $baseline = $config->baseline;
+        if ($baseline !== null && $baseline !== '') {
+            $includes[] = $baseline;
+        }
+
+        return [
+            self::KEY_PARAMETERS => $parameters,
+            self::KEY_INCLUDES => $includes,
+        ];
     }
 
-    /**
-     * Convert absolute paths to paths relative to project root when possible
-     */
-    protected function getRelativePaths(array $absolutePaths): array
-    {
-        $rootDir = rtrim($this->loader->getComposerDir(), '/');
-
-        return array_map(
-            static function (string $path) use ($rootDir): string {
-                if ($rootDir !== '' && str_starts_with($path, $rootDir . '/')) {
-                    return substr($path, strlen($rootDir) + 1);
-                }
-
-                return $path;
-            },
-            $absolutePaths
-        );
-    }
-
-    /**
-     * Convert configuration array to NEON format
-     */
     protected function convertToNeon(array $config, int $indent = 0): string
     {
         $neon = '';
         $indentStr = str_repeat('    ', $indent);
 
         foreach ($config as $key => $value) {
-            if (is_array($value)) {
-                // Check if array is associative or indexed
-                if ($this->isAssociativeArray($value)) {
-                    $neon .= $indentStr . $key . ":\n";
-                    $neon .= $this->convertToNeon($value, $indent + 1);
-                } else {
-                    $neon .= $indentStr . $key . ":\n";
-                    foreach ($value as $item) {
-                        if (is_array($item)) {
-                            $neon .= $indentStr . "    -\n";
-                            $neon .= $this->convertToNeon($item, $indent + 2);
-                        } else {
-                            $neon .= $indentStr . "    - " . $this->formatValue($item) . "\n";
-                        }
+            if (is_array($value) === false) {
+                $neon .= $indentStr . $key . ': ' . $this->formatValue($value) . "\n";
+                continue;
+            }
+
+            $neon .= $indentStr . $key . ":\n";
+
+            if (array_is_list($value)) {
+                foreach ($value as $item) {
+                    if (is_array($item)) {
+                        $neon .= $indentStr . "    -\n";
+                        $neon .= $this->convertToNeon($item, $indent + 2);
+                    } else {
+                        $neon .= $indentStr . "    - " . $this->formatValue($item) . "\n";
                     }
                 }
-            } else {
-                $neon .= $indentStr . $key . ': ' . $this->formatValue($value) . "\n";
+                continue;
             }
+
+            $neon .= $this->convertToNeon($value, $indent + 1);
         }
 
         return $neon;
     }
 
-    /**
-     * Check if array is associative
-     */
-    protected function isAssociativeArray(array $array): bool
-    {
-        if (empty($array)) {
-            return false;
-        }
-
-        return array_keys($array) !== range(0, count($array) - 1);
-    }
-
-    /**
-     * Format value for NEON output
-     */
     protected function formatValue(mixed $value): string
     {
         if (is_bool($value)) {

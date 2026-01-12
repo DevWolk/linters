@@ -32,38 +32,62 @@ Centralized PHP linter configurations and static analysis tools for PHP projects
 ## Configuration (Target Schema)
 
 All tool settings live in `extra.linters`:
+All paths/patterns (including `baseline` and `cache_dir`) are used as-is (no normalization).
+`skip_files` is treated as path/glob patterns (no filename-only special casing).
 
 ```json
 {
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/src"],
-        "skip": ["/vendor"],
-        "frameworks": "laravel",
-        "cache_dir": "./var/rector-cache",
-        "parallel": true
+        "paths": ["src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": [],
+        "frameworks": ["laravel"],
+        "cache_dir": ".cache/rector",
+        "parallel": {
+          "enabled": true,
+          "timeout": 120,
+          "max_processes": 4,
+          "files_per_process": 20
+        }
       },
       "php-cs-fixer": {
-        "paths": ["/src"],
-        "skip_dirs": [],
-        "skip_files": [],
+        "paths": ["src"],
+        "skip_dirs": ["src/Legacy"],
+        "skip_files": ["*.blade.php"],
+        "cache_dir": ".cache/php-cs-fixer",
         "parallel": {
           "enabled": true,
           "max_processes": 4
         }
       },
       "phpstan": {
-        "paths": ["/src"],
-        "skip": ["/vendor"]
+        "paths": ["src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": [],
+        "baseline": "phpstan-baseline.neon",
+        "cache_dir": ".cache/phpstan",
+        "parallel": {
+          "enabled": true,
+          "max_processes": 4
+        }
       },
       "phpcs": {
-        "paths": ["/src"],
-        "skip": []
+        "paths": ["src"],
+        "skip_dirs": [],
+        "skip_files": [],
+        "cache_dir": ".cache/phpcs",
+        "parallel": {
+          "enabled": true,
+          "max_processes": 4
+        }
       },
       "phpmd": {
-        "paths": ["/src"],
-        "skip": ["/vendor"]
+        "paths": ["src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": [],
+        "baseline": "phpmd-baseline.xml"
       },
       "composer-unused": {
         "named-filters": [
@@ -75,7 +99,7 @@ All tool settings live in `extra.linters`:
 }
 ```
 
-All tool configs live under `extra.linters.<tool>`.
+All tool configs live under `extra.linters.<tool>` and only the keys above are accepted.
 ## CLI (Single Standard)
 
 ```bash

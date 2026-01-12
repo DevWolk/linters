@@ -6,7 +6,7 @@ use Rector\Config\RectorConfig;
 
 return static function (RectorConfig $rectorConfig): void {
     // Check if rector/rector-laravel is installed
-    if (class_exists(\RectorLaravel\Set\LaravelLevelSetList::class) === false) {
+    if (!class_exists(\RectorLaravel\Set\LaravelLevelSetList::class)) {
 
         return;
     }

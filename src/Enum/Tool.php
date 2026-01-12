@@ -51,4 +51,24 @@ enum Tool: string
             default => false,
         };
     }
+
+    public function generatedTarget(): ?string
+    {
+        return match ($this) {
+            self::PHP_STAN => 'phpstan.neon',
+            self::PHP_CS => 'phpcs.xml',
+            self::PHP_MD => 'phpmd.ruleset.xml',
+            default => null,
+        };
+    }
+
+    public function packageConfigPath(): ?string
+    {
+        return match ($this) {
+            self::RECTOR => 'configs/rector.php',
+            self::PHP_CS_FIXER => 'configs/.php-cs-fixer.dist.php',
+            self::COMPOSER_UNUSED => 'configs/composer-unused.php',
+            default => null,
+        };
+    }
 }

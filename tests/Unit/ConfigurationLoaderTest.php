@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit;
 
+use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 final class ConfigurationLoaderTest extends TestCase
@@ -15,16 +15,13 @@ final class ConfigurationLoaderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->testDir = sys_get_temp_dir() . '/linters-test-' . uniqid();
-        mkdir($this->testDir);
+        $this->testDir = $this->createTempDir('linters-test-');
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        if (is_dir($this->testDir)) {
-            $this->removeDirectory($this->testDir);
-        }
+        $this->removeDirectory($this->testDir);
     }
 
     public function testConstructorThrowsExceptionWhenComposerJsonNotFound(): void
@@ -50,7 +47,7 @@ final class ConfigurationLoaderTest extends TestCase
             'extra' => [
                 'linters' => [
                     'rector' => [
-                        'paths' => ['/app', '/src'],
+                        'paths' => ['app', 'src'],
                     ],
                 ],
             ],
@@ -58,38 +55,59 @@ final class ConfigurationLoaderTest extends TestCase
 
         $loader = new ConfigurationLoader($this->testDir);
 
-        self::assertSame(['/app', '/src'], $loader->get('rector.paths'));
+        self::assertSame(['app', 'src'], $loader->get('rector.paths'));
     }
 
-    public function testGetAbsolutePathsReturnsAbsolutePaths(): void
+    public function testGetReturnsPathsAsConfigured(): void
     {
         $this->createComposerJson([
             'extra' => [
                 'linters' => [
                     'rector' => [
-                        'paths' => ['/app', '/src'],
+                        'paths' => ['app', 'src'],
                     ],
                 ],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $paths = $loader->getAbsolutePaths('rector.paths');
+        $paths = $loader->get('rector.paths');
 
         self::assertSame([
-            $this->testDir . '/app',
-            $this->testDir . '/src',
+            'app',
+            'src',
         ], $paths);
     }
 
-    public function testGetAbsolutePathsReturnsEmptyArrayWhenKeyNotFound(): void
+    public function testGetReturnsDefaultArrayWhenKeyNotFound(): void
     {
         $this->createComposerJson([]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $paths = $loader->getAbsolutePaths('nonexistent.paths');
+        $paths = $loader->get('nonexistent.paths', []);
 
         self::assertSame([], $paths);
+    }
+
+    public function testGetReturnsPathsWithoutNormalization(): void
+    {
+        $this->createComposerJson([
+            'extra' => [
+                'linters' => [
+                    'rector' => [
+                        'paths' => ['src', 'tests'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $paths = $loader->get('rector.paths');
+
+        self::assertSame([
+            'src',
+            'tests',
+        ], $paths);
     }
 
     public function testGetReturnsFalseValues(): void
@@ -98,7 +116,7 @@ final class ConfigurationLoaderTest extends TestCase
             'extra' => [
                 'linters' => [
                     'phpstan' => [
-                        'paths' => ['/src'],
+                        'paths' => ['src'],
                         'parallel' => false,
                     ],
                 ],
@@ -110,23 +128,38 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertFalse($loader->get('phpstan.parallel', true));
     }
 
-    public function testConstructorThrowsOnUnsupportedKeys(): void
+    public function testConstructorRejectsUnsupportedTool(): void
     {
         $this->createComposerJson([
             'extra' => [
                 'linters' => [
-                    'phpstan' => [
-                        'paths' => ['/src'],
-                        'level' => 8,
-                    ],
+                    'unknown-tool' => [],
                 ],
             ],
         ]);
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Unsupported config key: extra.linters.phpstan.level');
+        $this->expectExceptionMessage('Unsupported tool: extra.linters.unknown-tool');
 
         new ConfigurationLoader($this->testDir);
+    }
+
+    public function testConstructorIgnoresUnknownKeys(): void
+    {
+        $this->createComposerJson([
+            'extra' => [
+                'linters' => [
+                    'phpstan' => [
+                        'paths' => ['src'],
+                        'unknown_key' => ['anything'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+
+        self::assertSame(['src'], $loader->get('phpstan.paths'));
     }
 
     public function testConstructorUsesCustomExtraKey(): void
@@ -150,28 +183,5 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $json = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents($this->testDir . '/composer.json', $json);
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
     }
 }

@@ -4,28 +4,18 @@ declare(strict_types=1);
 
 namespace Linters\Service;
 
+use Linters\ConfigGenerator\ConfigGeneratorInterface;
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
 use Linters\ConfigGenerator\PhpStanConfigGenerator;
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
+use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final readonly class ToolRunner
 {
     private const DEFAULT_PHP_MD_FORMAT = 'text';
-
-    private const GENERATED_TARGETS = [
-        'phpstan' => 'phpstan.neon',
-        'phpcs' => 'phpcs.xml',
-        'phpmd' => 'phpmd.ruleset.xml',
-    ];
-
-    private const PACKAGE_CONFIGS = [
-        'rector' => 'configs/rector.php',
-        'php-cs-fixer' => 'configs/.php-cs-fixer.dist.php',
-        'composer-unused' => 'configs/composer-unused.php',
-    ];
 
     public function __construct(
         private ConfigurationLoader $loader
@@ -35,7 +25,7 @@ final readonly class ToolRunner
     public function generate(Tool $tool): string
     {
         if (!$tool->requiresGeneration()) {
-            throw new \RuntimeException($tool->label() . ' does not require config generation');
+            throw new RuntimeException($tool->label() . ' does not require config generation');
         }
 
         $target = $this->resolveGeneratedTarget($tool);
@@ -57,13 +47,13 @@ final readonly class ToolRunner
         return $this->runCommand($output, $tool->label(), $command);
     }
 
-    private function createGenerator(Tool $tool): PhpStanConfigGenerator|PhpCsConfigGenerator|PhpMdConfigGenerator
+    private function createGenerator(Tool $tool): ConfigGeneratorInterface
     {
         return match ($tool) {
             Tool::PHP_STAN => new PhpStanConfigGenerator($this->loader),
             Tool::PHP_CS => new PhpCsConfigGenerator($this->loader),
             Tool::PHP_MD => new PhpMdConfigGenerator($this->loader),
-            default => throw new \RuntimeException('Unsupported generator tool: ' . $tool->label()),
+            default => throw new RuntimeException('Unsupported generator tool: ' . $tool->label()),
         };
     }
 
@@ -87,19 +77,12 @@ final readonly class ToolRunner
 
         $command = escapeshellarg($binary) . ' analyze --configuration=' . escapeshellarg($target);
 
-        $parallel = $this->loader->get('phpstan.parallel');
-        if (is_bool($parallel)) {
-            if ($parallel) {
-                $command .= ' --parallel';
-            }
-        } elseif (is_array($parallel)) {
-            $enabled = $parallel['enabled'] ?? true;
-            if ($enabled) {
-                $command .= ' --parallel';
-                $jobs = $parallel['jobs'] ?? null;
-                if (is_int($jobs) || (is_string($jobs) && preg_match('/^\d+$/', $jobs) === 1)) {
-                    $command .= ' --jobs=' . (int)$jobs;
-                }
+        $config = $this->loader->getPhpStanConfig();
+        $parallel = $config->parallel;
+        if ($parallel?->enabled) {
+            $command .= ' --parallel';
+            if ($parallel->maxProcesses !== null) {
+                $command .= ' --jobs=' . $parallel->maxProcesses;
             }
         }
 
@@ -110,24 +93,37 @@ final readonly class ToolRunner
     {
         $target = $this->requireGeneratedTarget($target, Tool::PHP_CS);
 
-        return escapeshellarg($binary) . ' --standard=' . escapeshellarg($target);
+        $command = escapeshellarg($binary) . ' --standard=' . escapeshellarg($target);
+
+        $config = $this->loader->getPhpCsConfig();
+        $parallel = $config->parallel;
+        if ($parallel?->enabled && $parallel->maxProcesses !== null) {
+            $command .= ' --parallel=' . $parallel->maxProcesses;
+        }
+
+        return $command;
     }
 
     private function buildPhpMdCommand(string $binary, ?string $target): string
     {
         $target = $this->requireGeneratedTarget($target, Tool::PHP_MD);
 
-        $paths = $this->loader->getAbsolutePaths('phpmd.paths');
-        if ($paths === []) {
-            throw new \RuntimeException('Missing required config: extra.linters.phpmd.paths');
-        }
+        $config = $this->loader->getPhpMdConfig();
+        $paths = $config->paths;
 
         $format = self::DEFAULT_PHP_MD_FORMAT;
 
-        return escapeshellarg($binary)
+        $command = escapeshellarg($binary)
             . ' ' . escapeshellarg(implode(',', $paths))
             . ' ' . escapeshellarg($format)
             . ' ' . escapeshellarg($target);
+
+        $baseline = $config->baseline;
+        if ($baseline !== null && $baseline !== '') {
+            $command .= ' --baseline-file=' . escapeshellarg($baseline);
+        }
+
+        return $command;
     }
 
     private function buildRectorCommand(string $binary): string
@@ -158,9 +154,10 @@ final readonly class ToolRunner
 
     private function resolveGeneratedTarget(Tool $tool): string
     {
-        $relativePath = self::GENERATED_TARGETS[$tool->value] ?? null;
+        $relativePath = $tool->generatedTarget();
+
         if ($relativePath === null) {
-            throw new \RuntimeException('Missing generated target mapping for ' . $tool->label());
+            throw new RuntimeException('Missing generated target mapping for ' . $tool->label());
         }
 
         return rtrim($this->loader->getComposerDir(), '/') . '/' . $relativePath;
@@ -168,9 +165,10 @@ final readonly class ToolRunner
 
     private function resolvePackageConfigPath(Tool $tool): string
     {
-        $relativePath = self::PACKAGE_CONFIGS[$tool->value] ?? null;
+        $relativePath = $tool->packageConfigPath();
+
         if ($relativePath === null) {
-            throw new \RuntimeException('Missing package config mapping for ' . $tool->label());
+            throw new RuntimeException('Missing package config mapping for ' . $tool->label());
         }
 
         return rtrim(dirname(__DIR__, 2), '/') . '/' . $relativePath;
@@ -179,8 +177,8 @@ final readonly class ToolRunner
     private function resolveBinary(string $binary): string
     {
         $path = rtrim($this->loader->getComposerDir(), '/') . '/vendor/bin/' . $binary;
-        if (file_exists($path) === false) {
-            throw new \RuntimeException("Unable to locate {$binary} binary at {$path}");
+        if (!file_exists($path)) {
+            throw new RuntimeException("Unable to locate {$binary} binary at {$path}");
         }
 
         return $path;
@@ -189,7 +187,7 @@ final readonly class ToolRunner
     private function requireGeneratedTarget(?string $target, Tool $tool): string
     {
         if (!is_string($target) || $target === '') {
-            throw new \RuntimeException('Missing generated target for ' . $tool->label());
+            throw new RuntimeException('Missing generated target for ' . $tool->label());
         }
 
         return $target;

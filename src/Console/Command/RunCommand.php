@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 final class RunCommand extends Command
 {
@@ -37,7 +38,7 @@ final class RunCommand extends Command
             $runner = new ToolRunner($loader);
 
             return $runner->run($tool, $output);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $output->writeln('<error>' . $exception->getMessage() . '</error>');
             return Command::FAILURE;
         }

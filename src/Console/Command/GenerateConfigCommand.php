@@ -7,10 +7,12 @@ namespace Linters\Console\Command;
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
 use Linters\Utils\ConfigurationLoader;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 final class GenerateConfigCommand extends Command
 {
@@ -35,15 +37,15 @@ final class GenerateConfigCommand extends Command
         try {
             $toolName = strtolower((string)$input->getArgument('tool'));
             $tool = Tool::fromName($toolName);
-            if ($tool->requiresGeneration() === false) {
-                throw new \RuntimeException($tool->label() . ' does not support config generation');
+            if (!$tool->requiresGeneration()) {
+                throw new RuntimeException($tool->label() . ' does not support config generation');
             }
 
             $loader = new ConfigurationLoader();
             $runner = new ToolRunner($loader);
 
             $target = $runner->generate($tool);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $output->writeln('<error>' . $exception->getMessage() . '</error>');
             return Command::FAILURE;
         }

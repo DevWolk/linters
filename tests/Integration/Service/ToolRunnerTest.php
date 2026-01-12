@@ -6,8 +6,8 @@ namespace Linters\Tests\Integration\Service;
 
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
+use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 final class ToolRunnerTest extends TestCase
@@ -17,9 +17,7 @@ final class ToolRunnerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->testDir = sys_get_temp_dir() . '/linters-runner-' . uniqid('', true);
-        mkdir($this->testDir);
+        $this->testDir = $this->createTempDir('linters-runner-');
         mkdir($this->testDir . '/vendor');
         mkdir($this->testDir . '/vendor/bin');
     }
@@ -27,17 +25,14 @@ final class ToolRunnerTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->testDir)) {
-            $this->removeDirectory($this->testDir);
-        }
+        $this->removeDirectory($this->testDir);
     }
 
     public function testGenerateUsesDefaultTarget(): void
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths' => ['/src'],
+                'paths' => ['src'],
             ],
         ]);
 
@@ -59,7 +54,7 @@ final class ToolRunnerTest extends TestCase
 
         $this->createComposerJson([
             'phpmd' => [
-                'paths' => ['/src', '/tests'],
+                'paths' => ['src', 'tests'],
             ],
         ]);
 
@@ -77,9 +72,76 @@ final class ToolRunnerTest extends TestCase
         $targetPath = $this->testDir . '/phpmd.ruleset.xml';
         $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
         self::assertSame([
-            $this->testDir . '/src,' . $this->testDir . '/tests',
+            'src,tests',
             'text',
             $targetPath,
+        ], $loggedArgs);
+    }
+
+    public function testRunAddsPhpMdBaselineFile(): void
+    {
+        $logPath = $this->testDir . '/phpmd-baseline.log';
+        $binaryPath = $this->testDir . '/vendor/bin/phpmd';
+
+        $this->createComposerJson([
+            'phpmd' => [
+                'paths' => ['src'],
+                'baseline' => 'phpmd-baseline.xml',
+            ],
+        ]);
+
+        $this->createBinaryScript($binaryPath, $logPath);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $runner = new ToolRunner($loader);
+        $output = new BufferedOutput();
+
+        $exitCode = $runner->run(Tool::PHP_MD, $output);
+
+        self::assertSame(0, $exitCode);
+        self::assertFileExists($logPath);
+
+        $targetPath = $this->testDir . '/phpmd.ruleset.xml';
+        $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
+        self::assertSame([
+            'src',
+            'text',
+            $targetPath,
+            '--baseline-file=phpmd-baseline.xml',
+        ], $loggedArgs);
+    }
+
+    public function testRunAddsPhpCsParallelFlag(): void
+    {
+        $logPath = $this->testDir . '/phpcs.log';
+        $binaryPath = $this->testDir . '/vendor/bin/phpcs';
+
+        $this->createComposerJson([
+            'phpcs' => [
+                'paths' => ['src'],
+                'parallel' => [
+                    'enabled' => true,
+                    'max_processes' => 4,
+                ],
+            ],
+        ]);
+
+        $this->createBinaryScript($binaryPath, $logPath);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $runner = new ToolRunner($loader);
+        $output = new BufferedOutput();
+
+        $exitCode = $runner->run(Tool::PHP_CS, $output);
+
+        self::assertSame(0, $exitCode);
+        self::assertFileExists($logPath);
+
+        $targetPath = $this->testDir . '/phpcs.xml';
+        $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
+        self::assertSame([
+            '--standard=' . $targetPath,
+            '--parallel=4',
         ], $loggedArgs);
     }
 
@@ -102,28 +164,5 @@ final class ToolRunnerTest extends TestCase
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($this->testDir . '/composer.json', $json);
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
     }
 }

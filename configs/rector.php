@@ -15,7 +15,6 @@ use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\StaticCall\RemoveParentCallWithoutParentRector;
 use Rector\Doctrine\Set\DoctrineSetList;
-use Rector\Exception\Configuration\InvalidConfigurationException;
 use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\Class_\RenamePropertyToMatchTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
@@ -35,41 +34,16 @@ use Rector\TypeDeclaration\Rector\ClassMethod\AddMethodCallBasedStrictParamTypeR
 use Rector\ValueObject\PhpVersion;
 
 $composerLoader = new ConfigurationLoader();
-
-$frameworksValue = $composerLoader->get('rector.frameworks', []);
-$frameworks = [];
-$isSymfonyEnabled = false;
-$isLaravelEnabled = false;
-
-if (is_array($frameworksValue)) {
-    if (array_is_list($frameworksValue)) {
-        $frameworks = $frameworksValue;
-    } else {
-        foreach ($frameworksValue as $name => $enabled) {
-            if ($enabled) {
-                $frameworks[] = (string)$name;
-            }
-        }
-    }
-} elseif (is_string($frameworksValue) && $frameworksValue !== '') {
-    $frameworks[] = $frameworksValue;
-}
-
-$frameworks = array_map(
-    static fn(string $framework): string => strtolower($framework),
-    $frameworks
-);
+$config = $composerLoader->getRectorConfig();
 
 $frameworkSets = [];
 
-if (in_array('laravel', $frameworks, true)) {
+if ($config->isLaravelProject()) {
     $frameworkSets[] = AppRectorSetList::LARAVEL;
-    $isLaravelEnabled = true;
 }
 
-if (in_array('symfony', $frameworks, true)) {
+if ($config->isSymfonyProject()) {
     $frameworkSets[] = AppRectorSetList::SYMFONY;
-    $isSymfonyEnabled = true;
 }
 
 $baseSets = [
@@ -97,43 +71,13 @@ $baseSets = [
 
 $configuredSets = array_merge($baseSets, $frameworkSets);
 
-/**
- * @throws InvalidConfigurationException
- */
 $rectorConfig = RectorConfig::configure();
 
-$cacheDir = $composerLoader->get('rector.cache_dir');
-if (is_string($cacheDir) && $cacheDir !== '') {
+if ($config->cacheDir !== null && $config->cacheDir !== '') {
     $rectorConfig = $rectorConfig->withCache(
-        cacheDirectory: $cacheDir,
+        cacheDirectory: $config->cacheDir,
         cacheClass: FileCacheStorage::class
     );
-}
-
-$parallel = $composerLoader->get('rector.parallel', true);
-$parallelEnabled = false;
-$timeout = null;
-$maxProcesses = null;
-$jobSize = null;
-
-if (is_bool($parallel)) {
-    $parallelEnabled = $parallel;
-} elseif (is_array($parallel)) {
-    $parallelEnabled = $parallel['enabled'] ?? true;
-    if (is_int($parallel['timeout'] ?? null) || is_string($parallel['timeout'] ?? null)) {
-        $timeout = (int)$parallel['timeout'];
-    }
-    if (is_int($parallel['max_processes'] ?? null) || is_string($parallel['max_processes'] ?? null)) {
-        $maxProcesses = (int)$parallel['max_processes'];
-    }
-    if (is_int($parallel['files_per_process'] ?? null) || is_string($parallel['files_per_process'] ?? null)) {
-        $jobSize = (int)$parallel['files_per_process'];
-    }
-}
-
-$paths = $composerLoader->getAbsolutePaths('rector.paths');
-if ($paths === []) {
-    throw new InvalidConfigurationException('Missing required config: extra.linters.rector.paths');
 }
 
 $rectorConfig = $rectorConfig
@@ -155,8 +99,8 @@ $rectorConfig = $rectorConfig
     ->withComposerBased(
         doctrine: true,
         phpunit: true,
-        symfony: $isSymfonyEnabled,
-        laravel: $isLaravelEnabled,
+        symfony: $config->isSymfonyProject(),
+        laravel: $config->isLaravelProject(),
     )
     ->withAttributesSets(
         doctrine: true,
@@ -166,10 +110,11 @@ $rectorConfig = $rectorConfig
     )
     ->withSets($configuredSets)
     ->withPhpVersion(PhpVersion::PHP_82)
-    ->withPaths($paths)
+    ->withPaths($config->paths)
     ->withSkip(
         array_merge(
-            $composerLoader->getAbsolutePaths('rector.skip'),
+            $config->skipDirs,
+            $config->skipFiles,
             [
                 SimplifyBoolIdenticalTrueRector::class, // it's breaks the Routers
                 IsCountableRector::class, // this rule does not fit, a lot of where it goes wrong
@@ -199,11 +144,15 @@ $rectorConfig = $rectorConfig
             ],
         )
     )
-    ->withFileExtensions(['php']);
+    ->withFileExtensions(\Linters\DTO\RectorConfig::FILE_EXTENSIONS);
 
-if ($parallelEnabled) {
+if ($config->parallel?->enabled) {
     // https://getrector.com/documentation/troubleshooting-parallel
-    $rectorConfig = $rectorConfig->withParallel($timeout, $maxProcesses, $jobSize);
+    $rectorConfig = $rectorConfig->withParallel(
+        $config->parallel?->timeout,
+        $config->parallel?->maxProcesses,
+        $config->parallel?->filesPerProcess,
+    );
 }
 
 return $rectorConfig;

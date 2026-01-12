@@ -2,92 +2,46 @@
 
 declare(strict_types=1);
 
+use Linters\DTO\PhpCsFixerConfig;
 use Linters\Utils\ConfigurationLoader;
 
 /**
  * @link https://mlocati.github.io/php-cs-fixer-configurator/
  * @link https://cs.symfony.com/doc/usage.html
  */
-/** Don't use finder for vscode. It will be slow. */
-$isVSCodeRun = isset($_SERVER['VSCODE_AGENT_FOLDER']);
-$finder = [];
-$composerLoader = null;
-$parallelEnabled = false;
-$maxProcesses = null;
-$filesPerProcess = null;
-$timeout = null;
 
-if ($isVSCodeRun === false) {
-    // Get settings from extra section of composer and provide access for them
-    $composerLoader = new ConfigurationLoader();
-    $skipDirs = $composerLoader->getAbsolutePaths('php-cs-fixer.skip_dirs');
-    $skipFiles = $composerLoader->get('php-cs-fixer.skip_files', []);
-    $paths = $composerLoader->getAbsolutePaths('php-cs-fixer.paths');
-    if ($paths === []) {
-        throw new \RuntimeException('Missing required config: extra.linters.php-cs-fixer.paths');
-    }
+$composerLoader = new ConfigurationLoader();
+$toolConfig = $composerLoader->getPhpCsFixerConfig();
 
-    $parallel = $composerLoader->get('php-cs-fixer.parallel', false);
-    if (is_bool($parallel)) {
-        $parallelEnabled = $parallel;
-    } elseif (is_array($parallel)) {
-        $parallelEnabled = $parallel['enabled'] ?? true;
-        if (is_int($parallel['max_processes'] ?? null) || is_string($parallel['max_processes'] ?? null)) {
-            $maxProcesses = (int)$parallel['max_processes'];
-        }
-        if (is_int($parallel['files_per_process'] ?? null) || is_string($parallel['files_per_process'] ?? null)) {
-            $filesPerProcess = (int)$parallel['files_per_process'];
-        }
-        if (is_int($parallel['timeout'] ?? null) || is_string($parallel['timeout'] ?? null)) {
-            $timeout = (int)$parallel['timeout'];
-        }
-    }
-
-    if (is_array($skipFiles) === false) {
-        $skipFiles = [$skipFiles];
-    }
-
-    $skipNames = [];
-    $skipPaths = [];
-    foreach ($skipFiles as $pattern) {
-        if (is_string($pattern) === false || $pattern === '') {
-            continue;
-        }
-
-        $pattern = ltrim($pattern, '/');
-        if (str_contains($pattern, '/')) {
-            $skipPaths[] = $pattern;
-        } else {
-            $skipNames[] = $pattern;
-        }
-    }
-
-    $notNames = ['*.blade.php', '_*'];
-    if ($skipNames !== []) {
-        $notNames = array_values(array_unique(array_merge($notNames, $skipNames)));
-    }
-
-    $finder = PhpCsFixer\Finder::create()
-        ->ignoreVCS(true)
-        ->ignoreDotFiles(true)
-        ->name('*.php')
-        ->notName($notNames)
-        ->exclude($skipDirs)
-        ->in($paths);
-
-    if ($skipPaths !== []) {
-        $finder->notPath($skipPaths);
-    }
-}
+$finder = PhpCsFixer\Finder::create()
+    ->ignoreVCS(true)
+    ->ignoreDotFiles(true)
+    ->name(PhpCsFixerConfig::PATTERN_NAME)
+    ->notName(PhpCsFixerConfig::NOT_NAMES)
+    ->notPath($toolConfig->skipFiles)
+    ->exclude($toolConfig->skipDirs)
+    ->in($toolConfig->paths);
 
 $config = new PhpCsFixer\Config();
 
-if ($parallelEnabled) {
-    $config->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect(
-        $filesPerProcess,
-        $timeout,
-        $maxProcesses,
-    ));
+if ($toolConfig->parallel?->enabled) {
+    $parallel = $toolConfig->parallel;
+    $parallelConfig = PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect(
+        $parallel?->filesPerProcess,
+        $parallel?->timeout,
+        $parallel?->maxProcesses,
+    );
+    $config->setParallelConfig($parallelConfig);
+}
+
+if ($toolConfig->cacheDir !== null && $toolConfig->cacheDir !== '') {
+    $cacheFile = sprintf(
+        '%s/%s',
+        rtrim($toolConfig->cacheDir, '/'),
+        PhpCsFixerConfig::CACHE_NAME,
+    );
+
+    $config->setCacheFile($cacheFile);
 }
 
 return $config
