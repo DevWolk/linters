@@ -17,7 +17,7 @@ use Linters\Utils\ConfigurationLoader;
  */
 class PhpStanConfigGenerator implements ConfigGeneratorInterface
 {
-    private const TEMPLATE_PATH = __DIR__ . '/../../configs/phpstan.neon';
+    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpstan.neon';
 
     private const KEY_PARAMETERS = 'parameters';
 
@@ -62,7 +62,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
             $parameters[self::KEY_TMP_DIR] = $cacheDir;
         }
 
-        $includes = [self::TEMPLATE_PATH];
+        $includes = [self::PACKAGE_CONFIG_PATH];
 
         $baseline = $config->baseline;
         if ($baseline !== null && $baseline !== '') {

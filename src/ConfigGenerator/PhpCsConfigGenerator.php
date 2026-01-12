@@ -19,7 +19,7 @@ use Linters\Utils\ConfigurationLoader;
  */
 class PhpCsConfigGenerator implements ConfigGeneratorInterface
 {
-    private const TEMPLATE_PATH = __DIR__ . '/../../configs/phpcs.xml';
+    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpcs.xml';
 
     private const TAG_FILE = 'file';
 
@@ -59,7 +59,7 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
     protected function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
-        $dom->load(self::TEMPLATE_PATH);
+        $dom->load(self::PACKAGE_CONFIG_PATH);
 
         $config = $this->loader->getPhpCsConfig();
         $ruleset = $dom->documentElement;

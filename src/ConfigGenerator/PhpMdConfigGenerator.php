@@ -20,7 +20,7 @@ use Linters\Utils\ConfigurationLoader;
  */
 class PhpMdConfigGenerator implements ConfigGeneratorInterface
 {
-    private const TEMPLATE_PATH = __DIR__ . '/../../configs/phpmd.ruleset.xml';
+    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpmd.ruleset.xml';
 
     private const TAG_EXCLUDE_PATTERN = 'exclude-pattern';
 
@@ -50,7 +50,7 @@ class PhpMdConfigGenerator implements ConfigGeneratorInterface
     protected function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
-        $dom->load(self::TEMPLATE_PATH);
+        $dom->load(self::PACKAGE_CONFIG_PATH);
 
         $ruleset = $dom->documentElement;
         if (!$ruleset instanceof DOMElement) {
