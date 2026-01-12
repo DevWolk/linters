@@ -11,6 +11,9 @@ enum Tool: string
     case PHP_STAN = 'phpstan';
     case PHP_CS = 'phpcs';
     case PHP_MD = 'phpmd';
+    case RECTOR = 'rector';
+    case PHP_CS_FIXER = 'php-cs-fixer';
+    case COMPOSER_UNUSED = 'composer-unused';
 
     public static function fromName(string $name): self
     {
@@ -28,6 +31,9 @@ enum Tool: string
             self::PHP_STAN => 'PHPStan',
             self::PHP_CS => 'PHPCS',
             self::PHP_MD => 'PHPMD',
+            self::RECTOR => 'Rector',
+            self::PHP_CS_FIXER => 'PHP-CS-Fixer',
+            self::COMPOSER_UNUSED => 'composer-unused',
         };
     }
 
@@ -36,23 +42,13 @@ enum Tool: string
         return $this->value;
     }
 
-    public function targetKey(): string
-    {
-        return $this->value . '.target';
-    }
-
-    public function templateKey(): string
-    {
-        return $this->value . '.template';
-    }
-
-    public function formatKey(): ?string
-    {
-        return $this === self::PHP_MD ? 'phpmd.format' : null;
-    }
-
     public function requiresGeneration(): bool
     {
-        return true;
+        return match ($this) {
+            self::PHP_STAN,
+            self::PHP_CS,
+            self::PHP_MD => true,
+            default => false,
+        };
     }
 }

@@ -110,10 +110,34 @@ if (is_string($cacheDir) && $cacheDir !== '') {
     );
 }
 
-return $rectorConfig
+$parallel = $composerLoader->get('rector.parallel', true);
+$parallelEnabled = false;
+$timeout = null;
+$maxProcesses = null;
+$jobSize = null;
+
+if (is_bool($parallel)) {
+    $parallelEnabled = $parallel;
+} elseif (is_array($parallel)) {
+    $parallelEnabled = $parallel['enabled'] ?? true;
+    if (is_int($parallel['timeout'] ?? null) || is_string($parallel['timeout'] ?? null)) {
+        $timeout = (int)$parallel['timeout'];
+    }
+    if (is_int($parallel['max_processes'] ?? null) || is_string($parallel['max_processes'] ?? null)) {
+        $maxProcesses = (int)$parallel['max_processes'];
+    }
+    if (is_int($parallel['files_per_process'] ?? null) || is_string($parallel['files_per_process'] ?? null)) {
+        $jobSize = (int)$parallel['files_per_process'];
+    }
+}
+
+$paths = $composerLoader->getAbsolutePaths('rector.paths');
+if ($paths === []) {
+    throw new InvalidConfigurationException('Missing required config: extra.linters.rector.paths');
+}
+
+$rectorConfig = $rectorConfig
     ->withRootFiles()
-    // https://getrector.com/documentation/troubleshooting-parallel
-    ->withParallel(360, 2, 40)
     ->withImportNames(importDocBlockNames: false, importShortClasses: false)
     ->withPreparedSets(
         deadCode: true,
@@ -142,7 +166,7 @@ return $rectorConfig
     )
     ->withSets($configuredSets)
     ->withPhpVersion(PhpVersion::PHP_82)
-    ->withPaths($composerLoader->getAbsolutePaths('rector.paths'))
+    ->withPaths($paths)
     ->withSkip(
         array_merge(
             $composerLoader->getAbsolutePaths('rector.skip'),
@@ -176,3 +200,10 @@ return $rectorConfig
         )
     )
     ->withFileExtensions(['php']);
+
+if ($parallelEnabled) {
+    // https://getrector.com/documentation/troubleshooting-parallel
+    $rectorConfig = $rectorConfig->withParallel($timeout, $maxProcesses, $jobSize);
+}
+
+return $rectorConfig;

@@ -13,68 +13,116 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final readonly class ToolRunner
 {
+    private const DEFAULT_PHP_MD_FORMAT = 'text';
+
+    private const GENERATED_TARGETS = [
+        'phpstan' => 'phpstan.neon',
+        'phpcs' => 'phpcs.xml',
+        'phpmd' => 'phpmd.ruleset.xml',
+    ];
+
+    private const PACKAGE_CONFIGS = [
+        'rector' => 'configs/rector.php',
+        'php-cs-fixer' => 'configs/.php-cs-fixer.dist.php',
+        'composer-unused' => 'configs/composer-unused.php',
+    ];
+
     public function __construct(
         private ConfigurationLoader $loader
     ) {
     }
 
-    public function generate(Tool $tool, ?string $targetOverride, ?string $templateOverride): string
+    public function generate(Tool $tool): string
     {
-        $target = $this->resolveTarget($tool, $targetOverride);
-        $template = $this->resolveTemplate($tool, $templateOverride);
+        if (!$tool->requiresGeneration()) {
+            throw new \RuntimeException($tool->label() . ' does not require config generation');
+        }
 
-        $generator = $this->createGenerator($tool, $template);
+        $target = $this->resolveGeneratedTarget($tool);
+        $generator = $this->createGenerator($tool);
         $generator->generate($target);
 
         return $target;
     }
 
-    public function run(
-        Tool $tool,
-        ?string $targetOverride,
-        ?string $templateOverride,
-        ?string $formatOverride,
-        OutputInterface $output
-    ): int {
+    public function run(Tool $tool, OutputInterface $output): int
+    {
+        $target = null;
         if ($tool->requiresGeneration()) {
             $output->writeln('Generating: ' . $tool->label() . ' config');
-            $target = $this->generate($tool, $targetOverride, $templateOverride);
-        } else {
-            $target = $this->resolveTarget($tool, $targetOverride);
+            $target = $this->generate($tool);
         }
 
-        $command = $this->buildCommand($tool, $target, $formatOverride);
+        $command = $this->buildCommand($tool, $target);
         return $this->runCommand($output, $tool->label(), $command);
     }
 
-    private function createGenerator(Tool $tool, ?string $template): PhpStanConfigGenerator|PhpCsConfigGenerator|PhpMdConfigGenerator
+    private function createGenerator(Tool $tool): PhpStanConfigGenerator|PhpCsConfigGenerator|PhpMdConfigGenerator
     {
         return match ($tool) {
-            Tool::PHP_STAN => new PhpStanConfigGenerator($this->loader, $template),
-            Tool::PHP_CS => new PhpCsConfigGenerator($this->loader, $template),
-            Tool::PHP_MD => new PhpMdConfigGenerator($this->loader, $template),
+            Tool::PHP_STAN => new PhpStanConfigGenerator($this->loader),
+            Tool::PHP_CS => new PhpCsConfigGenerator($this->loader),
+            Tool::PHP_MD => new PhpMdConfigGenerator($this->loader),
+            default => throw new \RuntimeException('Unsupported generator tool: ' . $tool->label()),
         };
     }
 
-    private function buildCommand(Tool $tool, string $target, ?string $formatOverride): string
+    private function buildCommand(Tool $tool, ?string $target): string
     {
         $binary = $this->resolveBinary($tool->binary());
 
         return match ($tool) {
-            Tool::PHP_STAN => escapeshellarg($binary) . ' analyze --configuration=' . escapeshellarg($target),
-            Tool::PHP_CS => escapeshellarg($binary) . ' --standard=' . escapeshellarg($target),
-            Tool::PHP_MD => $this->buildPhpMdCommand($binary, $target, $formatOverride),
+            Tool::PHP_STAN => $this->buildPhpStanCommand($binary, $target),
+            Tool::PHP_CS => $this->buildPhpCsCommand($binary, $target),
+            Tool::PHP_MD => $this->buildPhpMdCommand($binary, $target),
+            Tool::RECTOR => $this->buildRectorCommand($binary),
+            Tool::PHP_CS_FIXER => $this->buildPhpCsFixerCommand($binary),
+            Tool::COMPOSER_UNUSED => $this->buildComposerUnusedCommand($binary),
         };
     }
 
-    private function buildPhpMdCommand(string $binary, string $target, ?string $formatOverride): string
+    private function buildPhpStanCommand(string $binary, ?string $target): string
     {
+        $target = $this->requireGeneratedTarget($target, Tool::PHP_STAN);
+
+        $command = escapeshellarg($binary) . ' analyze --configuration=' . escapeshellarg($target);
+
+        $parallel = $this->loader->get('phpstan.parallel');
+        if (is_bool($parallel)) {
+            if ($parallel) {
+                $command .= ' --parallel';
+            }
+        } elseif (is_array($parallel)) {
+            $enabled = $parallel['enabled'] ?? true;
+            if ($enabled) {
+                $command .= ' --parallel';
+                $jobs = $parallel['jobs'] ?? null;
+                if (is_int($jobs) || (is_string($jobs) && preg_match('/^\d+$/', $jobs) === 1)) {
+                    $command .= ' --jobs=' . (int)$jobs;
+                }
+            }
+        }
+
+        return $command;
+    }
+
+    private function buildPhpCsCommand(string $binary, ?string $target): string
+    {
+        $target = $this->requireGeneratedTarget($target, Tool::PHP_CS);
+
+        return escapeshellarg($binary) . ' --standard=' . escapeshellarg($target);
+    }
+
+    private function buildPhpMdCommand(string $binary, ?string $target): string
+    {
+        $target = $this->requireGeneratedTarget($target, Tool::PHP_MD);
+
         $paths = $this->loader->getAbsolutePaths('phpmd.paths');
         if ($paths === []) {
             throw new \RuntimeException('Missing required config: extra.linters.phpmd.paths');
         }
 
-        $format = $formatOverride ?? $this->requireString('phpmd.format');
+        $format = self::DEFAULT_PHP_MD_FORMAT;
 
         return escapeshellarg($binary)
             . ' ' . escapeshellarg(implode(',', $paths))
@@ -82,29 +130,50 @@ final readonly class ToolRunner
             . ' ' . escapeshellarg($target);
     }
 
-    private function resolveTarget(Tool $tool, ?string $targetOverride): string
+    private function buildRectorCommand(string $binary): string
     {
-        $target = $this->normalizeOverride($targetOverride);
-        if ($target !== null) {
-            return $target;
-        }
+        $configPath = $this->resolvePackageConfigPath(Tool::RECTOR);
 
-        return $this->requireString($tool->targetKey());
+        return escapeshellarg($binary)
+            . ' process --config=' . escapeshellarg($configPath)
+            . ' --clear-cache';
     }
 
-    private function resolveTemplate(Tool $tool, ?string $templateOverride): ?string
+    private function buildPhpCsFixerCommand(string $binary): string
     {
-        $template = $this->normalizeOverride($templateOverride);
-        if ($template !== null) {
-            return $template;
+        $configPath = $this->resolvePackageConfigPath(Tool::PHP_CS_FIXER);
+
+        return escapeshellarg($binary)
+            . ' fix --config=' . escapeshellarg($configPath)
+            . ' --allow-risky=yes';
+    }
+
+    private function buildComposerUnusedCommand(string $binary): string
+    {
+        $configPath = $this->resolvePackageConfigPath(Tool::COMPOSER_UNUSED);
+
+        return escapeshellarg($binary)
+            . ' --configuration=' . escapeshellarg($configPath);
+    }
+
+    private function resolveGeneratedTarget(Tool $tool): string
+    {
+        $relativePath = self::GENERATED_TARGETS[$tool->value] ?? null;
+        if ($relativePath === null) {
+            throw new \RuntimeException('Missing generated target mapping for ' . $tool->label());
         }
 
-        $configTemplate = $this->loader->get($tool->templateKey());
-        if (!is_string($configTemplate) || $configTemplate === '') {
-            return null;
+        return rtrim($this->loader->getComposerDir(), '/') . '/' . $relativePath;
+    }
+
+    private function resolvePackageConfigPath(Tool $tool): string
+    {
+        $relativePath = self::PACKAGE_CONFIGS[$tool->value] ?? null;
+        if ($relativePath === null) {
+            throw new \RuntimeException('Missing package config mapping for ' . $tool->label());
         }
 
-        return $configTemplate;
+        return rtrim(dirname(__DIR__, 2), '/') . '/' . $relativePath;
     }
 
     private function resolveBinary(string $binary): string
@@ -117,23 +186,13 @@ final readonly class ToolRunner
         return $path;
     }
 
-    private function requireString(string $key): string
+    private function requireGeneratedTarget(?string $target, Tool $tool): string
     {
-        $value = $this->loader->get($key);
-        if (!is_string($value) || $value === '') {
-            throw new \RuntimeException("Missing required config: extra.linters.{$key}");
+        if (!is_string($target) || $target === '') {
+            throw new \RuntimeException('Missing generated target for ' . $tool->label());
         }
 
-        return $value;
-    }
-
-    private function normalizeOverride(?string $value): ?string
-    {
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        return $value;
+        return $target;
     }
 
     private function runCommand(OutputInterface $output, string $label, string $command): int

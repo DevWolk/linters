@@ -92,6 +92,43 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame([], $paths);
     }
 
+    public function testGetReturnsFalseValues(): void
+    {
+        $this->createComposerJson([
+            'extra' => [
+                'linters' => [
+                    'phpstan' => [
+                        'paths' => ['/src'],
+                        'parallel' => false,
+                    ],
+                ],
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+
+        self::assertFalse($loader->get('phpstan.parallel', true));
+    }
+
+    public function testConstructorThrowsOnUnsupportedKeys(): void
+    {
+        $this->createComposerJson([
+            'extra' => [
+                'linters' => [
+                    'phpstan' => [
+                        'paths' => ['/src'],
+                        'level' => 8,
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unsupported config key: extra.linters.phpstan.level');
+
+        new ConfigurationLoader($this->testDir);
+    }
+
     public function testConstructorUsesCustomExtraKey(): void
     {
         $this->createComposerJson([

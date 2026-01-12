@@ -10,7 +10,6 @@ use Linters\Utils\ConfigurationLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class RunCommand extends Command
@@ -25,10 +24,7 @@ final class RunCommand extends Command
         $this
             ->setName('run')
             ->setDescription('Generate config and run a tool from extra.linters')
-            ->addArgument('tool', InputArgument::REQUIRED, $tools)
-            ->addOption('target', null, InputOption::VALUE_REQUIRED, 'Target output file')
-            ->addOption('config', null, InputOption::VALUE_REQUIRED, 'Template file to use')
-            ->addOption('format', null, InputOption::VALUE_REQUIRED, 'PHPMD output format');
+            ->addArgument('tool', InputArgument::REQUIRED, $tools);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -40,25 +36,10 @@ final class RunCommand extends Command
             $loader = new ConfigurationLoader();
             $runner = new ToolRunner($loader);
 
-            return $runner->run(
-                $tool,
-                $this->normalizeOption($input->getOption('target')),
-                $this->normalizeOption($input->getOption('config')),
-                $this->normalizeOption($input->getOption('format')),
-                $output
-            );
+            return $runner->run($tool, $output);
         } catch (\Throwable $exception) {
             $output->writeln('<error>' . $exception->getMessage() . '</error>');
             return Command::FAILURE;
         }
-    }
-
-    private function normalizeOption(mixed $value): ?string
-    {
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        return $value;
     }
 }

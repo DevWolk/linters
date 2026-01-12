@@ -29,80 +29,22 @@ final class PhpMdConfigGeneratorTest extends TestCase
         }
     }
 
-    public function testGenerateUsesCustomRulesetsAndExcludes(): void
+    public function testGenerateAddsExcludes(): void
     {
         $this->createComposerJson([
             'phpmd' => [
-                'rulesets' => ['codesize'],
                 'skip' => ['/vendor'],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpMdConfigGenerator($loader, $this->testDir . '/missing-template.xml');
+        $generator = new PhpMdConfigGenerator($loader);
         $targetPath = $this->testDir . '/phpmd.ruleset.xml';
 
         $generator->generate($targetPath);
 
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->load($targetPath);
-
-        $rules = $dom->getElementsByTagName('rule');
-        $ruleRefs = [];
-        foreach ($rules as $rule) {
-            $ruleRefs[] = $rule->getAttribute('ref');
-        }
-
-        $excludes = [];
-        foreach ($dom->getElementsByTagName('exclude-pattern') as $node) {
-            $excludes[] = $node->nodeValue;
-        }
-
-        self::assertContains('rulesets/codesize.xml', $ruleRefs);
-        self::assertContains($this->testDir . '/vendor', $excludes);
-    }
-
-    public function testGenerateAppliesRulesetsWhenTemplateProvided(): void
-    {
-        $this->createComposerJson([
-            'phpmd' => [
-                'rulesets' => ['cleancode', 'unusedcode'],
-                'skip' => ['/vendor'],
-            ],
-        ]);
-
-        $templatePath = $this->testDir . '/template.xml';
-        file_put_contents($templatePath, <<<'XML'
-<?xml version="1.0"?>
-<ruleset name="Template Rules"
-         xmlns="http://pmd.sf.net/ruleset/1.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd">
-    <description>Template</description>
-    <rule ref="rulesets/cleancode.xml">
-        <exclude name="StaticAccess"/>
-    </rule>
-    <rule ref="rulesets/design.xml/DepthOfInheritance"/>
-</ruleset>
-XML);
-
-        $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpMdConfigGenerator($loader, $templatePath);
-        $targetPath = $this->testDir . '/phpmd.ruleset.xml';
-
-        $generator->generate($targetPath);
-
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->load($targetPath);
-
-        $ruleRefs = [];
-        foreach ($dom->getElementsByTagName('rule') as $rule) {
-            $ruleRefs[] = $rule->getAttribute('ref');
-        }
-
-        self::assertContains('rulesets/cleancode.xml', $ruleRefs);
-        self::assertContains('rulesets/unusedcode.xml', $ruleRefs);
-        self::assertNotContains('rulesets/design.xml/DepthOfInheritance', $ruleRefs);
 
         $excludes = [];
         foreach ($dom->getElementsByTagName('exclude-pattern') as $node) {

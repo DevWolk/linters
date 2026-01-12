@@ -33,7 +33,7 @@ final class ToolRunnerTest extends TestCase
         }
     }
 
-    public function testGenerateUsesOverrideTarget(): void
+    public function testGenerateUsesDefaultTarget(): void
     {
         $this->createComposerJson([
             'phpstan' => [
@@ -44,25 +44,22 @@ final class ToolRunnerTest extends TestCase
         $loader = new ConfigurationLoader($this->testDir);
         $runner = new ToolRunner($loader);
 
-        $overrideTarget = $this->testDir . '/override.neon';
-        $target = $runner->generate(Tool::PHP_STAN, $overrideTarget, '/template.neon');
+        $target = $runner->generate(Tool::PHP_STAN);
+        $expectedTarget = $this->testDir . '/phpstan.neon';
 
-        self::assertSame($overrideTarget, $target);
-        self::assertFileExists($overrideTarget);
-        self::assertStringContainsString('/template.neon', file_get_contents($overrideTarget));
+        self::assertSame($expectedTarget, $target);
+        self::assertFileExists($expectedTarget);
+        self::assertStringContainsString('configs/phpstan.neon', file_get_contents($expectedTarget));
     }
 
-    public function testRunUsesFormatOverrideAndInvokesBinary(): void
+    public function testRunInvokesBinaryWithDefaultFormat(): void
     {
-        $targetPath = $this->testDir . '/phpmd.ruleset.xml';
         $logPath = $this->testDir . '/phpmd.log';
         $binaryPath = $this->testDir . '/vendor/bin/phpmd';
 
         $this->createComposerJson([
             'phpmd' => [
                 'paths' => ['/src', '/tests'],
-                'target' => $targetPath,
-                'format' => 'text',
             ],
         ]);
 
@@ -72,15 +69,16 @@ final class ToolRunnerTest extends TestCase
         $runner = new ToolRunner($loader);
         $output = new BufferedOutput();
 
-        $exitCode = $runner->run(Tool::PHP_MD, null, null, 'xml', $output);
+        $exitCode = $runner->run(Tool::PHP_MD, $output);
 
         self::assertSame(0, $exitCode);
         self::assertFileExists($logPath);
 
+        $targetPath = $this->testDir . '/phpmd.ruleset.xml';
         $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
         self::assertSame([
             $this->testDir . '/src,' . $this->testDir . '/tests',
-            'xml',
+            'text',
             $targetPath,
         ], $loggedArgs);
     }

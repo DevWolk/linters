@@ -35,7 +35,13 @@ class ConfigurationLoader
         $content = file_get_contents($this->composerDir . self::COMPOSER_FILE);
         $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
-        $this->config = $content['extra'][$this->extraKey] ?? [];
+        $config = $content['extra'][$this->extraKey] ?? [];
+
+        if (is_array($config) === false) {
+            throw new RuntimeException('extra.' . $this->extraKey . ' must be an object');
+        }
+
+        $this->config = $config;
     }
 
     /**
@@ -46,7 +52,7 @@ class ConfigurationLoader
         $explodedKeys = explode('.', $keys);
         $array = $this->config;
         foreach ($explodedKeys as $key) {
-            if (\is_array($array) && isset($array[$key])) {
+            if (\is_array($array) && array_key_exists($key, $array)) {
                 $array = $array[$key];
             } else {
                 return $default;
@@ -59,6 +65,10 @@ class ConfigurationLoader
     public function getAbsolutePaths(string $key, array $default = []): array
     {
         $paths = (array)$this->get($key, $default);
+        $paths = array_values(array_filter(
+            $paths,
+            static fn(mixed $path): bool => is_string($path) && $path !== ''
+        ));
         $root  = $this->getComposerDir();
 
         return array_map(

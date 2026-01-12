@@ -51,9 +51,7 @@
           "/vendor",
           "/storage",
           "/bootstrap/cache"
-        ],
-        "level": 8,
-        "target": "./phpstan.neon"
+        ]
       },
       "phpcs": {
         "paths": [
@@ -62,16 +60,13 @@
         ],
         "skip": [
           "/resources/views"
-        ],
-        "target": "./phpcs.xml"
+        ]
       },
       "phpmd": {
         "paths": [
           "/app"
         ],
-        "skip": [],
-        "target": "./phpmd.ruleset.xml",
-        "format": "text"
+        "skip": []
       },
       "composer-unused": {
         "named-filters": []

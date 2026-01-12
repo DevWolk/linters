@@ -40,7 +40,7 @@ final class PhpCsConfigGeneratorTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpCsConfigGenerator($loader, $this->testDir . '/missing-template.xml');
+        $generator = new PhpCsConfigGenerator($loader);
         $targetPath = $this->testDir . '/phpcs.xml';
 
         $generator->generate($targetPath);
@@ -72,7 +72,7 @@ final class PhpCsConfigGeneratorTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpCsConfigGenerator($loader, $this->testDir . '/missing-template.xml');
+        $generator = new PhpCsConfigGenerator($loader);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Missing required config: extra.linters.phpcs.paths');

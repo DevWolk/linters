@@ -10,21 +10,20 @@ use Linters\Utils\ConfigurationLoader;
  * Generator for PHPStan NEON configuration files
  *
  * This class generates phpstan.neon dynamically from:
- * - Base template or default configuration
+ * - Base template
  * - Paths from composer.json extra.linters.phpstan.paths
  * - Skip patterns from extra.linters.phpstan.skip
- * - Level from extra.linters.phpstan.level (default: 8)
  * - Baseline from extra.linters.phpstan.baseline
  */
 class PhpStanConfigGenerator
 {
     protected ConfigurationLoader $loader;
-    protected ?string $templatePath;
+    protected string $templatePath;
 
-    public function __construct(?ConfigurationLoader $loader = null, ?string $templatePath = null)
+    public function __construct(?ConfigurationLoader $loader = null)
     {
         $this->loader = $loader ?? new ConfigurationLoader();
-        $this->templatePath = $templatePath ?? __DIR__ . '/../../configs/phpstan.neon';
+        $this->templatePath = __DIR__ . '/../../configs/phpstan.neon';
     }
 
     /**
@@ -48,48 +47,26 @@ class PhpStanConfigGenerator
             throw new \RuntimeException('Missing required config: extra.linters.phpstan.paths');
         }
 
-        $config = [
-            'parameters' => [
-                'level' => $this->loader->get('phpstan.level', 8),
-                'paths' => $this->getRelativePaths($paths),
-            ],
-        ];
+        $config = [];
 
         // Add exclude paths if specified
         $excludePaths = $this->loader->getAbsolutePaths('phpstan.skip', []);
-        if (!empty($excludePaths)) {
-            $config['parameters']['excludePaths'] = $this->getRelativePaths($excludePaths);
+        $parameters = [
+            'paths' => $this->getRelativePaths($paths),
+        ];
+        if ($excludePaths !== []) {
+            $parameters['excludePaths'] = $this->getRelativePaths($excludePaths);
         }
 
-        $includes = [];
-        if ($this->templatePath) {
-            $includes[] = $this->templatePath;
-        }
+        $config['parameters'] = $parameters;
+        $includes[] = $this->templatePath;
 
-        // Add baseline if specified
         $baseline = $this->loader->get('phpstan.baseline');
         if ($baseline) {
             $includes[] = (string)$baseline;
         }
 
-        if ($includes !== []) {
-            $config['includes'] = $includes;
-        }
-
-        // Add strict rules configuration
-        $config['parameters']['strictRules'] = [
-            'allRules' => true,
-        ];
-
-        // Add additional checks
-        $config['parameters']['checkMissingIterableValueType'] = true;
-        $config['parameters']['checkGenericClassInNonGenericObjectType'] = true;
-
-        // Merge with custom configuration
-        $customConfig = $this->loader->get('phpstan.config', []);
-        if (!empty($customConfig)) {
-            $config = $this->arrayMergeRecursive($config, $customConfig);
-        }
+        $config['includes'] = $includes;
 
         return $config;
     }
@@ -177,23 +154,5 @@ class PhpStanConfigGenerator
         }
 
         return (string)$value;
-    }
-
-    /**
-     * Recursively merge arrays
-     */
-    protected function arrayMergeRecursive(array $array1, array $array2): array
-    {
-        $merged = $array1;
-
-        foreach ($array2 as $key => $value) {
-            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
-                $merged[$key] = $this->arrayMergeRecursive($merged[$key], $value);
-            } else {
-                $merged[$key] = $value;
-            }
-        }
-
-        return $merged;
     }
 }

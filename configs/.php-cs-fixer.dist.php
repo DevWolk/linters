@@ -12,11 +12,36 @@ use Linters\Utils\ConfigurationLoader;
 $isVSCodeRun = isset($_SERVER['VSCODE_AGENT_FOLDER']);
 $finder = [];
 $composerLoader = null;
+$parallelEnabled = false;
+$maxProcesses = null;
+$filesPerProcess = null;
+$timeout = null;
+
 if ($isVSCodeRun === false) {
     // Get settings from extra section of composer and provide access for them
     $composerLoader = new ConfigurationLoader();
-    $skipDirs = $composerLoader->getAbsolutePaths('php-cs-fixer.skip_dirs', []);
+    $skipDirs = $composerLoader->getAbsolutePaths('php-cs-fixer.skip_dirs');
     $skipFiles = $composerLoader->get('php-cs-fixer.skip_files', []);
+    $paths = $composerLoader->getAbsolutePaths('php-cs-fixer.paths');
+    if ($paths === []) {
+        throw new \RuntimeException('Missing required config: extra.linters.php-cs-fixer.paths');
+    }
+
+    $parallel = $composerLoader->get('php-cs-fixer.parallel', false);
+    if (is_bool($parallel)) {
+        $parallelEnabled = $parallel;
+    } elseif (is_array($parallel)) {
+        $parallelEnabled = $parallel['enabled'] ?? true;
+        if (is_int($parallel['max_processes'] ?? null) || is_string($parallel['max_processes'] ?? null)) {
+            $maxProcesses = (int)$parallel['max_processes'];
+        }
+        if (is_int($parallel['files_per_process'] ?? null) || is_string($parallel['files_per_process'] ?? null)) {
+            $filesPerProcess = (int)$parallel['files_per_process'];
+        }
+        if (is_int($parallel['timeout'] ?? null) || is_string($parallel['timeout'] ?? null)) {
+            $timeout = (int)$parallel['timeout'];
+        }
+    }
 
     if (is_array($skipFiles) === false) {
         $skipFiles = [$skipFiles];
@@ -48,7 +73,7 @@ if ($isVSCodeRun === false) {
         ->name('*.php')
         ->notName($notNames)
         ->exclude($skipDirs)
-        ->in($composerLoader->getAbsolutePaths('php-cs-fixer.paths'));
+        ->in($paths);
 
     if ($skipPaths !== []) {
         $finder->notPath($skipPaths);
@@ -57,8 +82,12 @@ if ($isVSCodeRun === false) {
 
 $config = new PhpCsFixer\Config();
 
-if ($composerLoader?->get('php-cs-fixer.parallel', false)) {
-    $config->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect());
+if ($parallelEnabled) {
+    $config->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect(
+        $filesPerProcess,
+        $timeout,
+        $maxProcesses,
+    ));
 }
 
 return $config

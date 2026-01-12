@@ -30,39 +30,28 @@ final class PhpStanConfigGeneratorTest extends TestCase
         }
     }
 
-    public function testGenerateWritesConfigurationWithIncludesAndCustomConfig(): void
+    public function testGenerateWritesConfigurationWithIncludesAndExcludes(): void
     {
         $this->createComposerJson([
             'phpstan' => [
                 'paths' => ['/src', '/tests'],
                 'skip' => ['/vendor'],
-                'level' => 7,
-                'baseline' => 'phpstan-baseline.neon',
-                'config' => [
-                    'parameters' => [
-                        'ignoreErrors' => ['#Call to deprecated#'],
-                    ],
-                ],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpStanConfigGenerator($loader, '/template.neon');
+        $generator = new PhpStanConfigGenerator($loader);
         $targetPath = $this->testDir . '/phpstan.neon';
 
         $generator->generate($targetPath);
 
         $contents = file_get_contents($targetPath);
-        self::assertStringContainsString('level: 7', $contents);
         self::assertStringContainsString("- src\n", $contents);
         self::assertStringContainsString("- tests\n", $contents);
         self::assertStringContainsString("excludePaths:\n", $contents);
         self::assertStringContainsString("- vendor\n", $contents);
         self::assertStringContainsString("includes:\n", $contents);
-        self::assertStringContainsString("- /template.neon\n", $contents);
-        self::assertStringContainsString("- phpstan-baseline.neon\n", $contents);
-        self::assertStringContainsString("ignoreErrors:\n", $contents);
-        self::assertStringContainsString("- '#Call to deprecated#'\n", $contents);
+        self::assertStringContainsString("configs/phpstan.neon\n", $contents);
         self::assertStringNotContainsString($this->testDir . '/src', $contents);
     }
 
@@ -70,12 +59,12 @@ final class PhpStanConfigGeneratorTest extends TestCase
     {
         $this->createComposerJson([
             'phpstan' => [
-                'level' => 8,
+                'skip' => ['/vendor'],
             ],
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
-        $generator = new PhpStanConfigGenerator($loader, null);
+        $generator = new PhpStanConfigGenerator($loader);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Missing required config: extra.linters.phpstan.paths');
