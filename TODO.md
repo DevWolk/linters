@@ -1,104 +1,36 @@
-# TODO: План улучшений devwolk/linters
+# TODO
 
-## Карта проекта (текущая логика)
-```
-bin/linters                    → Entrypoint (Symfony Console)
-src/Console/Application         → Регистрирует команды generate/run
-src/Console/Command/GenerateConfigCommand → Генерация конфигов для phpstan/phpcs/phpmd
-src/Console/Command/RunCommand  → Генерация (если нужна) + запуск любого tool
+## 1) Fix config validation and required keys
+- Problem: `ConfigValidation::optionalStringList()` calls `stringList()` with a wrong signature.
+- Plan:
+  1. Fix `ConfigValidation::optionalStringList()` to remove string $key.
+  2. Adjust tests
 
-ConfigurationLoader            → Читает extra.linters из composer.json
-    └── validateConfig: только ключи из Tool enum
+## 2) Enforce the "only 7 allowed config points" rule
+- Problem: unknown keys inside `extra.linters.<tool>` are silently ignored, which violates the "no extra knobs" requirement.
+- Plan:
+  1. This is not an issue for now. Do nothing.
 
-DTO
-    ├── ToolConfigInterface    → fromArray()
-    ├── BaseToolConfig         → paths/skipDirs/skipFiles/parallel/cacheDir/baseline
-    ├── ParallelConfig         → enabled/timeout/maxProcesses/filesPerProcess
-    ├── PhpStan/PhpCs/PhpMd/PhpCsFixer/RectorConfig (+ frameworks)
-    └── ComposerUnusedConfig   → namedFilters
+## 3) Align docs and examples with the actual schema
+- Problem: docs/examples/README still mention unsupported keys (`skip`, `level`, `target`, `format`, `rulesets`, `config`, `template`) and require leading `/` paths, which the code does not enforce.
+- Plan:
+  1. Update `docs/INSTALLATION.md`, `docs/CONFIGURATION.md`, `docs/PHPSTAN_GUIDE.md`, `docs/RECTOR_GUIDE.md`, `docs/TROUBLESHOOTING.md` to only show supported keys.
+  2. Replace `skip` with `skip_dirs`/`skip_files` everywhere.
+  3. Clarify that paths are used as-is (relative or absolute) and no normalization is applied.
+  4. Update example composer.json files and READMEs under `examples/` to match the real schema.
 
-ConfigGenerators
-    ├── PhpStanConfigGenerator → phpstan.neon (includes template + baseline + paths/excludes/tmpDir)
-    ├── PhpCsConfigGenerator   → phpcs.xml (file/exclude-pattern + cache)
-    └── PhpMdConfigGenerator   → phpmd.ruleset.xml (exclude-pattern)
+## 4) Finish Symfony framework preset handling
+- Problem: `src/Rector/Configs/Sets/symfony.php` is empty, but `symfony` is exposed as a framework option.
+- Plan:
+  1. Remove the `symfony` framework option from docs/README.
 
-configs/ (шаблоны и "живые" конфиги)
-    ├── phpstan.neon/phpcs.xml/phpmd.ruleset.xml → шаблоны
-    ├── rector.php → читает DTO + sets/skip/paths/parallel/cache
-    ├── .php-cs-fixer.dist.php → читает DTO + Finder/parallel/cache
-    └── composer-unused.php → читает DTO + named-filters
+## 5) Strengthen custom Rector rule tests
+- Problem: fixtures in `tests/Integration/Rector/.../Fixture/*.php.inc` only show the "after" state, so transformations are not actually verified.
+- Plan:
+  1. Convert fixtures to the standard Rector "before/after" format with `-----`.
+  2. Add at least one fixture that demonstrates each rule's actual transformation.
 
-ToolRunner                     → resolve binary + generate (если нужно) + запуск через passthru
-Tool enum                       → список инструментов + маппинг generatedTarget/packageConfigPath
-```
-
-## Логика выполнения (generate/run)
-- `bin/linters generate <tool>` → ToolRunner::generate → ConfigGenerator → файл в корне проекта
-- `bin/linters run <tool>` → generate (если нужно) → buildCommand (DTO + параметры) → запуск
-- Инструменты без генерации используют конфиги из `configs/` напрямую
-
-## Поддерживаемые инструменты (Tool enum)
-| Tool            | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks            | named-filters |
-|-----------------|-------|-----------|------------|----------|-----------|----------|-----------------------|---------------|
-| phpstan         | REQ   | OPT       | OPT        | OPT      | OPT       | OPT      | -                     | -             |
-| phpcs           | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -                     | -             |
-| phpmd           | REQ   | OPT       | OPT        | -        | -         | OPT      | -                     | -             |
-| rector          | REQ   | OPT       | OPT        | OPT      | OPT       | -        | OPT (laravel/symfony) | -             |
-| php-cs-fixer    | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -                     | -             |
-| composer-unused | -     | -         | -          | -        | -         | -        | -                     | OPT           |
-
-REQ = required, OPT = optional, - = not supported
-
-## Структура конфигурации extra.linters (целевая)
-```json
-{
-  "extra": {
-    "linters": {
-      "phpstan": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor", "storage"],
-        "skip_files": ["bootstrap/cache/packages.php"],
-        "parallel": true,
-        "cache_dir": ".cache/phpstan",
-        "baseline": "phpstan-baseline.neon"
-      },
-      "phpcs": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "parallel": 4,
-        "cache_dir": ".cache"
-      },
-      "phpmd": {
-        "paths": ["src"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "baseline": "phpmd-baseline.xml"
-      },
-      "rector": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "parallel": {
-          "enabled": true,
-          "timeout": 120,
-          "max_processes": 8,
-          "files_per_process": 20
-        },
-        "cache_dir": ".cache/rector",
-        "frameworks": ["laravel"]
-      },
-      "php-cs-fixer": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": ["*.blade.php"],
-        "parallel": true,
-        "cache_dir": ".cache"
-      },
-      "composer-unused": {
-        "named-filters": ["php", "ext-*"]
-      }
-    }
-  }
-}
-```
+## 6) Improve missing-tool config errors
+- Problem: `ConfigurationLoader::getToolConfig()` assumes the tool exists and can trigger PHP notices instead of a clear exception.
+- Plan:
+  1. This is not an issue for now. Cause is already handled in `\Linters\Utils\ConfigurationLoader::validateConfig` for the step when config is loaded in the constructor.
