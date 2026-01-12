@@ -79,9 +79,9 @@ passthru() → вывод и exit code
 
 | Tool            | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks | named-filters |
 |-----------------|:-----:|:---------:|:----------:|:--------:|:---------:|:--------:|:----------:|:-------------:|
-| rector          | REQ   | OPT       | OPT        | OPT*     | OPT       | -        | OPT        | -             |
-| php-cs-fixer    | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -          | -             |
-| phpstan         | REQ   | OPT       | OPT        | OPT      | OPT       | OPT      | -          | -             |
+| rector          |  REQ  | OPT       | OPT        | OPT*     | OPT       | -        | OPT        | -             |
+| php-cs-fixer    |  REQ  | OPT       | OPT        | OPT      | OPT       | -        | -          | -             |
+| phpstan         |  REQ  | OPT       | OPT        | OPT      | OPT       | OPT      | -          | -             |
 | phpcs           | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -          | -             |
 | phpmd           | REQ   | OPT       | OPT        | -        | -         | OPT      | -          | -             |
 | composer-unused | -     | -         | -          | -        | -         | -        | -          | OPT           |
@@ -125,33 +125,3 @@ REQ = required, OPT = optional, - = not supported
 ```
 
 Файл `symfony.php` оставлен пустым. Для Symfony-проектов Rector автоматически определяет пакеты через `withComposerBased()`.
-
----
-
-## Соответствие первоначальной задаче
-
-Проект **полностью соответствует** требованиям:
-
-**Разрешённая конфигурация (только 7 точек):**
-- [x] Директории и файлы для включения (paths)
-- [x] Директории и файлы для исключения (skip_dirs, skip_files)
-- [x] Фреймворк для пресетов (rector.frameworks) — только Laravel работает, Symfony deprecated
-- [x] Baseline файл (phpstan.baseline, phpmd.baseline)
-- [x] Cache directory (cache_dir)
-- [x] Параллельность (parallel)
-- [x] Named filters для composer-unused (named-filters)
-
-**Правила линтеров НЕ конфигурируются пользователями:**
-- [x] Все правила зашиты в configs/
-- [x] Кастомные Rector rules встроены в библиотеку
-- [x] Неизвестные ключи игнорируются (не применяются)
-
----
-
-## Выполненные задачи
-
-- [x] Исправлен баг в `ConfigValidation::stringList()` — unset не работал, заменено на array_filter
-- [x] Консолидирована документация в README.md
-- [x] Обновлены примеры в examples/
-- [x] Удалены избыточные файлы документации из docs/
-- [x] Обновлён CLAUDE.md
