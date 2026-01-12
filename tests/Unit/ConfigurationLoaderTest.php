@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit;
 
+use JsonException;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
@@ -58,6 +59,9 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame(['app', 'src'], $loader->get('rector.paths'));
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testGetReturnsPathsAsConfigured(): void
     {
         $this->createComposerJson([
@@ -79,6 +83,9 @@ final class ConfigurationLoaderTest extends TestCase
         ], $paths);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testGetReturnsDefaultArrayWhenKeyNotFound(): void
     {
         $this->createComposerJson([]);
@@ -89,6 +96,9 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame([], $paths);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testGetReturnsPathsWithoutNormalization(): void
     {
         $this->createComposerJson([
@@ -110,6 +120,9 @@ final class ConfigurationLoaderTest extends TestCase
         ], $paths);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testGetReturnsFalseValues(): void
     {
         $this->createComposerJson([
@@ -162,6 +175,9 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame(['src'], $loader->get('phpstan.paths'));
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testConstructorUsesCustomExtraKey(): void
     {
         $this->createComposerJson([
@@ -179,9 +195,12 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame('test', $loader->get('tool.value'));
     }
 
+    /**
+     * @throws JsonException
+     */
     private function createComposerJson(array $content): void
     {
-        $json = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $json = json_encode($content, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents($this->testDir . '/composer.json', $json);
     }
 }

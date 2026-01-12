@@ -115,8 +115,9 @@ For large projects, migrate in stages:
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app/Services"],
-        "skip": []
+        "paths": ["app/Services"],
+        "skip_dirs": [],
+        "skip_files": []
       }
     }
   }
@@ -281,11 +282,7 @@ public function __construct(
 
 ### 1. Use Parallel Processing
 
-Rector runs in parallel by default (configured in `rector.php`):
-
-```php
-->withParallel(360, 2, 40)
-```
+Rector parallel behavior is controlled via `extra.linters.rector.parallel` (bool, int, or object).
 
 ### 2. Limit Scope
 
@@ -296,8 +293,9 @@ Process only what's necessary:
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app/Http/Controllers"],
-        "skip": ["/app/Legacy"]
+        "paths": ["app/Http/Controllers"],
+        "skip_dirs": ["app/Legacy"],
+        "skip_files": []
       }
     }
   }

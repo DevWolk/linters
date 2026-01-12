@@ -27,13 +27,13 @@ final class ConfigValidation
     /**
      * @return string[]
      */
-    public static function optionalStringList(mixed $value, string $key): array
+    public static function optionalStringList(mixed $value): array
     {
         if ($value === null) {
             return [];
         }
 
-        return self::stringList($value, $key);
+        return self::stringList($value);
     }
 
     public static function optionalRelativePath(mixed $value, string $key): ?string
@@ -54,7 +54,7 @@ final class ConfigValidation
      */
     public static function normalizeFrameworks(mixed $frameworks): array
     {
-        $list = self::optionalStringList($frameworks, 'extra.linters.rector.frameworks');
+        $list = self::optionalStringList($frameworks);
         $list = array_map(
             static fn(string $framework): string => strtolower($framework),
             $list

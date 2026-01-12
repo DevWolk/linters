@@ -13,29 +13,31 @@
     "linters": {
       "rector": {
         "paths": [
-          "/app",
-          "/config",
-          "/database",
-          "/routes",
-          "/tests"
+          "app",
+          "config",
+          "database",
+          "routes",
+          "tests"
         ],
-        "skip": [
-          "/app/Http/Middleware/TrustProxies.php",
-          "/app/Http/Middleware/TrustHosts.php",
-          "/bootstrap",
-          "/storage"
+        "skip_dirs": [
+          "bootstrap",
+          "storage"
+        ],
+        "skip_files": [
+          "app/Http/Middleware/TrustProxies.php",
+          "app/Http/Middleware/TrustHosts.php"
         ],
         "frameworks": "laravel"
       },
       "php-cs-fixer": {
         "paths": [
-          "/app",
-          "/config",
-          "/database",
-          "/routes"
+          "app",
+          "config",
+          "database",
+          "routes"
         ],
         "skip_dirs": [
-          "/resources/views"
+          "resources/views"
         ],
         "skip_files": [
           "*.generated.php"
@@ -44,29 +46,32 @@
       },
       "phpstan": {
         "paths": [
-          "/app",
-          "/tests"
+          "app",
+          "tests"
         ],
-        "skip": [
-          "/vendor",
-          "/storage",
-          "/bootstrap/cache"
-        ]
+        "skip_dirs": [
+          "vendor",
+          "storage",
+          "bootstrap/cache"
+        ],
+        "skip_files": []
       },
       "phpcs": {
         "paths": [
-          "/app",
-          "/config"
+          "app",
+          "config"
         ],
-        "skip": [
-          "/resources/views"
-        ]
+        "skip_dirs": [
+          "resources/views"
+        ],
+        "skip_files": []
       },
       "phpmd": {
         "paths": [
-          "/app"
+          "app"
         ],
-        "skip": []
+        "skip_dirs": [],
+        "skip_files": []
       },
       "composer-unused": {
         "named-filters": []

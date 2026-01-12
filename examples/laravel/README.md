@@ -28,9 +28,9 @@ Copy the `composer.json` configuration from this example to your Laravel project
 
 3. **Blade templates**: Exclude the views directory for tools that scan PHP files
    ```json
-   "skip": ["/resources/views"]
+   "skip_dirs": ["resources/views"]
    ```
-   For PHP-CS-Fixer, use `php-cs-fixer.skip_dirs` if you want to exclude directories beyond the default.
+   Use `skip_dirs` for any tool that should ignore Blade templates.
 
 ## Usage
 
@@ -172,7 +172,7 @@ composer phpstan-baseline
 
 ### Issue: Blade syntax errors
 
-**Solution**: Exclude `/resources/views` in `skip` for PHPCS/PHPMD. PHP-CS-Fixer already ignores `*.blade.php` by default.
+**Solution**: Exclude `resources/views` in `skip_dirs` for PHPCS/PHPMD. PHP-CS-Fixer already ignores `*.blade.php` by default.
 
 ## Learn More
 

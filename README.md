@@ -8,7 +8,7 @@ Centralized PHP linter configurations and static analysis tools for PHP projects
 - Templates for every check live under `configs/`
 - No project-specific paths or defaults inside the package
 - All settings come from `extra.linters` in the consuming `composer.json`
-- Framework flexibility via `rector.frameworks` and tool-specific `*.config`
+- Framework flexibility via `rector.frameworks`
 
 ## Current Status (Snapshot)
 
@@ -127,7 +127,7 @@ Framework-specific Rector rules are controlled by `rector.frameworks`:
   "extra": {
     "linters": {
       "rector": {
-        "frameworks": ["laravel", "symfony"]
+        "frameworks": ["laravel"]
       }
     }
   }

@@ -21,7 +21,7 @@ final readonly class ComposerUnusedConfig implements ToolConfigInterface
 
     public static function fromArray(array $config): self
     {
-        $filters = ConfigValidation::optionalStringList($config['named-filters'] ?? null, 'extra.linters.composer-unused.named-filters');
+        $filters = ConfigValidation::optionalStringList($config['named-filters'] ?? null);
 
         return new self($filters);
     }

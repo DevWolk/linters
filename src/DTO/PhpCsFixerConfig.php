@@ -23,8 +23,8 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
             throw new InvalidArgumentException('Missing required config: extra.linters.php-cs-fixer.paths');
         }
 
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null, 'extra.linters.php-cs-fixer.skip_dirs');
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null, 'extra.linters.php-cs-fixer.skip_files');
+        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
         $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.php-cs-fixer.cache_dir');
 

@@ -43,6 +43,7 @@ PHPStan has 10 levels (0-9):
 | 9/max | Maximum strictness | Strict projects |
 
 **Recommended**: Start at level 6, aim for level 8.
+The package template sets the level to 8 and it is not configurable via `extra.linters`.
 
 ## Configuration
 
@@ -53,11 +54,12 @@ Configure in `composer.json`:
   "extra": {
     "linters": {
       "phpstan": {
-        "paths": ["/app", "/src"],
-        "skip": ["/vendor"],
-        "level": 8,
+        "paths": ["app", "src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": [],
         "baseline": "phpstan-baseline.neon",
-        "target": "./phpstan.neon"
+        "cache_dir": ".cache/phpstan",
+        "parallel": true
       }
     }
   }
@@ -66,26 +68,6 @@ Configure in `composer.json`:
 
 The `phpstan.neon` file is generated from `extra.linters.phpstan` on each run; avoid editing it manually.
 Ensure `paths` is set in `extra.linters.phpstan` (it's required).
-
-Additional PHPStan settings can be merged via `extra.linters.phpstan.config`:
-
-```json
-{
-  "extra": {
-    "linters": {
-      "phpstan": {
-        "config": {
-          "parameters": {
-            "ignoreErrors": [
-              "#Call to deprecated#"
-            ]
-          }
-        }
-      }
-    }
-  }
-}
-```
 
 ## Common Errors and Solutions
 
@@ -244,7 +226,7 @@ PHPStan caches results automatically. Clear when needed:
 
 ### 3. Parallel Processing
 
-Parallel processing is available; enable it via the PHPStan CLI flag (e.g., `--parallel`) if desired.
+Parallel processing is available; enable it via `extra.linters.phpstan.parallel` (bool, int, or object).
 
 ## CI/CD Integration
 
@@ -265,8 +247,8 @@ phpstan:
 
 ## Best Practices
 
-1. **Start with lower level**, gradually increase
-2. **Use baseline** for existing projects
+1. **Start with a baseline** for existing projects and reduce it over time
+2. **Limit scope early**, then expand `paths` gradually
 3. **Fix errors immediately** in new code
 4. **Run in CI/CD** to prevent regressions
 5. **Don't ignore errors** unless absolutely necessary

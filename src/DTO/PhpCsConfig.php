@@ -18,8 +18,8 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
             throw new InvalidArgumentException('Missing required config: extra.linters.phpcs.paths');
         }
 
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null, 'extra.linters.phpcs.skip_dirs');
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null, 'extra.linters.phpcs.skip_files');
+        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
         $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.phpcs.cache_dir');
 

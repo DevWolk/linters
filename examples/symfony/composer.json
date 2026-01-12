@@ -13,22 +13,24 @@
     "linters": {
       "rector": {
         "paths": [
-          "/src",
-          "/tests"
+          "src",
+          "tests"
         ],
-        "skip": [
-          "/src/Kernel.php",
-          "/var",
-          "/vendor"
+        "skip_dirs": [
+          "var",
+          "vendor"
+        ],
+        "skip_files": [
+          "src/Kernel.php"
         ],
         "frameworks": "symfony"
       },
       "php-cs-fixer": {
         "paths": [
-          "/src"
+          "src"
         ],
         "skip_dirs": [
-          "/templates"
+          "templates"
         ],
         "skip_files": [
           "*.generated.php"
@@ -37,27 +39,30 @@
       },
       "phpstan": {
         "paths": [
-          "/src",
-          "/tests"
+          "src",
+          "tests"
         ],
-        "skip": [
-          "/vendor",
-          "/var"
-        ]
+        "skip_dirs": [
+          "vendor",
+          "var"
+        ],
+        "skip_files": []
       },
       "phpcs": {
         "paths": [
-          "/src"
+          "src"
         ],
-        "skip": [
-          "/templates"
-        ]
+        "skip_dirs": [
+          "templates"
+        ],
+        "skip_files": []
       },
       "phpmd": {
         "paths": [
-          "/src"
+          "src"
         ],
-        "skip": []
+        "skip_dirs": [],
+        "skip_files": []
       },
       "composer-unused": {
         "named-filters": []

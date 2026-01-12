@@ -25,9 +25,9 @@ Copy the `composer.json` configuration from this example to your Symfony project
 
 3. **Twig templates**: Exclude the templates directory for tools that scan PHP files
    ```json
-   "skip": ["/templates"]
+   "skip_dirs": ["templates"]
    ```
-   For PHP-CS-Fixer, use `php-cs-fixer.skip_dirs` when you need directory-level exclusions.
+   Use `skip_dirs` when you need directory-level exclusions.
 
 ## Usage
 
@@ -200,18 +200,19 @@ lint:
 
 ### Issue: Rector suggests changes to Kernel
 
-**Solution**: Kernel.php is already in skip list. If you see suggestions, they're usually safe but review carefully.
+**Solution**: Kernel.php is already in `skip_files`. If you see suggestions, they're usually safe but review carefully.
 
 ### Issue: PHPStan errors in generated code
 
-**Solution**: Add generated directories to skip:
+**Solution**: Add generated directories to `skip_dirs`:
 
 ```json
 {
   "extra": {
     "linters": {
       "phpstan": {
-        "skip": ["/vendor", "/var", "/src/Generated"]
+        "skip_dirs": ["vendor", "var", "src/Generated"],
+        "skip_files": []
       }
     }
   }
@@ -220,7 +221,7 @@ lint:
 
 ### Issue: Twig syntax errors
 
-**Solution**: Exclude `/templates` in `skip` for PHPCS/PHPMD (and any PHP-only tools).
+**Solution**: Exclude `templates` in `skip_dirs` for PHPCS/PHPMD (and any PHP-only tools).
 
 ## Additional Tools for Symfony
 

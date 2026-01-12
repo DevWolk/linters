@@ -38,8 +38,8 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
             throw new InvalidArgumentException('Missing required config: extra.linters.rector.paths');
         }
 
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null, 'extra.linters.rector.skip_dirs');
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null, 'extra.linters.rector.skip_files');
+        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null, true);
         $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.rector.cache_dir');
         $frameworks = ConfigValidation::normalizeFrameworks($config['frameworks'] ?? null);

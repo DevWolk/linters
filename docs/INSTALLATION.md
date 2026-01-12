@@ -31,33 +31,48 @@ Add the `extra.linters` configuration to your `composer.json`:
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app", "/src", "/tests"],
-        "skip": ["/vendor", "/storage"],
+        "paths": ["app", "src", "tests"],
+        "skip_dirs": ["vendor", "storage"],
+        "skip_files": ["app/Http/Middleware/TrustProxies.php"],
         "frameworks": "laravel",
-        "cache_dir": "./var/rector-cache"
+        "cache_dir": ".cache/rector",
+        "parallel": {
+          "enabled": true,
+          "timeout": 120,
+          "max_processes": 4,
+          "files_per_process": 20
+        }
       },
       "php-cs-fixer": {
-        "paths": ["/app", "/src"],
-        "skip_dirs": ["/resources/views"],
+        "paths": ["app", "src"],
+        "skip_dirs": ["resources/views"],
         "skip_files": ["*.generated.php"],
-        "parallel": true
+        "parallel": true,
+        "cache_dir": ".cache/php-cs-fixer"
       },
       "phpstan": {
-        "paths": ["/app", "/src"],
-        "skip": ["/vendor"],
-        "level": 8,
-        "target": "./phpstan.neon"
+        "paths": ["app", "src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": [],
+        "baseline": "phpstan-baseline.neon",
+        "cache_dir": ".cache/phpstan",
+        "parallel": {
+          "enabled": true,
+          "max_processes": 4
+        }
       },
       "phpcs": {
-        "paths": ["/app", "/src"],
-        "skip": [],
-        "target": "./phpcs.xml"
+        "paths": ["app", "src"],
+        "skip_dirs": [],
+        "skip_files": [],
+        "cache_dir": ".cache/phpcs",
+        "parallel": 4
       },
       "phpmd": {
-        "paths": ["/app", "/src"],
-        "skip": [],
-        "target": "./phpmd.ruleset.xml",
-        "format": "text"
+        "paths": ["app", "src"],
+        "skip_dirs": [],
+        "skip_files": [],
+        "baseline": "phpmd-baseline.xml"
       },
       "composer-unused": {
         "named-filters": []
@@ -69,17 +84,15 @@ Add the `extra.linters` configuration to your `composer.json`:
 
 ### Configuration Explanation
 
-- **frameworks**: Optional list/map enabling Rector presets. Examples: `["laravel"]`, `"symfony"`, or `{"laravel": true, "symfony": true}`.
-- **cache_dir**: Optional cache directory for Rector.
+All paths and patterns are used as-is (relative or absolute).
 
-- **paths**: Directories to analyze (must start with `/`, relative to project root)
-- **skip**: Paths to exclude for tools like Rector/PHPStan/PHPCS/PHPMD (must start with `/`)
-- **skip_dirs**: Directories to exclude for PHP-CS-Fixer (must start with `/`)
-- **skip_files**: File name globs or path patterns to exclude for PHP-CS-Fixer
-- **parallel**: (PHP-CS-Fixer only) Enable parallel runner
-- **level**: (PHPStan only) Analysis strictness level (0-9 or 'max')
-- **target**: Output file for generated configs (phpstan/phpcs/phpmd)
-- **format**: (PHPMD only) Output format passed to phpmd (text, xml, html)
+- **paths**: Directories/files to analyze (required for all analyzers)
+- **skip_dirs**: Directories to exclude
+- **skip_files**: File globs or path patterns to exclude
+- **frameworks**: Optional Rector presets list or string (for example: `"laravel"` or `["laravel"]`)
+- **baseline**: Optional baseline file for tools that support it (PHPStan, PHPMD)
+- **cache_dir**: Optional cache directory for tools that support it
+- **parallel**: Optional parallel config (bool, int, or object with `enabled`, `timeout`, `max_processes`, `files_per_process`)
 - **named-filters**: (composer-unused only) Package names to ignore
 
 ## Step 3: Add Composer Scripts

@@ -17,6 +17,7 @@ Complete guide for configuring `devwolk/linters` in your project.
 ## Overview
 
 All tools are configured through the `extra.linters` section in your project's `composer.json`. This centralized approach ensures consistency and simplifies maintenance.
+Paths and patterns are used as-is (relative or absolute).
 
 ## Configuration Structure
 
@@ -27,9 +28,9 @@ The basic structure for `extra.linters`:
   "extra": {
     "linters": {
       "tool-name": {
-        "paths": ["/path/to/analyze"],
-        "skip": ["/path/to/exclude"],
-        "additional-settings": "value"
+        "paths": ["src"],
+        "skip_dirs": ["vendor"],
+        "skip_files": ["*.generated.php"]
       }
     }
   }
@@ -45,9 +46,10 @@ The basic structure for `extra.linters`:
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app", "/src", "/tests"],
-        "skip": ["/app/legacy", "/vendor"],
-        "cache_dir": "./var/rector-cache"
+        "paths": ["app", "src", "tests"],
+        "skip_dirs": ["app/legacy", "vendor"],
+        "skip_files": [],
+        "cache_dir": ".cache/rector"
       }
     }
   }
@@ -56,14 +58,16 @@ The basic structure for `extra.linters`:
 
 ### Available Options
 
-- **paths** (array): Directories to process
-- **skip** (array): Paths to exclude from processing
-- **frameworks** (array|string|map): Enable framework presets (`laravel`, `symfony`)
+- **paths** (array): Directories/files to process
+- **skip_dirs** (array): Directories to exclude from processing
+- **skip_files** (array): File globs or path patterns to exclude
+- **frameworks** (array|string): Enable framework presets (for example: `laravel`)
+- **parallel** (bool|int|object): Enable parallel mode (`true`, `4`, or object with `enabled`, `timeout`, `max_processes`, `files_per_process`)
 - **cache_dir** (string): Optional cache directory for Rector
 
 ### Framework Presets
 
-Use `rector.frameworks` to load framework-specific rule sets in one of these formats:
+Use `rector.frameworks` to load framework-specific rule sets as a string or array:
 
 **String**
 ```json
@@ -91,22 +95,6 @@ Use `rector.frameworks` to load framework-specific rule sets in one of these for
 }
 ```
 
-**Map**
-```json
-{
-  "extra": {
-    "linters": {
-      "rector": {
-        "frameworks": {
-          "laravel": true,
-          "symfony": true
-        }
-      }
-    }
-  }
-}
-```
-
 ### Laravel Projects
 
 ```json
@@ -114,12 +102,9 @@ Use `rector.frameworks` to load framework-specific rule sets in one of these for
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app", "/config", "/database", "/tests"],
-        "skip": [
-          "/app/Http/Middleware/TrustProxies.php",
-          "/bootstrap",
-          "/storage"
-        ]
+        "paths": ["app", "config", "database", "tests"],
+        "skip_dirs": ["bootstrap", "storage"],
+        "skip_files": ["app/Http/Middleware/TrustProxies.php"]
       }
     }
   }
@@ -133,8 +118,9 @@ Use `rector.frameworks` to load framework-specific rule sets in one of these for
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/src", "/tests"],
-        "skip": ["/src/Kernel.php", "/var", "/vendor"]
+        "paths": ["src", "tests"],
+        "skip_dirs": ["var", "vendor"],
+        "skip_files": ["src/Kernel.php"]
       }
     }
   }
@@ -150,8 +136,8 @@ Use `rector.frameworks` to load framework-specific rule sets in one of these for
   "extra": {
     "linters": {
       "php-cs-fixer": {
-        "paths": ["/app", "/src"],
-        "skip_dirs": ["/resources/views", "/templates"],
+        "paths": ["app", "src"],
+        "skip_dirs": ["resources/views", "templates"],
         "skip_files": ["*.generated.php"]
       }
     }
@@ -161,10 +147,11 @@ Use `rector.frameworks` to load framework-specific rule sets in one of these for
 
 ### Available Options
 
-- **paths** (array): Directories to analyze (must start with `/`)
-- **skip_dirs** (array): Directories to exclude (must start with `/`)
+- **paths** (array): Directories/files to analyze
+- **skip_dirs** (array): Directories to exclude
 - **skip_files** (array): File name globs or path patterns to exclude
-- **parallel** (bool): Enable PHP-CS-Fixer parallel mode
+- **parallel** (bool|int|object): Enable parallel mode (`true`, `4`, or object with `enabled`, `timeout`, `max_processes`, `files_per_process`)
+- **cache_dir** (string): Optional cache directory
 
 Note: the bundled PHP-CS-Fixer config already ignores `*.blade.php` by filename.
 If a `skip_files` entry contains `/`, it is treated as a path pattern relative to the project root.
@@ -176,8 +163,8 @@ If a `skip_files` entry contains `/`, it is treated as a path pattern relative t
   "extra": {
     "linters": {
       "php-cs-fixer": {
-        "paths": ["/app", "/config", "/database"],
-        "skip_dirs": ["/resources/views", "/storage"],
+        "paths": ["app", "config", "database"],
+        "skip_dirs": ["resources/views", "storage"],
         "skip_files": ["*.generated.php"]
       }
     }
@@ -194,10 +181,12 @@ If a `skip_files` entry contains `/`, it is treated as a path pattern relative t
   "extra": {
     "linters": {
       "phpstan": {
-        "paths": ["/app", "/src"],
-        "skip": ["/vendor", "/tests"],
-        "level": 8,
-        "target": "./phpstan.neon"
+        "paths": ["app", "src"],
+        "skip_dirs": ["vendor", "tests"],
+        "skip_files": [],
+        "baseline": "phpstan-baseline.neon",
+        "cache_dir": ".cache/phpstan",
+        "parallel": true
       }
     }
   }
@@ -206,23 +195,12 @@ If a `skip_files` entry contains `/`, it is treated as a path pattern relative t
 
 ### Available Options
 
-- **paths** (array, required): Directories to analyze
-- **skip** (array): Paths to exclude
-- **level** (int|string): Analysis level (0-9 or 'max')
+- **paths** (array, required): Directories/files to analyze
+- **skip_dirs** (array): Directories to exclude
+- **skip_files** (array): File globs or path patterns to exclude
 - **baseline** (string): Path to baseline file (optional)
-- **config** (object): Additional configuration merged into the generated NEON
-- **target** (string): Output file for `linters generate phpstan` or `linters run phpstan`
-- **template** (string): Template file for `linters generate phpstan`
-
-### Analysis Levels
-
-| Level | Description |
-|-------|-------------|
-| 0 | Basic checks only |
-| 1-4 | Gradually stricter rules |
-| 5-7 | Production-ready strictness |
-| 8 | Recommended for new projects |
-| 9/max | Maximum strictness |
+- **cache_dir** (string): Optional cache directory
+- **parallel** (bool|int|object): Enable parallel mode (`true`, `4`, or object with `enabled`, `timeout`, `max_processes`, `files_per_process`)
 
 ### Using Baseline
 
@@ -233,10 +211,8 @@ For existing projects with many errors:
   "extra": {
     "linters": {
       "phpstan": {
-        "paths": ["/app"],
-        "level": 8,
-        "baseline": "phpstan-baseline.neon",
-        "target": "./phpstan.neon"
+        "paths": ["app"],
+        "baseline": "phpstan-baseline.neon"
       }
     }
   }
@@ -257,9 +233,11 @@ composer phpstan-baseline
   "extra": {
     "linters": {
       "phpcs": {
-        "paths": ["/app", "/src"],
-        "skip": [],
-        "target": "./phpcs.xml"
+        "paths": ["app", "src"],
+        "skip_dirs": [],
+        "skip_files": [],
+        "cache_dir": ".cache/phpcs",
+        "parallel": 4
       }
     }
   }
@@ -268,10 +246,11 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array, required): Directories to check (must start with `/`)
-- **skip** (array): Paths/patterns to exclude (must start with `/`)
-- **target** (string): Output file for `linters generate phpcs` or `linters run phpcs`
-- **template** (string): Template file for `linters generate phpcs`
+- **paths** (array, required): Directories/files to check
+- **skip_dirs** (array): Directories to exclude
+- **skip_files** (array): File globs or path patterns to exclude
+- **cache_dir** (string): Optional cache directory
+- **parallel** (bool|int|object): Enable parallel mode (`true`, `4`, or object with `enabled`, `timeout`, `max_processes`, `files_per_process`)
 
 ## PHPMD Configuration
 
@@ -282,10 +261,10 @@ composer phpstan-baseline
   "extra": {
     "linters": {
       "phpmd": {
-        "paths": ["/app", "/src"],
-        "skip": [],
-        "target": "./phpmd.ruleset.xml",
-        "format": "text"
+        "paths": ["app", "src"],
+        "skip_dirs": [],
+        "skip_files": [],
+        "baseline": "phpmd-baseline.xml"
       }
     }
   }
@@ -294,16 +273,10 @@ composer phpstan-baseline
 
 ### Available Options
 
-- **paths** (array, required): Directories to analyze (must start with `/`)
-- **skip** (array): Paths to exclude (must start with `/`)
-- **rulesets** (array): Select ruleset categories (filters template entries and adds missing ones)
-- **format** (string): Output format passed to phpmd (text, xml, html)
-- **target** (string): Output file for `linters generate phpmd` or `linters run phpmd`
-- **template** (string): Template file for `linters generate phpmd`
-
-Note: when a template is used (default), `phpmd.rulesets` filters ruleset categories
-inside the template and adds any missing ones. Use `phpmd.template` (or `--config`)
-if you need full control over the XML.
+- **paths** (array, required): Directories/files to analyze
+- **skip_dirs** (array): Directories to exclude
+- **skip_files** (array): File globs or path patterns to exclude
+- **baseline** (string): Path to baseline file (optional)
 
 ## Composer-unused Configuration
 
@@ -339,9 +312,8 @@ Use different configurations for development and CI:
   "extra": {
     "linters": {
       "phpstan": {
-        "paths": ["/app"],
-        "level": 6,
-        "target": "./phpstan.neon"
+        "paths": ["src"],
+        "baseline": "phpstan-baseline.neon"
       }
     }
   }
@@ -354,29 +326,7 @@ Use different configurations for development and CI:
   "extra": {
     "linters": {
       "phpstan": {
-        "level": 8
-      }
-    }
-  }
-}
-```
-
-### Extending Base Configurations
-
-Use `extra.linters.phpstan.config` to merge additional PHPStan settings:
-
-```json
-{
-  "extra": {
-    "linters": {
-      "phpstan": {
-        "config": {
-          "parameters": {
-            "ignoreErrors": [
-              "#Call to deprecated#"
-            ]
-          }
-        }
+        "paths": ["src", "tests"]
       }
     }
   }
@@ -389,7 +339,7 @@ Analyze different directories with different settings by running commands multip
 
 ## Default Values
 
-No implicit defaults are applied for `*.paths`, `*.target`, or `phpmd.format`.
+No implicit defaults are applied; required keys like `paths` must be provided.
 
 ## Configuration Examples
 
@@ -401,11 +351,12 @@ No implicit defaults are applied for `*.paths`, `*.target`, or `phpmd.format`.
     "linters": {
       "rector": {
         "paths": [
-          "/packages/core/src",
-          "/packages/api/src",
-          "/packages/web/src"
+          "packages/core/src",
+          "packages/api/src",
+          "packages/web/src"
         ],
-        "skip": ["/packages/*/vendor"]
+        "skip_dirs": ["packages/*/vendor"],
+        "skip_files": []
       }
     }
   }
@@ -421,14 +372,13 @@ Start with low strictness and gradually increase:
   "extra": {
     "linters": {
       "phpstan": {
-        "paths": ["/app"],
-        "level": 4,
-        "baseline": "phpstan-baseline.neon",
-        "target": "./phpstan.neon"
+        "paths": ["app"],
+        "baseline": "phpstan-baseline.neon"
       },
       "rector": {
-        "paths": ["/app/Services"],
-        "skip": ["/app/Legacy"]
+        "paths": ["app/Services"],
+        "skip_dirs": ["app/Legacy"],
+        "skip_files": []
       }
     }
   }
@@ -442,13 +392,10 @@ Start with low strictness and gradually increase:
 Ensure:
 1. Configuration is in root `composer.json`
 2. JSON syntax is valid
-3. Paths start with `/` (e.g., `/src` not `src`)
+3. Paths and patterns match your project layout (they are used as-is)
 
 ### Paths Not Found
 
-Use absolute paths from project root:
-- ✅ `/app/Models`
-- ❌ `app/Models`
-- ❌ `./app/Models`
+Paths are not normalized. Use the exact paths or globs you want the tools to receive.
 
 For more help, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).

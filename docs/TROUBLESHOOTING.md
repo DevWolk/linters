@@ -54,7 +54,7 @@ Fatal error: Allowed memory size exhausted
 Path "/app" does not exist
 ```
 
-**Cause**: Paths must be absolute from project root with leading slash.
+**Cause**: The configured path does not match your project layout.
 
 **Solution:**
 ```json
@@ -62,9 +62,7 @@ Path "/app" does not exist
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app"],  // ✅ Correct
-        // NOT "app"          // ❌ Wrong
-        // NOT "./app"        // ❌ Wrong
+        "paths": ["app", "src"]
       }
     }
   }
@@ -142,32 +140,15 @@ return RectorConfig::configure()
    composer phpstan-baseline
    ```
 
-2. Lower analysis level:
+2. Limit scope:
    ```json
    {
      "extra": {
        "linters": {
          "phpstan": {
-           "level": 5
-         }
-       }
-     }
-   }
-   ```
-
-3. Ignore specific errors via `extra.linters.phpstan.config`:
-   ```json
-   {
-     "extra": {
-       "linters": {
-         "phpstan": {
-           "config": {
-             "parameters": {
-               "ignoreErrors": [
-                 "#Method .* has no return type#"
-               ]
-             }
-           }
+           "paths": ["src"],
+           "skip_dirs": ["vendor", "tests"],
+           "skip_files": []
          }
        }
      }
@@ -184,24 +165,7 @@ return RectorConfig::configure()
    composer dump-autoload
    ```
 
-2. Add bootstrap file via `extra.linters.phpstan.config`:
-   ```json
-   {
-     "extra": {
-       "linters": {
-         "phpstan": {
-           "config": {
-             "parameters": {
-               "bootstrapFiles": [
-                 "vendor/autoload.php"
-               ]
-             }
-           }
-         }
-       }
-     }
-   }
-   ```
+2. Ensure you're running from the project root where `composer.json` lives.
 
 ## PHP-CS-Fixer Issues
 
@@ -244,7 +208,7 @@ chmod -R 755 src/
    }
    ```
 
-2. **Use parallel processing** (enable via the PHPStan CLI flag if needed)
+2. **Use parallel processing** via `extra.linters.<tool>.parallel` where supported
 
 3. **Increase memory**:
    ```bash
@@ -256,9 +220,10 @@ chmod -R 755 src/
    {
      "extra": {
        "linters": {
-         "rector": {
-           "skip": ["/vendor", "/storage", "/node_modules"]
-         }
+       "rector": {
+          "skip_dirs": ["vendor", "storage", "node_modules"],
+          "skip_files": []
+        }
        }
      }
    }
@@ -320,13 +285,13 @@ volumes:
 
 **Error**: Windows uses `\` instead of `/`
 
-**Solution**: Always use `/` in configuration:
+**Solution**: Always use `/` as the path separator in configuration:
 ```json
 {
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["/app/Services"]  // Works on all OSes
+        "paths": ["app/Services"]  // Works on all OSes
       }
     }
   }

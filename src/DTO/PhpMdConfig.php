@@ -16,8 +16,8 @@ final readonly class PhpMdConfig extends BaseToolConfig implements ToolConfigInt
             throw new InvalidArgumentException('Missing required config: extra.linters.phpmd.paths');
         }
 
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null, 'extra.linters.phpmd.skip_dirs');
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null, 'extra.linters.phpmd.skip_files');
+        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $baseline = ConfigValidation::optionalRelativePath($config['baseline'] ?? null, 'extra.linters.phpmd.baseline');
 
         return new self(
