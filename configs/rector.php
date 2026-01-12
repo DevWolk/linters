@@ -42,10 +42,6 @@ if ($config->isLaravelProject()) {
     $frameworkSets[] = AppRectorSetList::LARAVEL;
 }
 
-if ($config->isSymfonyProject()) {
-    $frameworkSets[] = AppRectorSetList::SYMFONY;
-}
-
 $baseSets = [
     AppRectorSetList::APP_RULES,
     AppRectorSetList::DOCTRINE,

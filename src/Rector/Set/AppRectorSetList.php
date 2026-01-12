@@ -14,7 +14,4 @@ final class AppRectorSetList
 
     /** @var string */
     public const LARAVEL = __DIR__ . '/../Configs/Sets/laravel.php';
-
-    /** @var string */
-    public const SYMFONY = __DIR__ . '/../Configs/Sets/symfony.php';
 }

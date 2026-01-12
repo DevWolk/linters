@@ -42,8 +42,7 @@ bin/linters                    → CLI entrypoint (Symfony Console Application)
 │   ├── Configs/Sets/
 │   │   ├── app-rules.php              → Регистрация кастомных Rector rules
 │   │   ├── doctrine.php               → Doctrine-специфичные правила
-│   │   ├── laravel.php                → Laravel sets (если rector-laravel установлен)
-│   │   └── symfony.php                → Пустой (SymfonySetList deprecated)
+│   │   └── laravel.php                → Laravel sets (если rector-laravel установлен)
 │   └── Rules/
 │       ├── MockObjectStaticToInstanceCallRector.php → self::any() → $this->any()
 │       └── AssertInstanceToStaticCallRector.php     → $this->assert*() → self::assert*()
@@ -63,8 +62,6 @@ bin/linters                    → CLI entrypoint (Symfony Console Application)
 Пользователь запускает: ./vendor/bin/linters run phpstan
     ↓
 RunCommand → ConfigurationLoader (читает composer.json)
-    ↓
-Tool::PHP_STAN.requiresGeneration() = true
     ↓
 ToolRunner::generate() → PhpStanConfigGenerator
     ↓
@@ -90,38 +87,3 @@ REQ = required, OPT = optional, - = not supported
 *rector parallel по умолчанию enabled
 
 ---
-
-## Открытые задачи
-
-### Тесты для кастомных Rector rules
-
-**Статус:** ЖЕЛАТЕЛЬНО
-
-**Файлы:** Отсутствуют тестовые фикстуры для `MockObjectStaticToInstanceCallRector` и `AssertInstanceToStaticCallRector`
-
-**План:**
-1. Создать папку `tests/Unit/Rector/Rules/`
-2. Добавить тесты в формате Rector fixture
-
----
-
-## Архитектурные решения
-
-### ConfigurationLoader::getToolConfig() без проверки
-
-Проверка существования ключа в `getToolConfig()` не нужна:
-- `validateConfig()` в конструкторе уже валидирует все ключи
-- `getToolConfig()` — приватный метод, вызывается только после конструктора
-- Инвариант класса гарантирует валидность config
-
-### Symfony preset пустой
-
-`SymfonySetList` deprecated в Rector:
-```php
-/**
- * @deprecated Set list are too generic and do not handle package differences.
- * Use ->withComposerBased(symfony: true) instead
- */
-```
-
-Файл `symfony.php` оставлен пустым. Для Symfony-проектов Rector автоматически определяет пакеты через `withComposerBased()`.

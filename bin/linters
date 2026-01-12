@@ -30,7 +30,7 @@ $application = new Application();
 $application->setAutoExit(false);
 
 try {
-    $application->run();
+    exit($application->run());
 } catch (Exception $exception) {
     fwrite(STDERR, '[ERROR] ' . $exception->getMessage() . "\n");
     exit(1);

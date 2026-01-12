@@ -45,15 +45,23 @@
         "skip_files": []
       },
       "composer-unused": {
-        "named-filters": []
+        "named-filters": [
+          "wikimedia/composer-merge-plugin"
+        ]
       }
     }
   },
   "scripts": {
-    "rector": "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --clear-cache",
-    "rector-check": "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --dry-run",
-    "php-cs-fixer": "./vendor/bin/php-cs-fixer fix --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --allow-risky=yes",
-    "php-cs-fixer-check": "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff",
+    "rector": "./vendor/bin/linters run rector",
+    "rector-check": [
+      "./vendor/bin/linters generate rector",
+      "./vendor/bin/rector process --config=./rector.php --dry-run"
+    ],
+    "php-cs-fixer": "./vendor/bin/linters run php-cs-fixer",
+    "php-cs-fixer-check": [
+      "./vendor/bin/linters generate php-cs-fixer",
+      "./vendor/bin/php-cs-fixer fix --dry-run --config=./.php-cs-fixer.php --diff"
+    ],
     "phpstan": "./vendor/bin/linters run phpstan",
     "phpstan-baseline": [
       "./vendor/bin/linters generate phpstan",
@@ -61,6 +69,7 @@
     ],
     "phpcs": "./vendor/bin/linters run phpcs",
     "phpmd": "./vendor/bin/linters run phpmd",
+    "composer-unused": "./vendor/bin/linters run composer-unused",
     "lint": ["@rector-check", "@php-cs-fixer-check", "@phpstan", "@phpcs"],
     "lint-fix": ["@rector", "@php-cs-fixer"]
   }

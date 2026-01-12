@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Linters\Service;
 
+use Linters\ConfigGenerator\ComposerUnusedConfigGenerator;
 use Linters\ConfigGenerator\ConfigGeneratorInterface;
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
+use Linters\ConfigGenerator\PhpCsFixerConfigGenerator;
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
 use Linters\ConfigGenerator\PhpStanConfigGenerator;
+use Linters\ConfigGenerator\RectorConfigGenerator;
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
@@ -24,10 +27,6 @@ final readonly class ToolRunner
 
     public function generate(Tool $tool): string
     {
-        if (!$tool->requiresGeneration()) {
-            throw new RuntimeException($tool->label() . ' does not require config generation');
-        }
-
         $target = $this->resolveGeneratedTarget($tool);
         $generator = $this->createGenerator($tool);
         $generator->generate($target);
@@ -37,13 +36,11 @@ final readonly class ToolRunner
 
     public function run(Tool $tool, OutputInterface $output): int
     {
-        $target = null;
-        if ($tool->requiresGeneration()) {
-            $output->writeln('Generating: ' . $tool->label() . ' config');
-            $target = $this->generate($tool);
-        }
+        $output->writeln('Generating: ' . $tool->label() . ' config');
+        $target = $this->generate($tool);
 
         $command = $this->buildCommand($tool, $target);
+
         return $this->runCommand($output, $tool->label(), $command);
     }
 
@@ -53,11 +50,13 @@ final readonly class ToolRunner
             Tool::PHP_STAN => new PhpStanConfigGenerator($this->loader),
             Tool::PHP_CS => new PhpCsConfigGenerator($this->loader),
             Tool::PHP_MD => new PhpMdConfigGenerator($this->loader),
-            default => throw new RuntimeException('Unsupported generator tool: ' . $tool->label()),
+            Tool::RECTOR => new RectorConfigGenerator($this->loader),
+            Tool::PHP_CS_FIXER => new PhpCsFixerConfigGenerator($this->loader),
+            Tool::COMPOSER_UNUSED => new ComposerUnusedConfigGenerator($this->loader),
         };
     }
 
-    private function buildCommand(Tool $tool, ?string $target): string
+    private function buildCommand(Tool $tool, string $target): string
     {
         $binary = $this->resolveBinary($tool->binary());
 
@@ -65,16 +64,14 @@ final readonly class ToolRunner
             Tool::PHP_STAN => $this->buildPhpStanCommand($binary, $target),
             Tool::PHP_CS => $this->buildPhpCsCommand($binary, $target),
             Tool::PHP_MD => $this->buildPhpMdCommand($binary, $target),
-            Tool::RECTOR => $this->buildRectorCommand($binary),
-            Tool::PHP_CS_FIXER => $this->buildPhpCsFixerCommand($binary),
-            Tool::COMPOSER_UNUSED => $this->buildComposerUnusedCommand($binary),
+            Tool::RECTOR => $this->buildRectorCommand($binary, $target),
+            Tool::PHP_CS_FIXER => $this->buildPhpCsFixerCommand($binary, $target),
+            Tool::COMPOSER_UNUSED => $this->buildComposerUnusedCommand($binary, $target),
         };
     }
 
-    private function buildPhpStanCommand(string $binary, ?string $target): string
+    private function buildPhpStanCommand(string $binary, string $target): string
     {
-        $target = $this->requireGeneratedTarget($target, Tool::PHP_STAN);
-
         $command = escapeshellarg($binary) . ' analyze --configuration=' . escapeshellarg($target);
 
         $config = $this->loader->getPhpStanConfig();
@@ -89,10 +86,8 @@ final readonly class ToolRunner
         return $command;
     }
 
-    private function buildPhpCsCommand(string $binary, ?string $target): string
+    private function buildPhpCsCommand(string $binary, string $target): string
     {
-        $target = $this->requireGeneratedTarget($target, Tool::PHP_CS);
-
         $command = escapeshellarg($binary) . ' --standard=' . escapeshellarg($target);
 
         $config = $this->loader->getPhpCsConfig();
@@ -104,10 +99,8 @@ final readonly class ToolRunner
         return $command;
     }
 
-    private function buildPhpMdCommand(string $binary, ?string $target): string
+    private function buildPhpMdCommand(string $binary, string $target): string
     {
-        $target = $this->requireGeneratedTarget($target, Tool::PHP_MD);
-
         $config = $this->loader->getPhpMdConfig();
         $paths = $config->paths;
 
@@ -126,52 +119,29 @@ final readonly class ToolRunner
         return $command;
     }
 
-    private function buildRectorCommand(string $binary): string
+    private function buildRectorCommand(string $binary, string $target): string
     {
-        $configPath = $this->resolvePackageConfigPath(Tool::RECTOR);
-
         return escapeshellarg($binary)
-            . ' process --config=' . escapeshellarg($configPath)
+            . ' process --config=' . escapeshellarg($target)
             . ' --clear-cache';
     }
 
-    private function buildPhpCsFixerCommand(string $binary): string
+    private function buildPhpCsFixerCommand(string $binary, string $target): string
     {
-        $configPath = $this->resolvePackageConfigPath(Tool::PHP_CS_FIXER);
-
         return escapeshellarg($binary)
-            . ' fix --config=' . escapeshellarg($configPath)
+            . ' fix --config=' . escapeshellarg($target)
             . ' --allow-risky=yes';
     }
 
-    private function buildComposerUnusedCommand(string $binary): string
+    private function buildComposerUnusedCommand(string $binary, string $target): string
     {
-        $configPath = $this->resolvePackageConfigPath(Tool::COMPOSER_UNUSED);
-
         return escapeshellarg($binary)
-            . ' --configuration=' . escapeshellarg($configPath);
+            . ' --configuration=' . escapeshellarg($target);
     }
 
     private function resolveGeneratedTarget(Tool $tool): string
     {
-        $relativePath = $tool->generatedTarget();
-
-        if ($relativePath === null) {
-            throw new RuntimeException('Missing generated target mapping for ' . $tool->label());
-        }
-
-        return rtrim($this->loader->getComposerDir(), '/') . '/' . $relativePath;
-    }
-
-    private function resolvePackageConfigPath(Tool $tool): string
-    {
-        $relativePath = $tool->packageConfigPath();
-
-        if ($relativePath === null) {
-            throw new RuntimeException('Missing package config mapping for ' . $tool->label());
-        }
-
-        return rtrim(dirname(__DIR__, 2), '/') . '/' . $relativePath;
+        return rtrim($this->loader->getComposerDir(), '/') . '/' . $tool->generatedTarget();
     }
 
     private function resolveBinary(string $binary): string
@@ -182,15 +152,6 @@ final readonly class ToolRunner
         }
 
         return $path;
-    }
-
-    private function requireGeneratedTarget(?string $target, Tool $tool): string
-    {
-        if (!is_string($target) || $target === '') {
-            throw new RuntimeException('Missing generated target for ' . $tool->label());
-        }
-
-        return $target;
     }
 
     private function runCommand(OutputInterface $output, string $label, string $command): int

@@ -104,7 +104,7 @@ class ConfigurationLoader
 
     private function getToolConfig(string $tool): array
     {
-        return $this->config[$tool];
+        return $this->config[$tool] ?? [];
     }
 
     private function validateConfig(): void

@@ -7,7 +7,6 @@ namespace Linters\Console\Command;
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
 use Linters\Utils\ConfigurationLoader;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,10 +19,7 @@ final class GenerateConfigCommand extends Command
     {
         $tools = implode('|', array_map(
             static fn(Tool $tool): string => $tool->value,
-            array_filter(
-                Tool::cases(),
-                static fn(Tool $tool): bool => $tool->requiresGeneration()
-            )
+            Tool::cases(),
         ));
 
         $this
@@ -37,9 +33,6 @@ final class GenerateConfigCommand extends Command
         try {
             $toolName = strtolower((string)$input->getArgument('tool'));
             $tool = Tool::fromName($toolName);
-            if (!$tool->requiresGeneration()) {
-                throw new RuntimeException($tool->label() . ' does not support config generation');
-            }
 
             $loader = new ConfigurationLoader();
             $runner = new ToolRunner($loader);
