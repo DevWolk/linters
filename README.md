@@ -1,87 +1,69 @@
 # devwolk/linters
 
-Centralized PHP linter configurations and static analysis tools for PHP projects.
+Централизованные конфигурации линтеров для PHP проектов.
+Все правила зашиты в библиотеку — пользователи настраивают только пути и базовые параметры.
 
-## Target Standard (Spec)
+## Установка
 
-- Single CLI entrypoint: `./vendor/bin/linters generate <tool>` and `./vendor/bin/linters run <tool>`
-- Templates for every check live under `configs/`
-- No project-specific paths or defaults inside the package
-- All settings come from `extra.linters` in the consuming `composer.json`
-- Framework flexibility via `rector.frameworks`
+```bash
+composer require --dev devwolk/linters
+```
 
-## Current Status (Snapshot)
+**Требования:** PHP 8.2+, Composer 2.0+
 
-- Implemented: Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused
-- CLI: `linters run` supports all tools; `linters generate` is for PHPStan/PHPCS/PHPMD
-- Templates: `configs/phpstan.neon`, `configs/phpcs.xml`, `configs/phpmd.ruleset.xml`,
-  plus dynamic configs for Rector, PHP-CS-Fixer, and composer-unused
-- Pending: run test/make targets
+## Поддерживаемые инструменты
 
-## Supported Tools
+| Инструмент          | Описание                                             |
+|---------------------|------------------------------------------------------|
+| **Rector**          | Автоматический рефакторинг, миграция PHP/фреймворков |
+| **PHP-CS-Fixer**    | Форматирование кода (PSR-12 + strict rules)          |
+| **PHPStan**         | Статический анализ (level 8)                         |
+| **PHPCS**           | Code style проверки (PSR-12 + Slevomat)              |
+| **PHPMD**           | Детектор проблем качества кода                       |
+| **composer-unused** | Поиск неиспользуемых зависимостей                    |
 
-| Tool                                                                  | Version | Status |
-|-----------------------------------------------------------------------|---------|--------|
-| [Rector](https://getrector.com/)                                      | ^2.2    | Working (dynamic config) |
-| [PHP-CS-Fixer](https://cs.symfony.com/)                               | ^3.89   | Working (dynamic config) |
-| [PHPStan](https://phpstan.org/)                                       | ^2.1    | Working (generated config, not verified) |
-| [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)       | ^4.0    | Working (generated config, not verified) |
-| [PHPMD](https://phpmd.org/)                                           | ^2.15   | Working (generated config, not verified) |
-| [composer-unused](https://github.com/composer-unused/composer-unused) | ^0.9    | Working |
+## Конфигурация
 
-## Configuration (Target Schema)
-
-All tool settings live in `extra.linters`:
-All paths/patterns (including `baseline` and `cache_dir`) are used as-is (no normalization).
-`skip_files` is treated as path/glob patterns (no filename-only special casing).
+Вся конфигурация в `composer.json` под ключом `extra.linters`:
 
 ```json
 {
   "extra": {
     "linters": {
       "rector": {
-        "paths": ["src"],
+        "paths": ["src", "tests"],
         "skip_dirs": ["vendor"],
         "skip_files": [],
         "frameworks": ["laravel"],
-        "cache_dir": ".cache/rector",
         "parallel": {
           "enabled": true,
           "timeout": 120,
           "max_processes": 4,
           "files_per_process": 20
-        }
+        },
+        "cache_dir": ".cache/rector"
       },
       "php-cs-fixer": {
         "paths": ["src"],
         "skip_dirs": ["src/Legacy"],
         "skip_files": ["*.blade.php"],
-        "cache_dir": ".cache/php-cs-fixer",
-        "parallel": {
-          "enabled": true,
-          "max_processes": 4
-        }
+        "parallel": true,
+        "cache_dir": ".cache/php-cs-fixer"
       },
       "phpstan": {
         "paths": ["src"],
         "skip_dirs": ["vendor"],
         "skip_files": [],
-        "baseline": "phpstan-baseline.neon",
+        "parallel": true,
         "cache_dir": ".cache/phpstan",
-        "parallel": {
-          "enabled": true,
-          "max_processes": 4
-        }
+        "baseline": "phpstan-baseline.neon"
       },
       "phpcs": {
         "paths": ["src"],
         "skip_dirs": [],
         "skip_files": [],
-        "cache_dir": ".cache/phpcs",
-        "parallel": {
-          "enabled": true,
-          "max_processes": 4
-        }
+        "parallel": 4,
+        "cache_dir": ".cache/phpcs"
       },
       "phpmd": {
         "paths": ["src"],
@@ -99,34 +81,113 @@ All paths/patterns (including `baseline` and `cache_dir`) are used as-is (no nor
 }
 ```
 
-All tool configs live under `extra.linters.<tool>` and only the keys above are accepted.
-## CLI (Single Standard)
+### Поддерживаемые опции
+
+| Опция           | Тип                 | Инструменты                          | Описание                                |
+|-----------------|---------------------|--------------------------------------|-----------------------------------------|
+| `paths`         | `string[]`          | все кроме composer-unused            | **Обязательно.** Директории для анализа |
+| `skip_dirs`     | `string[]`          | все кроме composer-unused            | Директории для исключения               |
+| `skip_files`    | `string[]`          | все кроме composer-unused            | Паттерны файлов для исключения          |
+| `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs | Параллельное выполнение                 |
+| `cache_dir`     | `string`            | rector, php-cs-fixer, phpstan, phpcs | Директория кэша                         |
+| `baseline`      | `string`            | phpstan, phpmd                       | Файл baseline для игнорирования ошибок  |
+| `frameworks`    | `string[]`          | rector                               | Пресет фреймворка: `laravel`            |
+| `named-filters` | `string[]`          | composer-unused                      | Пакеты для игнорирования                |
+
+### Формат parallel
+
+```json
+// Простое включение
+"parallel": true
+
+// Количество процессов
+"parallel": 4
+
+// Полная конфигурация
+"parallel": {
+  "enabled": true,
+  "timeout": 120,
+  "max_processes": 8,
+  "files_per_process": 20
+}
+```
+
+## Использование
+
+### CLI
 
 ```bash
+# Запуск инструментов
 ./vendor/bin/linters run rector
 ./vendor/bin/linters run php-cs-fixer
-./vendor/bin/linters generate phpstan
-./vendor/bin/linters generate phpcs
-./vendor/bin/linters generate phpmd
 ./vendor/bin/linters run phpstan
 ./vendor/bin/linters run phpcs
 ./vendor/bin/linters run phpmd
 ./vendor/bin/linters run composer-unused
+
+# Генерация конфигов (phpstan/phpcs/phpmd)
+./vendor/bin/linters generate phpstan
 ```
 
-`linters run <tool>` regenerates configs for phpstan/phpcs/phpmd on each run.
-Generated configs are written to `phpstan.neon`, `phpcs.xml`, and `phpmd.ruleset.xml` in the project root.
-`linters generate` is only available for `phpstan`, `phpcs`, and `phpmd`.
+### Composer scripts
 
-## Framework Support
+Добавьте в `composer.json`:
 
-Framework-specific Rector rules are controlled by `rector.frameworks`:
+```json
+{
+  "scripts": {
+    "rector": "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --clear-cache",
+    "rector-check": "./vendor/bin/rector process --config=./vendor/devwolk/linters/configs/rector.php --dry-run",
+    "php-cs-fixer": "./vendor/bin/php-cs-fixer fix --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --allow-risky=yes",
+    "php-cs-fixer-check": "./vendor/bin/php-cs-fixer fix --dry-run --config=./vendor/devwolk/linters/configs/.php-cs-fixer.dist.php --diff",
+    "phpstan": "./vendor/bin/linters run phpstan",
+    "phpstan-baseline": ["./vendor/bin/linters generate phpstan", "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"],
+    "phpcs": "./vendor/bin/linters run phpcs",
+    "phpmd": "./vendor/bin/linters run phpmd",
+    "composer-unused": "./vendor/bin/composer-unused --configuration=./vendor/devwolk/linters/configs/composer-unused.php",
+    "lint": ["@rector-check", "@php-cs-fixer-check", "@phpstan", "@phpcs"],
+    "lint-fix": ["@rector", "@php-cs-fixer"]
+  }
+}
+```
+
+## Архитектура
+
+```
+bin/linters              CLI (Symfony Console)
+    ↓
+ConfigurationLoader      Читает extra.linters из composer.json
+    ↓
+DTO                      RectorConfig, PhpStanConfig, etc.
+    ↓
+┌───────────────────────────────────────────────────┐
+│ Генерируемые конфиги   │ Динамические конфиги     │
+│ (пишутся в корень)     │ (из пакета)              │
+├────────────────────────┼──────────────────────────┤
+│ phpstan.neon           │ configs/rector.php       │
+│ phpcs.xml              │ configs/.php-cs-fixer.dist.php │
+│ phpmd.ruleset.xml      │ configs/composer-unused.php │
+└───────────────────────────────────────────────────┘
+```
+
+### Как работает
+
+1. **ConfigurationLoader** читает `extra.linters` из composer.json проекта
+2. Создаёт типизированные DTO для каждого инструмента
+3. **Генерируемые конфиги** (phpstan, phpcs, phpmd): ConfigGenerator создаёт файл в корне проекта на основе шаблона + DTO
+4. **Динамические конфиги** (rector, php-cs-fixer, composer-unused): конфиг из пакета сам читает DTO при загрузке
+
+## Laravel
+
+Для Laravel проектов добавьте `frameworks: ["laravel"]`:
 
 ```json
 {
   "extra": {
     "linters": {
       "rector": {
+        "paths": ["app", "config", "database", "routes", "tests"],
+        "skip_dirs": ["bootstrap", "storage"],
         "frameworks": ["laravel"]
       }
     }
@@ -134,119 +195,69 @@ Framework-specific Rector rules are controlled by `rector.frameworks`:
 }
 ```
 
-Framework presets are limited to Rector via `rector.frameworks`.
+Требуется: `composer require --dev rector/rector-laravel`
 
-## Templates
+## Baseline (игнорирование существующих ошибок)
 
-`configs/` provides the shared templates used by generators:
+Для legacy проектов с большим количеством ошибок:
 
-- `configs/phpstan.neon`
-- `configs/phpcs.xml`
-- `configs/phpmd.ruleset.xml`
-- `configs/rector.php`
-- `configs/.php-cs-fixer.dist.php`
-- `configs/composer-unused.php`
+```bash
+# PHPStan
+./vendor/bin/linters generate phpstan
+./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline
 
-
-## Карта проекта (текущая логика)
-```
-bin/linters                    → Entrypoint (Symfony Console)
-src/Console/Application         → Регистрирует команды generate/run
-src/Console/Command/GenerateConfigCommand → Генерация конфигов для phpstan/phpcs/phpmd
-src/Console/Command/RunCommand  → Генерация (если нужна) + запуск любого tool
-
-ConfigurationLoader            → Читает extra.linters из composer.json
-    └── validateConfig: только ключи из Tool enum
-
-DTO
-    ├── ToolConfigInterface    → fromArray()
-    ├── BaseToolConfig         → paths/skipDirs/skipFiles/parallel/cacheDir/baseline
-    ├── ParallelConfig         → enabled/timeout/maxProcesses/filesPerProcess
-    ├── PhpStan/PhpCs/PhpMd/PhpCsFixer/RectorConfig (+ frameworks)
-    └── ComposerUnusedConfig   → namedFilters
-
-ConfigGenerators
-    ├── PhpStanConfigGenerator → phpstan.neon (includes template + baseline + paths/excludes/tmpDir)
-    ├── PhpCsConfigGenerator   → phpcs.xml (file/exclude-pattern + cache)
-    └── PhpMdConfigGenerator   → phpmd.ruleset.xml (exclude-pattern)
-
-configs/ (шаблоны и "живые" конфиги)
-    ├── phpstan.neon/phpcs.xml/phpmd.ruleset.xml → шаблоны
-    ├── rector.php → читает DTO + sets/skip/paths/parallel/cache
-    ├── .php-cs-fixer.dist.php → читает DTO + Finder/parallel/cache
-    └── composer-unused.php → читает DTO + named-filters
-
-ToolRunner                     → resolve binary + generate (если нужно) + запуск через passthru
-Tool enum                       → список инструментов + маппинг generatedTarget/packageConfigPath
-```
-
-## Логика выполнения (generate/run)
-- `bin/linters generate <tool>` → ToolRunner::generate → ConfigGenerator → файл в корне проекта
-- `bin/linters run <tool>` → generate (если нужно) → buildCommand (DTO + параметры) → запуск
-- Инструменты без генерации используют конфиги из `configs/` напрямую
-
-## Поддерживаемые инструменты (Tool enum)
-| Tool            | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks            | named-filters |
-|-----------------|-------|-----------|------------|----------|-----------|----------|-----------------------|---------------|
-| phpstan         | REQ   | OPT       | OPT        | OPT      | OPT       | OPT      | -                     | -             |
-| phpcs           | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -                     | -             |
-| phpmd           | REQ   | OPT       | OPT        | -        | -         | OPT      | -                     | -             |
-| rector          | REQ   | OPT       | OPT        | OPT      | OPT       | -        | OPT (laravel/symfony) | -             |
-| php-cs-fixer    | REQ   | OPT       | OPT        | OPT      | OPT       | -        | -                     | -             |
-| composer-unused | -     | -         | -          | -        | -         | -        | -                     | OPT           |
-
-REQ = required, OPT = optional, - = not supported
-
-## Структура конфигурации extra.linters (целевая)
-```json
-{
-  "extra": {
-    "linters": {
-      "phpstan": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor", "storage"],
-        "skip_files": ["bootstrap/cache/packages.php"],
-        "parallel": true,
-        "cache_dir": ".cache/phpstan",
-        "baseline": "phpstan-baseline.neon"
-      },
-      "phpcs": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "parallel": 4,
-        "cache_dir": ".cache"
-      },
-      "phpmd": {
-        "paths": ["src"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "baseline": "phpmd-baseline.xml"
-      },
-      "rector": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": [],
-        "parallel": {
-          "enabled": true,
-          "timeout": 120,
-          "max_processes": 8,
-          "files_per_process": 20
-        },
-        "cache_dir": ".cache/rector",
-        "frameworks": ["laravel"]
-      },
-      "php-cs-fixer": {
-        "paths": ["src", "tests"],
-        "skip_dirs": ["vendor"],
-        "skip_files": ["*.blade.php"],
-        "parallel": true,
-        "cache_dir": ".cache"
-      },
-      "composer-unused": {
-        "named-filters": ["php", "ext-*"]
-      }
-    }
-  }
+# Добавить в конфиг
+"phpstan": {
+  "paths": ["src"],
+  "baseline": "phpstan-baseline.neon"
 }
 ```
+
+## Кастомные Rector правила
+
+Библиотека включает два кастомных правила для PHPUnit:
+
+### MockObjectStaticToInstanceCallRector
+
+```php
+// Before
+$mock->expects(self::once())->method('foo');
+
+// After
+$mock->expects($this->once())->method('foo');
+```
+
+### AssertInstanceToStaticCallRector
+
+```php
+// Before
+$this->assertTrue($value);
+
+// After
+self::assertTrue($value);
+```
+
+## Troubleshooting
+
+### Memory limit
+
+```bash
+php -d memory_limit=2G vendor/bin/phpstan analyze
+```
+
+### Очистка кэша
+
+```bash
+./vendor/bin/rector process --clear-cache
+rm -rf .php-cs-fixer.cache .phpcs-cache
+```
+
+### Конфигурация не загружается
+
+1. Проверьте JSON: `composer validate`
+2. Убедитесь что конфиг в корневом composer.json
+3. `composer dump-autoload`
+
+## Примеры
+
+См. директорию `examples/` для полных примеров конфигурации Laravel и Symfony проектов.
