@@ -15,13 +15,7 @@ final class ConfigValidation
     {
         $list = (array) $value;
 
-        foreach ($list as $item) {
-            if (!is_string($item)) {
-                unset($item);
-            }
-        }
-
-        return $list;
+        return array_filter($list, static fn(mixed $item): bool => \is_string($item));
     }
 
     /**
