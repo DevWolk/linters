@@ -42,7 +42,7 @@ $configuredSets = [
     SetList::TYPE_DECLARATION,
     SetList::EARLY_RETURN,
 
-    LevelSetList::UP_TO_PHP_83,
+    LevelSetList::UP_TO_PHP_84,
 ];
 
 foreach ($config->sets as $set) {
@@ -90,7 +90,7 @@ $rectorConfig = $rectorConfig
         phpunit: true,
     )
     ->withSets($configuredSets)
-    ->withPhpVersion(PhpVersion::PHP_83)
+    ->withPhpVersion(PhpVersion::PHP_84)
     ->withPaths($config->paths)
     ->withSkip(
         array_merge(

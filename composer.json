@@ -15,30 +15,30 @@
     "code-quality"
   ],
   "require": {
-    "php": "^8.3",
+    "php": "^8.4",
     "ext-dom": "*",
     "ergebnis/composer-normalize": "^2.48",
-    "friendsofphp/php-cs-fixer": "^3.89",
+    "friendsofphp/php-cs-fixer": "^3.90",
+    "icanhazstring/composer-unused": "^0.9",
     "phpmd/phpmd": "^2.15",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-mockery": "^2.0",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-strict-rules": "^2.0",
-    "rector/rector": "^2.2",
+    "rector/rector": "^2.3",
     "roave/security-advisories": "dev-latest",
-    "slevomat/coding-standard": "^8.24",
+    "slevomat/coding-standard": "^8.26",
     "squizlabs/php_codesniffer": "^4.0",
     "symfony/console": "^7.3",
     "symfony/filesystem": "^7.4",
     "thecodingmachine/phpstan-safe-rule": "^1.4",
-    "thecodingmachine/safe": "^3.3",
-    "icanhazstring/composer-unused": "^0.9.5"
+    "thecodingmachine/safe": "^3.3"
   },
   "require-dev": {
     "driftingly/rector-laravel": "^2.1",
     "laravel/framework": "^12.47",
-    "phpunit/phpunit": "^11.0"
+    "phpunit/phpunit": "^12.5"
   },
   "suggest": {
     "driftingly/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel."
@@ -120,8 +120,8 @@
           "tests"
         ],
         "sets": [
-          "laravel11",
-          "phpunit11",
+          "laravel12",
+          "phpunit12",
           "doctrine"
         ],
         "skip_dirs": [

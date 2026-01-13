@@ -8,7 +8,7 @@ Centralized PHP linter configurations. Rules are bundled - you configure only pa
 composer require --dev devwolk/linters
 ```
 
-**Requirements:** PHP 8.3+
+**Requirements:** PHP 8.4+
 
 ## Supported Tools
 

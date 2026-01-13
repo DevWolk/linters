@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-bullseye
+FROM public.ecr.aws/docker/library/php:8.4-fpm-bullseye
 
 RUN apt update \
     && apt install -y \
@@ -16,7 +16,8 @@ RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     zip
 
-RUN pecl install xdebug-3.3.1 \
+RUN pecl channel-update pecl.php.net && \
+    pecl install xdebug-3.5.0 \
     && docker-php-ext-enable xdebug
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

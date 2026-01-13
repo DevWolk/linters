@@ -3,7 +3,7 @@
   "description": "Example Laravel project with devwolk/linters",
   "type": "project",
   "require": {
-    "php": "^8.3",
+    "php": "^8.4",
     "laravel/framework": "^11.0"
   },
   "require-dev": {
@@ -17,7 +17,12 @@
         "skip_dirs": ["bootstrap", "storage", "vendor"],
         "skip_files": [],
         "sets": ["laravel"],
-        "parallel": true,
+        "parallel": {
+          "parallel": true,
+          "filesPerProcess": 40,
+          "timeout":360,
+          "maxProcesses": 2
+        },
         "cache_dir": ".cache/rector"
       },
       "php-cs-fixer": {
