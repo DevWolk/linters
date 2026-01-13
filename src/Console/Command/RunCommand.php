@@ -18,7 +18,7 @@ final class RunCommand extends Command
     protected function configure(): void
     {
         $tools = implode('|', array_map(
-            static fn(Tool $tool): string => $tool->value,
+            static fn (Tool $tool): string => $tool->value,
             Tool::cases()
         ));
 
@@ -32,14 +32,15 @@ final class RunCommand extends Command
     {
         try {
             $toolName = strtolower((string)$input->getArgument('tool'));
-            $tool = Tool::fromName($toolName);
+            $tool = Tool::from($toolName);
 
             $loader = new ConfigurationLoader();
             $runner = new ToolRunner($loader);
 
             return $runner->run($tool, $output);
-        } catch (Throwable $exception) {
-            $output->writeln('<error>' . $exception->getMessage() . '</error>');
+        } catch (Throwable $throwable) {
+            $output->writeln('<error>' . $throwable->getMessage() . '</error>');
+
             return Command::FAILURE;
         }
     }

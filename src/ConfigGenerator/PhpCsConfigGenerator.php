@@ -10,7 +10,7 @@ use Linters\DTO\PhpCsConfig;
 use Linters\Utils\ConfigurationLoader;
 
 /**
- * Generator for PHP_CodeSniffer XML configuration files
+ * Generator for PHP_CodeSniffer XML configuration files.
  *
  * This class generates phpcs.xml dynamically from:
  * - Base template (configs/phpcs.xml)
@@ -33,11 +33,8 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
 
     private const ATTR_VALUE = 'value';
 
-    protected ConfigurationLoader $loader;
-
-    public function __construct(?ConfigurationLoader $loader = null)
+    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
-        $this->loader = $loader ?? new ConfigurationLoader();
     }
 
     /**
@@ -80,8 +77,9 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
         }
 
         $cacheDir = $config->cacheDir;
+
         if ($cacheDir !== null && $cacheDir !== '') {
-            $cachePath = sprintf('%s/%s', rtrim($cacheDir, '/'), PhpCsConfig::CACHE_NAME);
+            $cachePath = \sprintf('%s/%s', rtrim($cacheDir, '/'), PhpCsConfig::CACHE_NAME);
             $this->setCachePath($dom, $cachePath);
         }
 
@@ -96,11 +94,13 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
         foreach ($dom->getElementsByTagName(self::TAG_ARG) as $arg) {
             if ($arg->getAttribute(self::ATTR_NAME) === self::CACHE_ARG_NAME) {
                 $arg->setAttribute(self::ATTR_VALUE, $cachePath);
+
                 return;
             }
         }
 
         $ruleset = $dom->documentElement;
+
         if ($ruleset === null) {
             return;
         }
@@ -108,6 +108,7 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
         $cacheElement = $dom->createElement(self::TAG_ARG);
         $cacheElement->setAttribute(self::ATTR_NAME, self::CACHE_ARG_NAME);
         $cacheElement->setAttribute(self::ATTR_VALUE, $cachePath);
+
         $ruleset->appendChild($cacheElement);
     }
 }

@@ -8,17 +8,16 @@ use Linters\Utils\ConfigValidation;
 
 final readonly class ComposerUnusedConfig implements ToolConfigInterface
 {
-    /** @var string[] */
-    public array $namedFilters;
-
     /**
      * @param string[] $namedFilters
      */
-    public function __construct(array $namedFilters = [])
+    public function __construct(public array $namedFilters = [])
     {
-        $this->namedFilters = $namedFilters;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public static function fromArray(array $config): self
     {
         $filters = ConfigValidation::optionalStringList($config['named-filters'] ?? null);

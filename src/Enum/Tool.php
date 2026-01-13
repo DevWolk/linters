@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Linters\Enum;
 
-use InvalidArgumentException;
-
 enum Tool: string
 {
     case PHP_STAN = 'phpstan';
@@ -14,26 +12,18 @@ enum Tool: string
     case RECTOR = 'rector';
     case PHP_CS_FIXER = 'php-cs-fixer';
     case COMPOSER_UNUSED = 'composer-unused';
-
-    public static function fromName(string $name): self
-    {
-        $tool = self::tryFrom($name);
-        if ($tool === null) {
-            throw new InvalidArgumentException("Unknown tool: {$name}");
-        }
-
-        return $tool;
-    }
+    case COMPOSER_NORMALIZE = 'composer-normalize';
 
     public function label(): string
     {
         return match ($this) {
-            self::PHP_STAN => 'PHPStan',
-            self::PHP_CS => 'PHPCS',
-            self::PHP_MD => 'PHPMD',
-            self::RECTOR => 'Rector',
-            self::PHP_CS_FIXER => 'PHP-CS-Fixer',
-            self::COMPOSER_UNUSED => 'composer-unused',
+            self::PHP_STAN           => 'PHPStan',
+            self::PHP_CS             => 'PHPCS',
+            self::PHP_MD             => 'PHPMD',
+            self::RECTOR             => 'Rector',
+            self::PHP_CS_FIXER       => 'PHP-CS-Fixer',
+            self::COMPOSER_UNUSED    => 'composer-unused',
+            self::COMPOSER_NORMALIZE => 'composer-normalize',
         };
     }
 
@@ -45,12 +35,21 @@ enum Tool: string
     public function generatedTarget(): string
     {
         return match ($this) {
-            self::PHP_STAN => 'phpstan.neon',
-            self::PHP_CS => 'phpcs.xml',
-            self::PHP_MD => 'phpmd.ruleset.xml',
-            self::RECTOR => 'rector.php',
-            self::PHP_CS_FIXER => '.php-cs-fixer.php',
-            self::COMPOSER_UNUSED => 'composer-unused.php',
+            self::PHP_STAN           => 'phpstan.neon',
+            self::PHP_CS             => 'phpcs.xml',
+            self::PHP_MD             => 'phpmd.ruleset.xml',
+            self::RECTOR             => 'rector.php',
+            self::PHP_CS_FIXER       => '.php-cs-fixer.php',
+            self::COMPOSER_UNUSED    => 'composer-unused.php',
+            self::COMPOSER_NORMALIZE => '',
+        };
+    }
+
+    public function requiresGeneration(): bool
+    {
+        return match ($this) {
+            self::COMPOSER_NORMALIZE => false,
+            default                  => true,
         };
     }
 }

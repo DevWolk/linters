@@ -8,7 +8,7 @@
   },
   "require-dev": {
     "devwolk/linters": "^0.0.1",
-    "rector/rector-laravel": "^2.0"
+      "driftingly/rector-laravel": "^2.1"
   },
   "extra": {
     "linters": {

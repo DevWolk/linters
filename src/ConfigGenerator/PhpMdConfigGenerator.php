@@ -11,7 +11,7 @@ use Linters\DTO\PhpMdConfig;
 use Linters\Utils\ConfigurationLoader;
 
 /**
- * Generator for PHPMD XML ruleset files
+ * Generator for PHPMD XML ruleset files.
  *
  * This class generates phpmd.ruleset.xml dynamically from:
  * - Base template
@@ -24,11 +24,8 @@ class PhpMdConfigGenerator implements ConfigGeneratorInterface
 
     private const TAG_EXCLUDE_PATTERN = 'exclude-pattern';
 
-    protected ConfigurationLoader $loader;
-
-    public function __construct(?ConfigurationLoader $loader = null)
+    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
-        $this->loader = $loader ?? new ConfigurationLoader();
     }
 
     /**
@@ -53,6 +50,7 @@ class PhpMdConfigGenerator implements ConfigGeneratorInterface
         $dom->load(self::PACKAGE_CONFIG_PATH);
 
         $ruleset = $dom->documentElement;
+
         if (!$ruleset instanceof DOMElement) {
             return $dom;
         }

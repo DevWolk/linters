@@ -11,9 +11,13 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
 {
     public const CACHE_NAME = '.phpcs-cache';
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public static function fromArray(array $config): self
     {
-        $paths = ConfigValidation::stringList($config['paths']);
+        $paths = ConfigValidation::stringList($config['paths'] ?? []);
+
         if ($paths === []) {
             throw new InvalidArgumentException('Missing required config: extra.linters.phpcs.paths');
         }
@@ -21,7 +25,7 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
         $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
-        $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.phpcs.cache_dir');
+        $cacheDir = $config['cache_dir'] ?? null;
 
         return new self(
             $paths,
@@ -29,7 +33,6 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
             $skipFiles,
             $parallel,
             $cacheDir,
-            null,
         );
     }
 }

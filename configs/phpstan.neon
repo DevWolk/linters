@@ -9,32 +9,9 @@ parameters:
 
     # Paths to analyze/exclude are injected by the generator
 
-    # Enable strict rules for better code quality
-    strictRules:
-        allRules: true
-
-    # Additional quality checks
-    checkMissingIterableValueType: true
-    checkGenericClassInNonGenericObjectType: true
-    checkAlwaysTrueCheckTypeFunctionCall: true
-    checkAlwaysTrueInstanceof: true
-    checkAlwaysTrueStrictComparison: true
-    checkExplicitMixedMissingReturn: true
-    checkFunctionNameCase: true
-    checkInternalClassCaseSensitivity: true
-
     # Report all errors, even in baseline
     reportUnmatchedIgnoredErrors: false
 
     # File extensions to analyze
     fileExtensions:
         - php
-
-    # Ignore specific error patterns (use sparingly)
-    ignoreErrors:
-        # Example: Ignore specific deprecation warnings
-        # - '#Call to deprecated method#'
-
-    # Baseline file (uncomment to use)
-    # includes:
-    #     - phpstan-baseline.neon

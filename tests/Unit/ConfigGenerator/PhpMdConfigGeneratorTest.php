@@ -7,28 +7,29 @@ namespace Linters\Tests\Unit\ConfigGenerator;
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Safe\Exceptions\JsonException;
+
+use function Safe\file_put_contents;
+use function Safe\json_encode;
 
 final class PhpMdConfigGeneratorTest extends TestCase
 {
     private string $testDir;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->testDir = $this->createTempDir('linters-phpmd-');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeDirectory($this->testDir);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws \DOMException
+     * @throws DirException
+     * @throws \JsonException
+     * @throws JsonException
+     */
     public function testGenerateAddsExcludes(): void
     {
         $this->createComposerJson([
             'phpmd' => [
-                'paths' => ['src'],
+                'paths'     => ['src'],
                 'skip_dirs' => ['vendor'],
             ],
         ]);
@@ -50,6 +51,26 @@ final class PhpMdConfigGeneratorTest extends TestCase
         self::assertContains('vendor', $excludes);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->testDir = $this->createTempDir('linters-phpmd-');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeDirectory($this->testDir);
+    }
+
+    /**
+     * @param array<string, mixed> $lintersConfig
+     *
+     * @throws JsonException
+     * @throws FilesystemException
+     */
     private function createComposerJson(array $lintersConfig): void
     {
         $json = json_encode([

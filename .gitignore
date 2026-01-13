@@ -9,3 +9,14 @@
 /_ide_helper.php
 .DS_Store
 docker-compose.yml
+
+# Cache directory
+/.cache/
+
+# Generated linter configs (created by ./bin/linters generate)
+/rector.php
+/.php-cs-fixer.php
+/composer-unused.php
+/phpstan.neon
+/phpcs.xml
+/phpmd.ruleset.xml

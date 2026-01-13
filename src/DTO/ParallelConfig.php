@@ -14,34 +14,41 @@ final readonly class ParallelConfig
     ) {
     }
 
+    /**
+     * @param bool|string|int|array<string, mixed>|null $value
+     */
     public static function fromMixed(null|bool|string|int|array $value, bool $defaultEnabled = false): self
     {
-        if (is_bool($value)) {
+        if ($value === null) {
+            return new self($defaultEnabled);
+        }
+
+        if (\is_bool($value)) {
             return new self($value);
         }
 
         if (is_numeric($value)) {
-            return new self(true, maxProcesses: (int)$value);
+            return new self(true, maxProcesses: (int) $value);
         }
 
-        if (is_array($value)) {
-            return new self(
-                enabled: (bool) ($value['enabled'] ?? $defaultEnabled),
-                timeout: self::toInt($value['timeout'] ?? null),
-                maxProcesses: self::toInt($value['max_processes'] ?? null),
-                filesPerProcess: self::toInt($value['files_per_process'] ?? null),
-            );
-        }
-
-        return new self($defaultEnabled);
+        return self::fromArray($value, $defaultEnabled);
     }
 
-    private static function toInt(string|int|null $value): ?int
+    /**
+     * @param array<string, mixed> $value
+     */
+    private static function fromArray(array $value, bool $defaultEnabled): self
     {
-        if (is_numeric($value)) {
-            return (int)$value;
-        }
+        return new self(
+            enabled: (bool) ($value['enabled'] ?? $defaultEnabled),
+            timeout: self::toInt($value['timeout'] ?? null),
+            maxProcesses: self::toInt($value['max_processes'] ?? null),
+            filesPerProcess: self::toInt($value['files_per_process'] ?? null),
+        );
+    }
 
-        return null;
+    private static function toInt(null|string|int $value): ?int
+    {
+        return is_numeric($value) ? (int) $value : null;
     }
 }

@@ -5,33 +5,43 @@ declare(strict_types=1);
 namespace Linters\ConfigGenerator;
 
 use Linters\Utils\ConfigurationLoader;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Symfony\Component\Filesystem\Path;
+
+use function Safe\file_put_contents;
 
 /**
- * Generator for composer-unused configuration files
+ * Generator for composer-unused configuration files.
  *
  * Creates a stub file that requires the package's composer-unused.php config.
  * The package config reads named-filters from composer.json at runtime.
  */
 class ComposerUnusedConfigGenerator implements ConfigGeneratorInterface
 {
-    private const PACKAGE_CONFIG_PATH = 'vendor/devwolk/linters/configs/composer-unused.php';
-
-    protected ConfigurationLoader $loader;
-
-    public function __construct(?ConfigurationLoader $loader = null)
+    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
-        $this->loader = $loader ?? new ConfigurationLoader();
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     */
     public function generate(string $targetPath): void
     {
         $content = $this->buildContent();
         file_put_contents($targetPath, $content);
     }
 
+    /**
+     * @throws DirException
+     */
     protected function buildContent(): string
     {
-        $packagePath = self::PACKAGE_CONFIG_PATH;
+        $targetDir = $this->loader->getComposerDir();
+        $sourcePath = \dirname(__DIR__, 2) . '/configs/composer-unused.php';
+
+        $packagePath = Path::makeRelative($sourcePath, $targetDir);
 
         return <<<PHP
 <?php

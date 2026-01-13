@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit\ConfigGenerator;
 
+use InvalidArgumentException;
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use InvalidArgumentException;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Safe\Exceptions\JsonException;
+
+use function Safe\file_put_contents;
+use function Safe\json_encode;
 
 final class PhpCsConfigGeneratorTest extends TestCase
 {
     private string $testDir;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->testDir = $this->createTempDir('linters-phpcs-');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeDirectory($this->testDir);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws \DOMException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateAddsFilesAndExcludes(): void
     {
         $this->createComposerJson([
             'phpcs' => [
-                'paths' => ['src', 'tests'],
+                'paths'     => ['src', 'tests'],
                 'skip_dirs' => ['vendor'],
             ],
         ]);
@@ -58,6 +58,12 @@ final class PhpCsConfigGeneratorTest extends TestCase
         self::assertContains('vendor', $excludes);
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws \DOMException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateThrowsWhenPathsMissing(): void
     {
         $this->createComposerJson([
@@ -75,11 +81,17 @@ final class PhpCsConfigGeneratorTest extends TestCase
         $generator->generate($this->testDir . '/phpcs.xml');
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws \DOMException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateSetsCachePath(): void
     {
         $this->createComposerJson([
             'phpcs' => [
-                'paths' => ['src'],
+                'paths'     => ['src'],
                 'cache_dir' => '.cache/phpcs',
             ],
         ]);
@@ -104,6 +116,26 @@ final class PhpCsConfigGeneratorTest extends TestCase
         self::assertSame('.cache/phpcs/.phpcs-cache', $cacheValue);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->testDir = $this->createTempDir('linters-phpcs-');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeDirectory($this->testDir);
+    }
+
+    /**
+     * @param array<string, mixed> $lintersConfig
+     *
+     * @throws JsonException
+     * @throws FilesystemException
+     */
     private function createComposerJson(array $lintersConfig): void
     {
         $json = json_encode([

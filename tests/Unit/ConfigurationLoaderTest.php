@@ -8,22 +8,15 @@ use JsonException;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+
+use function Safe\file_put_contents;
+use function Safe\json_encode;
 
 final class ConfigurationLoaderTest extends TestCase
 {
     private string $testDir;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->testDir = $this->createTempDir('linters-test-');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeDirectory($this->testDir);
-    }
 
     public function testConstructorThrowsExceptionWhenComposerJsonNotFound(): void
     {
@@ -33,6 +26,11 @@ final class ConfigurationLoaderTest extends TestCase
         new ConfigurationLoader('/nonexistent/path');
     }
 
+    /**
+     * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
+     */
     public function testGetReturnsDefaultWhenKeyNotFound(): void
     {
         $this->createComposerJson([]);
@@ -42,6 +40,11 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame('default', $loader->get('nonexistent.key', 'default'));
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws JsonException
+     * @throws DirException
+     */
     public function testGetReturnsValueWithDotNotation(): void
     {
         $this->createComposerJson([
@@ -61,6 +64,8 @@ final class ConfigurationLoaderTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
      */
     public function testGetReturnsPathsAsConfigured(): void
     {
@@ -85,6 +90,8 @@ final class ConfigurationLoaderTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
      */
     public function testGetReturnsDefaultArrayWhenKeyNotFound(): void
     {
@@ -98,6 +105,8 @@ final class ConfigurationLoaderTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
      */
     public function testGetReturnsPathsWithoutNormalization(): void
     {
@@ -122,6 +131,8 @@ final class ConfigurationLoaderTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
      */
     public function testGetReturnsFalseValues(): void
     {
@@ -129,7 +140,7 @@ final class ConfigurationLoaderTest extends TestCase
             'extra' => [
                 'linters' => [
                     'phpstan' => [
-                        'paths' => ['src'],
+                        'paths'    => ['src'],
                         'parallel' => false,
                     ],
                 ],
@@ -141,29 +152,18 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertFalse($loader->get('phpstan.parallel', true));
     }
 
-    public function testConstructorRejectsUnsupportedTool(): void
-    {
-        $this->createComposerJson([
-            'extra' => [
-                'linters' => [
-                    'unknown-tool' => [],
-                ],
-            ],
-        ]);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Unsupported tool: extra.linters.unknown-tool');
-
-        new ConfigurationLoader($this->testDir);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws JsonException
+     * @throws DirException
+     */
     public function testConstructorIgnoresUnknownKeys(): void
     {
         $this->createComposerJson([
             'extra' => [
                 'linters' => [
                     'phpstan' => [
-                        'paths' => ['src'],
+                        'paths'       => ['src'],
                         'unknown_key' => ['anything'],
                     ],
                 ],
@@ -177,14 +177,16 @@ final class ConfigurationLoaderTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
      */
     public function testConstructorUsesCustomExtraKey(): void
     {
         $this->createComposerJson([
             'extra' => [
                 'custom-key' => [
-                    'tool' => [
-                        'value' => 'test',
+                    'phpstan' => [
+                        'paths' => ['src'],
                     ],
                 ],
             ],
@@ -192,11 +194,28 @@ final class ConfigurationLoaderTest extends TestCase
 
         $loader = new ConfigurationLoader($this->testDir, 'custom-key');
 
-        self::assertSame('test', $loader->get('tool.value'));
+        self::assertSame(['src'], $loader->get('phpstan.paths'));
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->testDir = $this->createTempDir('linters-test-');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeDirectory($this->testDir);
     }
 
     /**
+     * @param array<string, mixed> $content
+     *
      * @throws JsonException
+     * @throws FilesystemException
      */
     private function createComposerJson(array $content): void
     {

@@ -13,18 +13,27 @@ use Linters\DTO\PhpStanConfig;
 use Linters\DTO\RectorConfig;
 use Linters\Enum\Tool;
 use RuntimeException;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+
+use function Safe\file_get_contents;
+use function Safe\getcwd;
 
 class ConfigurationLoader
 {
     /** @var string */
     protected const COMPOSER_FILE = '/composer.json';
 
-    protected array $config = [];
-
+    /** @var string */
     private const EXTRA_KEY = 'linters';
+
+    /** @var array<string, array<string, mixed>> */
+    protected array $config = [];
 
     /**
      * @throws JsonException
+     * @throws DirException
+     * @throws FilesystemException
      */
     public function __construct(
         protected ?string $composerDir = null,
@@ -41,23 +50,22 @@ class ConfigurationLoader
 
         $config = $content['extra'][$this->extraKey] ?? [];
 
-        if (!is_array($config)) {
+        if (!\is_array($config)) {
             throw new RuntimeException('extra.' . $this->extraKey . ' must be an object');
         }
 
         $this->config = $config;
-        $this->validateConfig();
     }
 
     /**
-     * @return array|string|null
+     * @return array<string, mixed>|string|null
      */
     public function get(string $keys, mixed $default = null): mixed
     {
         $explodedKeys = explode('.', $keys);
         $array = $this->config;
         foreach ($explodedKeys as $key) {
-            if (!is_array($array) || !array_key_exists($key, $array)) {
+            if (!\is_array($array) || !\array_key_exists($key, $array)) {
                 return $default;
             }
 
@@ -97,27 +105,19 @@ class ConfigurationLoader
         return ComposerUnusedConfig::fromArray($this->getToolConfig(Tool::COMPOSER_UNUSED->value));
     }
 
+    /**
+     * @throws DirException
+     */
     public function getComposerDir(): string
     {
         return $this->composerDir ?? getcwd();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getToolConfig(string $tool): array
     {
         return $this->config[$tool] ?? [];
     }
-
-    private function validateConfig(): void
-    {
-        foreach ($this->config as $tool => $toolConfig) {
-            if (!is_string($tool) || Tool::tryFrom($tool) === null) {
-                throw new RuntimeException('Unsupported tool: extra.' . $this->extraKey . '.' . (string) $tool);
-            }
-
-            if (!is_array($toolConfig)) {
-                throw new RuntimeException('extra.' . $this->extraKey . '.' . $tool . ' must be an object');
-            }
-        }
-    }
-
 }

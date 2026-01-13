@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Linters\Utils;
 
-use InvalidArgumentException;
-
 final class ConfigValidation
 {
     /**
+     * @param string|array<int|string, mixed> $value
+     *
      * @return string[]
      */
     public static function stringList(string|array $value): array
     {
-        $list = (array) $value;
-
-        return array_filter($list, static fn(mixed $item): bool => \is_string($item));
+        return array_filter((array) $value, \is_string(...));
     }
 
     /**
@@ -30,19 +28,6 @@ final class ConfigValidation
         return self::stringList($value);
     }
 
-    public static function optionalRelativePath(mixed $value, string $key): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        if (!is_string($value)) {
-            throw new InvalidArgumentException($key . ' must be a string');
-        }
-
-        return $value;
-    }
-
     /**
      * @return string[]
      */
@@ -50,8 +35,8 @@ final class ConfigValidation
     {
         $list = self::optionalStringList($frameworks);
         $list = array_map(
-            static fn(string $framework): string => strtolower($framework),
-            $list
+            strtolower(...),
+            $list,
         );
 
         return array_values($list);

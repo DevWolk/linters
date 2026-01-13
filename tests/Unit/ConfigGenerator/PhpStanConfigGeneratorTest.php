@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit\ConfigGenerator;
 
+use InvalidArgumentException;
 use Linters\ConfigGenerator\PhpStanConfigGenerator;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
-use InvalidArgumentException;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Safe\Exceptions\JsonException;
+
+use function Safe\file_get_contents;
+use function Safe\file_put_contents;
+use function Safe\json_encode;
 
 final class PhpStanConfigGeneratorTest extends TestCase
 {
     private string $testDir;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->testDir = $this->createTempDir('linters-phpstan-');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeDirectory($this->testDir);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateWritesConfigurationWithIncludesAndExcludes(): void
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths' => ['src', 'tests'],
+                'paths'     => ['src', 'tests'],
                 'skip_dirs' => ['vendor'],
             ],
         ]);
@@ -50,6 +50,11 @@ final class PhpStanConfigGeneratorTest extends TestCase
         self::assertStringNotContainsString($this->testDir . '/src', $contents);
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateThrowsWhenPathsMissing(): void
     {
         $this->createComposerJson([
@@ -67,11 +72,16 @@ final class PhpStanConfigGeneratorTest extends TestCase
         $generator->generate($this->testDir . '/phpstan.neon');
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateAddsCacheDir(): void
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths' => ['src'],
+                'paths'     => ['src'],
                 'cache_dir' => '.cache/phpstan',
             ],
         ]);
@@ -86,6 +96,26 @@ final class PhpStanConfigGeneratorTest extends TestCase
         self::assertStringContainsString('tmpDir: .cache/phpstan', $contents);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->testDir = $this->createTempDir('linters-phpstan-');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeDirectory($this->testDir);
+    }
+
+    /**
+     * @param array<string, mixed> $lintersConfig
+     *
+     * @throws JsonException
+     * @throws FilesystemException
+     */
     private function createComposerJson(array $lintersConfig): void
     {
         $json = json_encode([

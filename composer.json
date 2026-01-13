@@ -1,9 +1,9 @@
 {
   "name": "devwolk/linters",
   "description": "Centralized PHP linter configurations and static analysis tools for PHP projects",
-  "version": "0.0.1",
   "license": "MIT",
   "type": "library",
+  "version": "0.0.1",
   "keywords": [
     "linter",
     "phpstan",
@@ -17,6 +17,8 @@
   "require": {
     "php": "^8.2",
     "ext-dom": "*",
+    "driftingly/rector-laravel": "^2.1",
+    "ergebnis/composer-normalize": "^2.48",
     "friendsofphp/php-cs-fixer": "^3.89",
     "icanhazstring/composer-unused": "^0.9.5",
     "phpmd/phpmd": "^2.15",
@@ -29,15 +31,16 @@
     "roave/security-advisories": "dev-latest",
     "slevomat/coding-standard": "^8.24",
     "squizlabs/php_codesniffer": "^4.0",
+    "symfony/console": "^7.3",
+    "symfony/filesystem": "^7.4",
     "thecodingmachine/phpstan-safe-rule": "^1.4",
-    "symfony/console": "^7.3"
+    "thecodingmachine/safe": "^3.3"
   },
   "require-dev": {
-    "ergebnis/composer-normalize": "^2.48",
     "phpunit/phpunit": "^11.0"
   },
   "suggest": {
-    "rector/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel.",
+    "driftingly/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel.",
     "rector/rector-symfony": "Enable Symfony Rector sets when rector.frameworks includes symfony."
   },
   "minimum-stability": "stable",
@@ -61,37 +64,65 @@
       "phpstan/extension-installer": true
     }
   },
-  "scripts": {
-    "rector": [
-      "./vendor/bin/rector process --config=./configs/rector.php --clear-cache"
-    ],
-    "rector-check": [
-      "./vendor/bin/rector process --config=./configs/rector.php --clear-cache --dry-run"
-    ],
-    "php-cs-fixer": [
-      "./vendor/bin/php-cs-fixer fix --config=./configs/.php-cs-fixer.dist.php --allow-risky=yes --using-cache=no"
-    ],
-    "php-cs-fixer-check": [
-      "./vendor/bin/php-cs-fixer fix --dry-run --config=./configs/.php-cs-fixer.dist.php --diff -vv --allow-risky=yes --using-cache=no"
-    ],
-    "phpstan": [
-      "./bin/linters run phpstan"
-    ],
-    "phpstan-baseline": [
-      "./bin/linters generate phpstan",
-      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
-    ],
-    "phpcs": [
-      "./bin/linters run phpcs"
-    ],
-    "phpmd": [
-      "./bin/linters run phpmd"
-    ],
-    "composer-unused": [
-      "./vendor/bin/composer-unused --configuration=./configs/composer-unused.php"
-    ],
-    "test": [
-      "./vendor/bin/phpunit --configuration=./phpunit.xml"
-    ]
+  "extra": {
+    "linters": {
+      "composer-unused": {
+        "named-filters": []
+      },
+      "php-cs-fixer": {
+        "cache_dir": ".cache/php-cs-fixer",
+        "parallel": true,
+        "paths": [
+          "src",
+          "tests"
+        ],
+        "skip_dirs": [
+          "vendor"
+        ]
+      },
+      "phpcs": {
+        "cache_dir": ".cache/phpcs",
+        "parallel": 4,
+        "paths": [
+          "src",
+          "tests"
+        ],
+        "skip_dirs": [
+          "vendor"
+        ]
+      },
+      "phpmd": {
+        "paths": [
+          "src",
+          "tests"
+        ],
+        "skip_dirs": [
+          "vendor"
+        ]
+      },
+      "phpstan": {
+        "baseline": "phpstan-baseline.neon",
+        "cache_dir": ".cache/phpstan",
+        "parallel": true,
+        "paths": [
+          "src",
+          "tests"
+        ],
+        "skip_dirs": [
+          "vendor"
+        ]
+      },
+      "rector": {
+        "cache_dir": ".cache/rector",
+        "parallel": true,
+        "paths": [
+          "src",
+          "tests"
+        ],
+        "skip_dirs": [
+          "vendor"
+        ]
+      }
+    }
   }
 }

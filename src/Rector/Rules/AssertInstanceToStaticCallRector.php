@@ -55,7 +55,7 @@ final class AssertInstanceToStaticCallRector extends AbstractRector implements M
     public function getRuleDefinition(): RuleDefinition
     {
         return new RuleDefinition(
-            'Changes PHPUnit assertion instance calls like $this->assertInstanceOf() to static calls like self::assertInstanceOf()',
+            'Changes PHPUnit $this->assert*() calls to self::assert*() static calls',
             [
                 new CodeSample(
                     <<<'CODE_SAMPLE'

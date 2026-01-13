@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\DTO\ParallelConfig;
+use Linters\DTO\PhpStanConfig;
 use Linters\Utils\ConfigurationLoader;
+use Safe\Exceptions\PcreException;
+
+use function Safe\file_put_contents;
+use function Safe\preg_match;
 
 /**
- * Generator for PHPStan NEON configuration files
+ * Generator for PHPStan NEON configuration files.
  *
  * This class generates phpstan.neon dynamically from:
  * - Base template
@@ -29,11 +35,10 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
 
     private const KEY_INCLUDES = 'includes';
 
-    protected ConfigurationLoader $loader;
+    private const KEY_PARALLEL = 'parallel';
 
-    public function __construct(?ConfigurationLoader $loader = null)
+    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
-        $this->loader = $loader ?? new ConfigurationLoader();
     }
 
     public function generate(string $targetPath): void
@@ -44,77 +49,49 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
         file_put_contents($targetPath, $neonContent);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function buildConfiguration(): array
     {
         $config = $this->loader->getPhpStanConfig();
 
-        $parameters = [
-            self::KEY_PATHS => $config->paths,
-        ];
-
-        $excludePaths = array_merge($config->skipDirs, $config->skipFiles);
-        if ($excludePaths !== []) {
-            $parameters[self::KEY_EXCLUDE_PATHS] = $excludePaths;
-        }
-
-        $cacheDir = $config->cacheDir;
-        if ($cacheDir !== null && $cacheDir !== '') {
-            $parameters[self::KEY_TMP_DIR] = $cacheDir;
-        }
-
-        $includes = [self::PACKAGE_CONFIG_PATH];
-
-        $baseline = $config->baseline;
-        if ($baseline !== null && $baseline !== '') {
-            $includes[] = $baseline;
-        }
+        $parameters = $this->buildParameters($config);
+        $includes = $this->buildIncludes($config);
 
         return [
             self::KEY_PARAMETERS => $parameters,
-            self::KEY_INCLUDES => $includes,
+            self::KEY_INCLUDES   => $includes,
         ];
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     protected function convertToNeon(array $config, int $indent = 0): string
     {
         $neon = '';
         $indentStr = str_repeat('    ', $indent);
 
         foreach ($config as $key => $value) {
-            if (is_array($value) === false) {
-                $neon .= $indentStr . $key . ': ' . $this->formatValue($value) . "\n";
-                continue;
-            }
-
-            $neon .= $indentStr . $key . ":\n";
-
-            if (array_is_list($value)) {
-                foreach ($value as $item) {
-                    if (is_array($item)) {
-                        $neon .= $indentStr . "    -\n";
-                        $neon .= $this->convertToNeon($item, $indent + 2);
-                    } else {
-                        $neon .= $indentStr . "    - " . $this->formatValue($item) . "\n";
-                    }
-                }
-                continue;
-            }
-
-            $neon .= $this->convertToNeon($value, $indent + 1);
+            $neon .= $this->convertKeyValue($key, $value, $indent, $indentStr);
         }
 
         return $neon;
     }
 
+    /**
+     * @throws PcreException
+     */
     protected function formatValue(mixed $value): string
     {
-        if (is_bool($value)) {
+        if (\is_bool($value)) {
             return $value ? 'true' : 'false';
         }
 
-        if (is_string($value)) {
+        if (\is_string($value)) {
             // Quote strings that contain special characters or spaces
-            if (preg_match('/[:\s#]/', $value)) {
+            if (preg_match('/[:\s#]/', $value) === 1) {
                 return "'" . str_replace("'", "''", $value) . "'";
             }
 
@@ -122,5 +99,105 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
         }
 
         return (string)$value;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildParameters(PhpStanConfig $config): array
+    {
+        $parameters = [
+            self::KEY_PATHS => $config->paths,
+        ];
+
+        $excludePaths = array_merge($config->skipDirs, $config->skipFiles);
+
+        if ($excludePaths !== []) {
+            $parameters[self::KEY_EXCLUDE_PATHS] = $excludePaths;
+        }
+
+        if ($config->cacheDir !== null && $config->cacheDir !== '') {
+            $parameters[self::KEY_TMP_DIR] = $config->cacheDir;
+        }
+
+        $parallelConfig = $this->buildParallelConfig($config->parallel);
+
+        if ($parallelConfig !== []) {
+            $parameters[self::KEY_PARALLEL] = $parallelConfig;
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    private function buildParallelConfig(?ParallelConfig $parallel): array
+    {
+        if ($parallel?->enabled !== true) {
+            return [];
+        }
+
+        $config = [];
+
+        if ($parallel?->maxProcesses !== null) {
+            $config['maximumNumberOfProcesses'] = $parallel->maxProcesses;
+        }
+
+        if ($parallel?->timeout !== null) {
+            $config['processTimeout'] = $parallel->timeout;
+        }
+
+        return $config;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildIncludes(PhpStanConfig $config): array
+    {
+        $includes = [self::PACKAGE_CONFIG_PATH];
+
+        if ($config->baseline !== null && $config->baseline !== '') {
+            $includes[] = $config->baseline;
+        }
+
+        return $includes;
+    }
+
+    /**
+     * @throws PcreException
+     */
+    private function convertKeyValue(string $key, mixed $value, int $indent, string $indentStr): string
+    {
+        if (\is_array($value) === false) {
+            return $indentStr . $key . ': ' . $this->formatValue($value) . "\n";
+        }
+
+        $neon = $indentStr . $key . ":\n";
+
+        if (array_is_list($value)) {
+            return $neon . $this->convertList($value, $indent, $indentStr);
+        }
+
+        return $neon . $this->convertToNeon($value, $indent + 1);
+    }
+
+    /**
+     * @param list<mixed> $items
+     *
+     * @throws PcreException
+     */
+    private function convertList(array $items, int $indent, string $indentStr): string
+    {
+        $neon = '';
+
+        foreach ($items as $item) {
+            $neon .= \is_array($item)
+                ? $indentStr . "    -\n" . $this->convertToNeon($item, $indent + 2)
+                : $indentStr . '    - ' . $this->formatValue($item) . "\n";
+        }
+
+        return $neon;
     }
 }

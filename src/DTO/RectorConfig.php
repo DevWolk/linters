@@ -12,9 +12,6 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
     /** @var string[] */
     public const FILE_EXTENSIONS = ['php'];
 
-    /** @var string[] */
-    public array $frameworks;
-
     /**
      * @param string[] $frameworks
      */
@@ -24,16 +21,18 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         array $skipFiles = [],
         ?ParallelConfig $parallel = null,
         ?string $cacheDir = null,
-        array $frameworks = [],
+        public array $frameworks = [],
     ) {
         parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
-
-        $this->frameworks = $frameworks;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public static function fromArray(array $config): self
     {
-        $paths = ConfigValidation::stringList($config['paths']);
+        $paths = ConfigValidation::stringList($config['paths'] ?? []);
+
         if ($paths === []) {
             throw new InvalidArgumentException('Missing required config: extra.linters.rector.paths');
         }
@@ -41,7 +40,7 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null, true);
-        $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.rector.cache_dir');
+        $cacheDir = $config['cache_dir'] ?? null;
         $frameworks = ConfigValidation::normalizeFrameworks($config['frameworks'] ?? null);
 
         return new self(

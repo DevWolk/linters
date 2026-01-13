@@ -8,26 +8,27 @@ use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\Console\Output\BufferedOutput;
+
+use function Safe\chmod;
+use function Safe\file;
+use function Safe\file_get_contents;
+use function Safe\file_put_contents;
+use function Safe\json_encode;
+use function Safe\mkdir;
 
 final class ToolRunnerTest extends TestCase
 {
     private string $testDir;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->testDir = $this->createTempDir('linters-runner-');
-        mkdir($this->testDir . '/vendor');
-        mkdir($this->testDir . '/vendor/bin');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeDirectory($this->testDir);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testGenerateUsesDefaultTarget(): void
     {
         $this->createComposerJson([
@@ -47,6 +48,11 @@ final class ToolRunnerTest extends TestCase
         self::assertStringContainsString('configs/phpstan.neon', file_get_contents($expectedTarget));
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testRunInvokesBinaryWithDefaultFormat(): void
     {
         $logPath = $this->testDir . '/phpmd.log';
@@ -78,6 +84,11 @@ final class ToolRunnerTest extends TestCase
         ], $loggedArgs);
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testRunAddsPhpMdBaselineFile(): void
     {
         $logPath = $this->testDir . '/phpmd-baseline.log';
@@ -85,7 +96,7 @@ final class ToolRunnerTest extends TestCase
 
         $this->createComposerJson([
             'phpmd' => [
-                'paths' => ['src'],
+                'paths'    => ['src'],
                 'baseline' => 'phpmd-baseline.xml',
             ],
         ]);
@@ -111,6 +122,11 @@ final class ToolRunnerTest extends TestCase
         ], $loggedArgs);
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     * @throws \JsonException
+     */
     public function testRunAddsPhpCsParallelFlag(): void
     {
         $logPath = $this->testDir . '/phpcs.log';
@@ -118,9 +134,9 @@ final class ToolRunnerTest extends TestCase
 
         $this->createComposerJson([
             'phpcs' => [
-                'paths' => ['src'],
+                'paths'    => ['src'],
                 'parallel' => [
-                    'enabled' => true,
+                    'enabled'       => true,
                     'max_processes' => 4,
                 ],
             ],
@@ -145,6 +161,25 @@ final class ToolRunnerTest extends TestCase
         ], $loggedArgs);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->testDir = $this->createTempDir('linters-runner-');
+        mkdir($this->testDir . '/vendor');
+        mkdir($this->testDir . '/vendor/bin');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeDirectory($this->testDir);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
     private function createBinaryScript(string $binaryPath, string $logPath): void
     {
         $script = "#!/usr/bin/env sh\n";
@@ -155,6 +190,12 @@ final class ToolRunnerTest extends TestCase
         chmod($binaryPath, 0755);
     }
 
+    /**
+     * @param array<string, mixed> $lintersConfig
+     *
+     * @throws FilesystemException
+     * @throws JsonException
+     */
     private function createComposerJson(array $lintersConfig): void
     {
         $json = json_encode([

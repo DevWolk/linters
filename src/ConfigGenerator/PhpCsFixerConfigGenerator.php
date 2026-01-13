@@ -5,33 +5,43 @@ declare(strict_types=1);
 namespace Linters\ConfigGenerator;
 
 use Linters\Utils\ConfigurationLoader;
+use Safe\Exceptions\DirException;
+use Safe\Exceptions\FilesystemException;
+use Symfony\Component\Filesystem\Path;
+
+use function Safe\file_put_contents;
 
 /**
- * Generator for PHP-CS-Fixer configuration files
+ * Generator for PHP-CS-Fixer configuration files.
  *
  * Creates a stub file that requires the package's .php-cs-fixer.dist.php config.
  * The package config reads paths/excludes from composer.json at runtime.
  */
 class PhpCsFixerConfigGenerator implements ConfigGeneratorInterface
 {
-    private const PACKAGE_CONFIG_PATH = 'vendor/devwolk/linters/configs/.php-cs-fixer.dist.php';
-
-    protected ConfigurationLoader $loader;
-
-    public function __construct(?ConfigurationLoader $loader = null)
+    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
-        $this->loader = $loader ?? new ConfigurationLoader();
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     */
     public function generate(string $targetPath): void
     {
         $content = $this->buildContent();
         file_put_contents($targetPath, $content);
     }
 
+    /**
+     * @throws DirException
+     */
     protected function buildContent(): string
     {
-        $packagePath = self::PACKAGE_CONFIG_PATH;
+        $targetDir = $this->loader->getComposerDir();
+        $sourcePath = \dirname(__DIR__, 2) . '/configs/.php-cs-fixer.dist.php';
+
+        $packagePath = Path::makeRelative($sourcePath, $targetDir);
 
         return <<<PHP
 <?php

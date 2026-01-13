@@ -16,9 +16,13 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
 
     public const CACHE_NAME = '.php-cs-fixer.cache';
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public static function fromArray(array $config): self
     {
-        $paths = ConfigValidation::stringList($config['paths']);
+        $paths = ConfigValidation::stringList($config['paths'] ?? []);
+
         if ($paths === []) {
             throw new InvalidArgumentException('Missing required config: extra.linters.php-cs-fixer.paths');
         }
@@ -26,7 +30,7 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
         $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
-        $cacheDir = ConfigValidation::optionalRelativePath($config['cache_dir'] ?? null, 'extra.linters.php-cs-fixer.cache_dir');
+        $cacheDir = $config['cache_dir'] ?? null;
 
         return new self(
             $paths,
@@ -34,7 +38,6 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
             $skipFiles,
             $parallel,
             $cacheDir,
-            null,
         );
     }
 }

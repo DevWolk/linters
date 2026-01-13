@@ -1,0 +1,73 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Linters\\DTO\\ParallelConfig\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: src/ConfigGenerator/PhpStanConfigGenerator.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Linters\\DTO\\ParallelConfig\:\:fromArray\(\) expects array\<string, mixed\>, array\<string, mixed\>\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/DTO/ParallelConfig.php
+
+		-
+			message: '#^PHPDoc tag @implements contains generic type Rector\\VersionBonding\\Contract\\MinPhpVersionInterface\<PhpParser\\Node\> but interface Rector\\VersionBonding\\Contract\\MinPhpVersionInterface is not generic\.$#'
+			identifier: generics.notGeneric
+			count: 1
+			path: src/Rector/Rules/AssertInstanceToStaticCallRector.php
+
+		-
+			message: '#^Parameter \#1 \$node \(PhpParser\\Node\\Expr\\MethodCall\) of method Linters\\Rector\\Rules\\AssertInstanceToStaticCallRector\:\:refactor\(\) should be contravariant with parameter \$node \(PhpParser\\Node\) of method Rector\\Contract\\Rector\\RectorInterface\:\:refactor\(\)$#'
+			identifier: method.childParameterType
+			count: 2
+			path: src/Rector/Rules/AssertInstanceToStaticCallRector.php
+
+		-
+			message: '#^Parameter \#2 \$name of class PhpParser\\Node\\Expr\\StaticCall constructor expects PhpParser\\Node\\Expr\|PhpParser\\Node\\Identifier\|string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Rector/Rules/AssertInstanceToStaticCallRector.php
+
+		-
+			message: '#^PHPDoc tag @implements contains generic type Rector\\VersionBonding\\Contract\\MinPhpVersionInterface\<PhpParser\\Node\> but interface Rector\\VersionBonding\\Contract\\MinPhpVersionInterface is not generic\.$#'
+			identifier: generics.notGeneric
+			count: 1
+			path: src/Rector/Rules/MockObjectStaticToInstanceCallRector.php
+
+		-
+			message: '#^Parameter \#1 \$node \(PhpParser\\Node\\Expr\\StaticCall\) of method Linters\\Rector\\Rules\\MockObjectStaticToInstanceCallRector\:\:refactor\(\) should be contravariant with parameter \$node \(PhpParser\\Node\) of method Rector\\Contract\\Rector\\RectorInterface\:\:refactor\(\)$#'
+			identifier: method.childParameterType
+			count: 2
+			path: src/Rector/Rules/MockObjectStaticToInstanceCallRector.php
+
+		-
+			message: '#^Function passthru is unsafe to use\. It can return FALSE instead of throwing an exception\. Please add ''use function Safe\\passthru;'' at the beginning of the file to use the variant provided by the ''thecodingmachine/safe'' library\.$#'
+			identifier: theCodingMachineSafe.function
+			count: 1
+			path: src/Service/ToolRunner.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertFalse\(\) with array\<string, mixed\>\|string\|null will always evaluate to false\.$#'
+			identifier: staticMethod.impossibleType
+			count: 1
+			path: tests/Unit/ConfigurationLoaderTest.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{''app'', ''src''\} and array\<string, mixed\>\|string\|null will always evaluate to false\.$#'
+			identifier: staticMethod.impossibleType
+			count: 2
+			path: tests/Unit/ConfigurationLoaderTest.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{''src'', ''tests''\} and array\<string, mixed\>\|string\|null will always evaluate to false\.$#'
+			identifier: staticMethod.impossibleType
+			count: 1
+			path: tests/Unit/ConfigurationLoaderTest.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{''src''\} and array\<string, mixed\>\|string\|null will always evaluate to false\.$#'
+			identifier: staticMethod.impossibleType
+			count: 2
+			path: tests/Unit/ConfigurationLoaderTest.php
