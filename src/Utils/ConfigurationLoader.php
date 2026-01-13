@@ -19,13 +19,13 @@ use Safe\Exceptions\FilesystemException;
 use function Safe\file_get_contents;
 use function Safe\getcwd;
 
-final class ConfigurationLoader
+final readonly class ConfigurationLoader
 {
     private const string COMPOSER_FILE = '/composer.json';
 
     private const string EXTRA_KEY = 'linters';
 
-    private readonly string $composerDir;
+    private string $composerDir;
 
     /** @var array<string, array<string, mixed>> */
     private array $config;
@@ -37,7 +37,7 @@ final class ConfigurationLoader
      */
     public function __construct(
         ?string $composerDir = null,
-        private readonly string $extraKey = self::EXTRA_KEY,
+        private string $extraKey = self::EXTRA_KEY,
     ) {
         $this->composerDir = $composerDir ?? getcwd();
 

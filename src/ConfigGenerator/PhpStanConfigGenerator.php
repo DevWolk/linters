@@ -7,6 +7,7 @@ namespace Linters\ConfigGenerator;
 use Linters\DTO\ParallelConfig;
 use Linters\DTO\PhpStanConfig;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
 use Safe\Exceptions\PcreException;
 use Symfony\Component\Filesystem\Path;
 
@@ -117,7 +118,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
             $parameters[self::KEY_EXCLUDE_PATHS] = $excludePaths;
         }
 
-        if ($config->cacheDir !== null && $config->cacheDir !== '') {
+        if (ConfigValidation::isNonEmptyString($config->cacheDir)) {
             $parameters[self::KEY_TMP_DIR] = $config->cacheDir;
         }
 
@@ -162,8 +163,8 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
 
         $includes = [$packageConfigPath];
 
-        if ($config->baseline !== null && $config->baseline !== '') {
-            $includes[] = $config->baseline;
+        if (ConfigValidation::isNonEmptyString($config->baseline)) {
+            $includes[] = (string) $config->baseline;
         }
 
         return $includes;

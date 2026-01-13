@@ -15,7 +15,7 @@ enum RectorSet: string
     case DOCTRINE = 'doctrine';
     case SYMFONY = 'symfony';
 
-    public function getPath(): ?string
+    public function getPath(): string
     {
         return match ($this) {
             self::LARAVEL11 => AppRectorSetList::LARAVEL11,
@@ -23,7 +23,7 @@ enum RectorSet: string
             self::DOCTRINE  => AppRectorSetList::DOCTRINE,
             self::PHPUNIT11 => AppRectorSetList::PHPUNIT11,
             self::PHPUNIT12 => AppRectorSetList::PHPUNIT12,
-            self::SYMFONY   => null, // Symfony is handled via withComposerBased in rector.php
+            self::SYMFONY   => AppRectorSetList::SYMFONY,
         };
     }
 }

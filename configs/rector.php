@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Linters\Rector\Set\AppRectorSetList;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
@@ -47,14 +48,14 @@ $configuredSets = [
 
 foreach ($config->sets as $set) {
     $path = $set->getPath();
-    if ($path !== null && !in_array($path, $configuredSets, true)) {
+    if (!in_array($path, $configuredSets, true)) {
         $configuredSets[] = $path;
     }
 }
 
 $rectorConfig = RectorConfig::configure();
 
-if ($config->cacheDir !== null && $config->cacheDir !== '') {
+if (ConfigValidation::isNonEmptyString($config->cacheDir)) {
     $rectorConfig = $rectorConfig->withCache(
         cacheDirectory: $config->cacheDir,
         cacheClass: FileCacheStorage::class
@@ -84,6 +85,7 @@ $rectorConfig = $rectorConfig
         laravel: $config->isLaravelProject(),
     )
     ->withAttributesSets(
+        symfony: $config->isSymfonyProject(),
         doctrine: true,
         mongoDb: true,
         gedmo: true,

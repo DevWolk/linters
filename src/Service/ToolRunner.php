@@ -13,9 +13,11 @@ use Linters\ConfigGenerator\PhpStanConfigGenerator;
 use Linters\ConfigGenerator\RectorConfigGenerator;
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
 use RuntimeException;
 use Safe\Exceptions\DirException;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Path;
 
 final readonly class ToolRunner
 {
@@ -112,8 +114,8 @@ final readonly class ToolRunner
 
         $baseline = $config->baseline;
 
-        if ($baseline !== null && $baseline !== '') {
-            $command .= ' --baseline-file=' . escapeshellarg($baseline);
+        if (ConfigValidation::isNonEmptyString($baseline)) {
+            $command .= ' --baseline-file=' . escapeshellarg((string) $baseline);
         }
 
         return $command;
@@ -152,12 +154,12 @@ final readonly class ToolRunner
             throw new RuntimeException(\sprintf('Tool %s does not have a generated target', $tool->value));
         }
 
-        return rtrim($this->loader->getComposerDir(), '/') . '/' . $target;
+        return Path::join($this->loader->getComposerDir(), $target);
     }
 
     private function resolveBinary(string $binary): string
     {
-        return rtrim($this->loader->getComposerDir(), '/') . '/vendor/bin/' . $binary;
+        return Path::join($this->loader->getComposerDir(), 'vendor', 'bin', $binary);
     }
 
     private function runCommand(OutputInterface $output, string $label, string $command): int

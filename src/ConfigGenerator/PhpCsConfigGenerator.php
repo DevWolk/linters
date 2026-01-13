@@ -8,6 +8,8 @@ use DOMDocument;
 use DOMException;
 use Linters\DTO\PhpCsConfig;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * Generator for PHP_CodeSniffer XML configuration files.
@@ -78,8 +80,8 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
 
         $cacheDir = $config->cacheDir;
 
-        if ($cacheDir !== null && $cacheDir !== '') {
-            $cachePath = \sprintf('%s/%s', rtrim($cacheDir, '/'), PhpCsConfig::CACHE_NAME);
+        if (ConfigValidation::isNonEmptyString($cacheDir)) {
+            $cachePath = Path::join((string) $cacheDir, PhpCsConfig::CACHE_NAME);
             $this->setCachePath($dom, $cachePath);
         }
 

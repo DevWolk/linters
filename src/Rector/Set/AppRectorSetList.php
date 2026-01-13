@@ -17,4 +17,6 @@ final class AppRectorSetList
     public const string PHPUNIT11 = __DIR__ . '/../Configs/Sets/phpunit11.php';
 
     public const string PHPUNIT12 = __DIR__ . '/../Configs/Sets/phpunit12.php';
+
+    public const string SYMFONY = __DIR__ . '/../Configs/Sets/symfony.php';
 }

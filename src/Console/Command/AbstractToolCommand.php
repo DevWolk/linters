@@ -47,6 +47,10 @@ abstract class AbstractToolCommand extends Command
         } catch (Throwable $throwable) {
             $output->writeln('<error>' . $throwable->getMessage() . '</error>');
 
+            if ($output->isVerbose()) {
+                $output->writeln('<error>' . $throwable->getTraceAsString() . '</error>');
+            }
+
             return Command::FAILURE;
         }
     }

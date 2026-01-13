@@ -7,7 +7,7 @@ use RectorLaravel\Set\LaravelLevelSetList;
 use RectorLaravel\Set\LaravelSetList;
 
 return static function (RectorConfig $rectorConfig): void {
-    // Check if driftingly/rector-laravel is installed
+    // Check if https://github.com/driftingly/rector-laravel is installed
     if (!class_exists(LaravelLevelSetList::class)) {
         return;
     }
