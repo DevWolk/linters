@@ -19,15 +19,16 @@ use Safe\Exceptions\FilesystemException;
 use function Safe\file_get_contents;
 use function Safe\getcwd;
 
-class ConfigurationLoader
+final class ConfigurationLoader
 {
-    /** @var string */
-    protected const COMPOSER_FILE = '/composer.json';
+    private const string COMPOSER_FILE = '/composer.json';
 
     private const string EXTRA_KEY = 'linters';
 
+    private readonly string $composerDir;
+
     /** @var array<string, array<string, mixed>> */
-    protected array $config = [];
+    private array $config;
 
     /**
      * @throws JsonException
@@ -35,10 +36,10 @@ class ConfigurationLoader
      * @throws FilesystemException
      */
     public function __construct(
-        protected ?string $composerDir = null,
-        protected string $extraKey = self::EXTRA_KEY,
+        ?string $composerDir = null,
+        private readonly string $extraKey = self::EXTRA_KEY,
     ) {
-        $this->composerDir ??= getcwd();
+        $this->composerDir = $composerDir ?? getcwd();
 
         if (!file_exists($this->composerDir . self::COMPOSER_FILE)) {
             throw new RuntimeException(self::COMPOSER_FILE . ' file not found');
@@ -54,24 +55,6 @@ class ConfigurationLoader
         }
 
         $this->config = $config;
-    }
-
-    /**
-     * @return array<string, mixed>|string|null
-     */
-    public function get(string $keys, mixed $default = null): mixed
-    {
-        $explodedKeys = explode('.', $keys);
-        $array = $this->config;
-        foreach ($explodedKeys as $key) {
-            if (!\is_array($array) || !\array_key_exists($key, $array)) {
-                return $default;
-            }
-
-            $array = $array[$key];
-        }
-
-        return $array;
     }
 
     public function getRectorConfig(): RectorConfig
@@ -104,12 +87,9 @@ class ConfigurationLoader
         return ComposerUnusedConfig::fromArray($this->getToolConfig(Tool::COMPOSER_UNUSED->value));
     }
 
-    /**
-     * @throws DirException
-     */
     public function getComposerDir(): string
     {
-        return $this->composerDir ?? getcwd();
+        return $this->composerDir;
     }
 
     /**

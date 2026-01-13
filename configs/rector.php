@@ -145,9 +145,9 @@ $rectorConfig = $rectorConfig
 if ($config->parallel?->enabled) {
     // https://getrector.com/documentation/troubleshooting-parallel
     $rectorConfig = $rectorConfig->withParallel(
-        $config->parallel?->timeout,
-        $config->parallel?->maxProcesses,
-        $config->parallel?->filesPerProcess,
+        $config->parallel->timeout,
+        $config->parallel->maxProcesses,
+        $config->parallel->filesPerProcess,
     );
 }
 

@@ -8,6 +8,7 @@ use Linters\DTO\ParallelConfig;
 use Linters\DTO\PhpStanConfig;
 use Linters\Utils\ConfigurationLoader;
 use Safe\Exceptions\PcreException;
+use Symfony\Component\Filesystem\Path;
 
 use function Safe\file_put_contents;
 use function Safe\preg_match;
@@ -156,7 +157,10 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
      */
     private function buildIncludes(PhpStanConfig $config): array
     {
-        $includes = [self::PACKAGE_CONFIG_PATH];
+        $targetDir = $this->loader->getComposerDir();
+        $packageConfigPath = Path::makeRelative(self::PACKAGE_CONFIG_PATH, $targetDir);
+
+        $includes = [$packageConfigPath];
 
         if ($config->baseline !== null && $config->baseline !== '') {
             $includes[] = $config->baseline;

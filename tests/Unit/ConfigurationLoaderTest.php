@@ -31,21 +31,7 @@ final class ConfigurationLoaderTest extends TestCase
      * @throws FilesystemException
      * @throws DirException
      */
-    public function testGetReturnsDefaultWhenKeyNotFound(): void
-    {
-        $this->createComposerJson([]);
-
-        $loader = new ConfigurationLoader($this->testDir);
-
-        self::assertSame('default', $loader->get('nonexistent.key', 'default'));
-    }
-
-    /**
-     * @throws FilesystemException
-     * @throws JsonException
-     * @throws DirException
-     */
-    public function testGetReturnsValueWithDotNotation(): void
+    public function testGetRectorConfigReturnsPaths(): void
     {
         $this->createComposerJson([
             'extra' => [
@@ -58,8 +44,9 @@ final class ConfigurationLoaderTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getRectorConfig();
 
-        self::assertSame(['app', 'src'], $loader->get('rector.paths'));
+        self::assertSame(['app', 'src'], $config->paths);
     }
 
     /**
@@ -67,74 +54,7 @@ final class ConfigurationLoaderTest extends TestCase
      * @throws FilesystemException
      * @throws DirException
      */
-    public function testGetReturnsPathsAsConfigured(): void
-    {
-        $this->createComposerJson([
-            'extra' => [
-                'linters' => [
-                    'rector' => [
-                        'paths' => ['app', 'src'],
-                    ],
-                ],
-            ],
-        ]);
-
-        $loader = new ConfigurationLoader($this->testDir);
-        $paths = $loader->get('rector.paths');
-
-        self::assertSame([
-            'app',
-            'src',
-        ], $paths);
-    }
-
-    /**
-     * @throws JsonException
-     * @throws FilesystemException
-     * @throws DirException
-     */
-    public function testGetReturnsDefaultArrayWhenKeyNotFound(): void
-    {
-        $this->createComposerJson([]);
-
-        $loader = new ConfigurationLoader($this->testDir);
-        $paths = $loader->get('nonexistent.paths', []);
-
-        self::assertSame([], $paths);
-    }
-
-    /**
-     * @throws JsonException
-     * @throws FilesystemException
-     * @throws DirException
-     */
-    public function testGetReturnsPathsWithoutNormalization(): void
-    {
-        $this->createComposerJson([
-            'extra' => [
-                'linters' => [
-                    'rector' => [
-                        'paths' => ['src', 'tests'],
-                    ],
-                ],
-            ],
-        ]);
-
-        $loader = new ConfigurationLoader($this->testDir);
-        $paths = $loader->get('rector.paths');
-
-        self::assertSame([
-            'src',
-            'tests',
-        ], $paths);
-    }
-
-    /**
-     * @throws JsonException
-     * @throws FilesystemException
-     * @throws DirException
-     */
-    public function testGetReturnsFalseValues(): void
+    public function testGetPhpStanConfigReturnsParallelFalse(): void
     {
         $this->createComposerJson([
             'extra' => [
@@ -148,8 +68,9 @@ final class ConfigurationLoaderTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getPhpStanConfig();
 
-        self::assertFalse($loader->get('phpstan.parallel', true));
+        self::assertFalse($config->parallel?->enabled);
     }
 
     /**
@@ -157,7 +78,7 @@ final class ConfigurationLoaderTest extends TestCase
      * @throws JsonException
      * @throws DirException
      */
-    public function testConstructorIgnoresUnknownKeys(): void
+    public function testConfigIgnoresUnknownKeys(): void
     {
         $this->createComposerJson([
             'extra' => [
@@ -171,8 +92,9 @@ final class ConfigurationLoaderTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getPhpStanConfig();
 
-        self::assertSame(['src'], $loader->get('phpstan.paths'));
+        self::assertSame(['src'], $config->paths);
     }
 
     /**
@@ -193,8 +115,23 @@ final class ConfigurationLoaderTest extends TestCase
         ]);
 
         $loader = new ConfigurationLoader($this->testDir, 'custom-key');
+        $config = $loader->getPhpStanConfig();
 
-        self::assertSame(['src'], $loader->get('phpstan.paths'));
+        self::assertSame(['src'], $config->paths);
+    }
+
+    /**
+     * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
+     */
+    public function testGetComposerDirReturnsConfiguredDir(): void
+    {
+        $this->createComposerJson([]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+
+        self::assertSame($this->testDir, $loader->getComposerDir());
     }
 
     protected function setUp(): void

@@ -25,9 +25,6 @@ final readonly class ToolRunner
     {
     }
 
-    /**
-     * @throws DirException
-     */
     public function generate(Tool $tool): string
     {
         $target = $this->resolveGeneratedTarget($tool);
@@ -72,13 +69,8 @@ final readonly class ToolRunner
      */
     private function buildCommand(Tool $tool, string $target): string
     {
-        if ($tool === Tool::COMPOSER_NORMALIZE) {
-            return $this->buildComposerNormalizeCommand();
-        }
+        $bin = $this->resolveBinary($tool->value);
 
-        $bin = $this->resolveBinary($tool->binary());
-
-        /** @var Tool::PHP_STAN|Tool::PHP_CS|Tool::PHP_MD|Tool::RECTOR|Tool::PHP_CS_FIXER|Tool::COMPOSER_UNUSED $tool */
         return match ($tool) {
             Tool::PHP_STAN        => $this->buildPhpStanCommand($bin, $target),
             Tool::PHP_CS          => $this->buildPhpCsCommand($bin, $target),
@@ -86,6 +78,7 @@ final readonly class ToolRunner
             Tool::RECTOR          => $this->buildRectorCommand($bin, $target),
             Tool::PHP_CS_FIXER    => $this->buildPhpCsFixerCommand($bin, $target),
             Tool::COMPOSER_UNUSED => $this->buildComposerUnusedCommand($bin, $target),
+            Tool::COMPOSER_NORMALIZE => $this->buildComposerNormalizeCommand(),
         };
     }
 
@@ -154,26 +147,20 @@ final readonly class ToolRunner
         return 'composer normalize';
     }
 
-    /**
-     * @throws DirException
-     */
     private function resolveGeneratedTarget(Tool $tool): string
     {
-        return rtrim($this->loader->getComposerDir(), '/') . '/' . $tool->generatedTarget();
-    }
+        $target = $tool->generatedTarget();
 
-    /**
-     * @throws DirException
-     */
-    private function resolveBinary(string $binary): string
-    {
-        $path = rtrim($this->loader->getComposerDir(), '/') . '/vendor/bin/' . $binary;
-
-        if (!file_exists($path)) {
-            throw new RuntimeException(\sprintf('Unable to locate %s binary at %s', $binary, $path));
+        if ($target === null) {
+            throw new RuntimeException(\sprintf('Tool %s does not have a generated target', $tool->value));
         }
 
-        return $path;
+        return rtrim($this->loader->getComposerDir(), '/') . '/' . $target;
+    }
+
+    private function resolveBinary(string $binary): string
+    {
+        return rtrim($this->loader->getComposerDir(), '/') . '/vendor/bin/' . $binary;
     }
 
     private function runCommand(OutputInterface $output, string $label, string $command): int

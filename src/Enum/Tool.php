@@ -27,12 +27,7 @@ enum Tool: string
         };
     }
 
-    public function binary(): string
-    {
-        return $this->value;
-    }
-
-    public function generatedTarget(): string
+    public function generatedTarget(): ?string
     {
         return match ($this) {
             self::PHP_STAN           => 'phpstan.neon',
@@ -41,7 +36,7 @@ enum Tool: string
             self::RECTOR             => 'rector.php',
             self::PHP_CS_FIXER       => '.php-cs-fixer.php',
             self::COMPOSER_UNUSED    => 'composer-unused.php',
-            self::COMPOSER_NORMALIZE => '',
+            self::COMPOSER_NORMALIZE => null,
         };
     }
 

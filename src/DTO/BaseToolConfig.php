@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Linters\DTO;
 
-use InvalidArgumentException;
-
 abstract readonly class BaseToolConfig
 {
     /**
@@ -21,8 +19,5 @@ abstract readonly class BaseToolConfig
         public ?string $cacheDir = null,
         public ?string $baseline = null,
     ) {
-        if ($this->paths === []) {
-            throw new InvalidArgumentException('paths is required');
-        }
     }
 }

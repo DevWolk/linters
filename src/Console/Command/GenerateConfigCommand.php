@@ -6,44 +6,24 @@ namespace Linters\Console\Command;
 
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
-use Linters\Utils\ConfigurationLoader;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
-final class GenerateConfigCommand extends Command
+final class GenerateConfigCommand extends AbstractToolCommand
 {
-    protected function configure(): void
+    protected function getCommandName(): string
     {
-        $tools = implode('|', array_map(
-            static fn (Tool $tool): string => $tool->value,
-            Tool::cases(),
-        ));
-
-        $this
-            ->setName('generate')
-            ->setDescription('Generate tool configuration from extra.linters')
-            ->addArgument('tool', InputArgument::REQUIRED, $tools);
+        return 'generate';
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function getCommandDescription(): string
     {
-        try {
-            $toolName = strtolower((string)$input->getArgument('tool'));
-            $tool = Tool::from($toolName);
+        return 'Generate tool configuration from extra.linters';
+    }
 
-            $loader = new ConfigurationLoader();
-            $runner = new ToolRunner($loader);
-
-            $target = $runner->generate($tool);
-        } catch (Throwable $throwable) {
-            $output->writeln('<error>' . $throwable->getMessage() . '</error>');
-
-            return Command::FAILURE;
-        }
-
+    protected function doExecute(Tool $tool, ToolRunner $runner, OutputInterface $output): int
+    {
+        $target = $runner->generate($tool);
         $output->writeln('Generated: ' . $target);
 
         return Command::SUCCESS;
