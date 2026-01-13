@@ -4,25 +4,13 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\Enum\Tool;
+use Linters\Utils\ConfigurationLoader;
+
 final class ComposerUnusedConfigGenerator extends AbstractStubConfigGenerator
 {
-    protected function getConfigFileName(): string
+    public function __construct(ConfigurationLoader $loader)
     {
-        return 'composer-unused.php';
-    }
-
-    protected function getToolName(): string
-    {
-        return 'composer-unused';
-    }
-
-    protected function getConfigKey(): string
-    {
-        return 'composer-unused';
-    }
-
-    protected function getDocumentationUrl(): string
-    {
-        return 'https://github.com/composer-unused/composer-unused';
+        parent::__construct(Tool::COMPOSER_UNUSED, $loader);
     }
 }

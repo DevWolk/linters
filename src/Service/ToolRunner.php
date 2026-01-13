@@ -72,12 +72,12 @@ final readonly class ToolRunner
         $bin = $this->resolveBinary($tool->value);
 
         return match ($tool) {
-            Tool::PHP_STAN        => $this->buildPhpStanCommand($bin, $target),
-            Tool::PHP_CS          => $this->buildPhpCsCommand($bin, $target),
-            Tool::PHP_MD          => $this->buildPhpMdCommand($bin, $target),
-            Tool::RECTOR          => $this->buildRectorCommand($bin, $target),
-            Tool::PHP_CS_FIXER    => $this->buildPhpCsFixerCommand($bin, $target),
-            Tool::COMPOSER_UNUSED => $this->buildComposerUnusedCommand($bin, $target),
+            Tool::PHP_STAN           => $this->buildPhpStanCommand($bin, $target),
+            Tool::PHP_CS             => $this->buildPhpCsCommand($bin, $target),
+            Tool::PHP_MD             => $this->buildPhpMdCommand($bin, $target),
+            Tool::RECTOR             => $this->buildRectorCommand($bin, $target),
+            Tool::PHP_CS_FIXER       => $this->buildPhpCsFixerCommand($bin, $target),
+            Tool::COMPOSER_UNUSED    => $this->buildComposerUnusedCommand($bin, $target),
             Tool::COMPOSER_NORMALIZE => $this->buildComposerNormalizeCommand(),
         };
     }

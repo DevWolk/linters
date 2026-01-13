@@ -4,25 +4,13 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\Enum\Tool;
+use Linters\Utils\ConfigurationLoader;
+
 final class RectorConfigGenerator extends AbstractStubConfigGenerator
 {
-    protected function getConfigFileName(): string
+    public function __construct(ConfigurationLoader $loader)
     {
-        return 'rector.php';
-    }
-
-    protected function getToolName(): string
-    {
-        return 'Rector';
-    }
-
-    protected function getConfigKey(): string
-    {
-        return 'rector';
-    }
-
-    protected function getDocumentationUrl(): string
-    {
-        return 'https://getrector.com/documentation';
+        parent::__construct(Tool::RECTOR, $loader);
     }
 }

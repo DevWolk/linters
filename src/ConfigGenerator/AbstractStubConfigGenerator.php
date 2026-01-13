@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
+use RuntimeException;
 use Safe\Exceptions\FilesystemException;
 use Symfony\Component\Filesystem\Path;
 
@@ -12,8 +14,10 @@ use function Safe\file_put_contents;
 
 abstract class AbstractStubConfigGenerator implements ConfigGeneratorInterface
 {
-    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
-    {
+    public function __construct(
+        private readonly Tool $tool,
+        private readonly ConfigurationLoader $loader,
+    ) {
     }
 
     /**
@@ -25,23 +29,16 @@ abstract class AbstractStubConfigGenerator implements ConfigGeneratorInterface
         file_put_contents($targetPath, $content);
     }
 
-    abstract protected function getConfigFileName(): string;
-
-    abstract protected function getToolName(): string;
-
-    abstract protected function getConfigKey(): string;
-
-    abstract protected function getDocumentationUrl(): string;
-
     protected function buildContent(): string
     {
+        $sourceFileName = $this->tool->sourceConfigFileName();
         $targetDir = $this->loader->getComposerDir();
-        $sourcePath = \dirname(__DIR__, 2) . '/configs/' . $this->getConfigFileName();
+        $sourcePath = \dirname(__DIR__, 2) . '/configs/' . $sourceFileName;
         $packagePath = Path::makeRelative($sourcePath, $targetDir);
 
-        $toolName = $this->getToolName();
-        $configKey = $this->getConfigKey();
-        $docUrl = $this->getDocumentationUrl();
+        $toolName = $this->tool->label();
+        $configKey = $this->tool->value;
+        $docUrl = $this->tool->documentationUrl();
 
         return <<<PHP
 <?php
