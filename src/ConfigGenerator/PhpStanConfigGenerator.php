@@ -23,19 +23,19 @@ use function Safe\preg_match;
  */
 class PhpStanConfigGenerator implements ConfigGeneratorInterface
 {
-    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpstan.neon';
+    private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpstan.neon';
 
-    private const KEY_PARAMETERS = 'parameters';
+    private const string KEY_PARAMETERS = 'parameters';
 
-    private const KEY_PATHS = 'paths';
+    private const string KEY_PATHS = 'paths';
 
-    private const KEY_EXCLUDE_PATHS = 'excludePaths';
+    private const string KEY_EXCLUDE_PATHS = 'excludePaths';
 
-    private const KEY_TMP_DIR = 'tmpDir';
+    private const string KEY_TMP_DIR = 'tmpDir';
 
-    private const KEY_INCLUDES = 'includes';
+    private const string KEY_INCLUDES = 'includes';
 
-    private const KEY_PARALLEL = 'parallel';
+    private const string KEY_PARALLEL = 'parallel';
 
     public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {

@@ -9,7 +9,7 @@ use Linters\Utils\ConfigValidation;
 
 final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInterface
 {
-    public const CACHE_NAME = '.phpcs-cache';
+    public const string CACHE_NAME = '.phpcs-cache';
 
     /**
      * @param array<string, mixed> $config

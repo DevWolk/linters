@@ -10,7 +10,7 @@ use Linters\Utils\ConfigValidation;
 final readonly class RectorConfig extends BaseToolConfig implements ToolConfigInterface
 {
     /** @var string[] */
-    public const FILE_EXTENSIONS = ['php'];
+    public const array FILE_EXTENSIONS = ['php'];
 
     /**
      * @param string[] $frameworks

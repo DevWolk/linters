@@ -11,7 +11,7 @@ use Symfony\Component\Console\Application as SymfonyApplication;
 
 final class Application extends SymfonyApplication
 {
-    private const PACKAGE_NAME = 'devwolk/linters';
+    private const string PACKAGE_NAME = 'devwolk/linters';
 
     public function __construct()
     {

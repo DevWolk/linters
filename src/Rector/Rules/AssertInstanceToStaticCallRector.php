@@ -22,7 +22,7 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 final class AssertInstanceToStaticCallRector extends AbstractRector implements MinPhpVersionInterface
 {
     /** @var string[] */
-    private const ASSERT_METHODS = [
+    private const array ASSERT_METHODS = [
         'assertInstanceOf',
         'assertNotInstanceOf',
         'assertContains',

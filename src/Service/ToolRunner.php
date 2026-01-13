@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final readonly class ToolRunner
 {
-    private const DEFAULT_PHP_MD_FORMAT = 'text';
+    private const string DEFAULT_PHP_MD_FORMAT = 'text';
 
     public function __construct(private ConfigurationLoader $loader)
     {

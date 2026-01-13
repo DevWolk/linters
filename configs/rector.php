@@ -62,7 +62,7 @@ $baseSets = [
     DoctrineSetList::MONGODB__ANNOTATIONS_TO_ATTRIBUTES,
     DoctrineSetList::DOCTRINE_CODE_QUALITY,
 
-    LevelSetList::UP_TO_PHP_82,
+    LevelSetList::UP_TO_PHP_83,
 ];
 
 $configuredSets = array_merge($baseSets, $frameworkSets);
@@ -105,7 +105,7 @@ $rectorConfig = $rectorConfig
         phpunit: true,
     )
     ->withSets($configuredSets)
-    ->withPhpVersion(PhpVersion::PHP_82)
+    ->withPhpVersion(PhpVersion::PHP_83)
     ->withPaths($config->paths)
     ->withSkip(
         array_merge(

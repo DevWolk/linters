@@ -6,12 +6,9 @@ namespace Linters\Rector\Set;
 
 final class AppRectorSetList
 {
-    /** @var string */
-    public const APP_RULES = __DIR__ . '/../Configs/Sets/app-rules.php';
+    public const string APP_RULES = __DIR__ . '/../Configs/Sets/app-rules.php';
 
-    /** @var string */
-    public const DOCTRINE = __DIR__ . '/../Configs/Sets/doctrine.php';
+    public const string DOCTRINE = __DIR__ . '/../Configs/Sets/doctrine.php';
 
-    /** @var string */
-    public const LARAVEL = __DIR__ . '/../Configs/Sets/laravel.php';
+    public const string LARAVEL = __DIR__ . '/../Configs/Sets/laravel.php';
 }

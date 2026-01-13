@@ -24,8 +24,7 @@ class ConfigurationLoader
     /** @var string */
     protected const COMPOSER_FILE = '/composer.json';
 
-    /** @var string */
-    private const EXTRA_KEY = 'linters';
+    private const string EXTRA_KEY = 'linters';
 
     /** @var array<string, array<string, mixed>> */
     protected array $config = [];

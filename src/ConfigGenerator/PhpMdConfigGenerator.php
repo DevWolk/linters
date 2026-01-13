@@ -20,9 +20,9 @@ use Linters\Utils\ConfigurationLoader;
  */
 class PhpMdConfigGenerator implements ConfigGeneratorInterface
 {
-    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpmd.ruleset.xml';
+    private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpmd.ruleset.xml';
 
-    private const TAG_EXCLUDE_PATTERN = 'exclude-pattern';
+    private const string TAG_EXCLUDE_PATTERN = 'exclude-pattern';
 
     public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {

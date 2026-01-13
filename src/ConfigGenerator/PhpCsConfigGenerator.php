@@ -19,19 +19,19 @@ use Linters\Utils\ConfigurationLoader;
  */
 class PhpCsConfigGenerator implements ConfigGeneratorInterface
 {
-    private const PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpcs.xml';
+    private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpcs.xml';
 
-    private const TAG_FILE = 'file';
+    private const string TAG_FILE = 'file';
 
-    private const TAG_EXCLUDE_PATTERN = 'exclude-pattern';
+    private const string TAG_EXCLUDE_PATTERN = 'exclude-pattern';
 
-    private const TAG_ARG = 'arg';
+    private const string TAG_ARG = 'arg';
 
-    private const CACHE_ARG_NAME = 'cache';
+    private const string CACHE_ARG_NAME = 'cache';
 
-    private const ATTR_NAME = 'name';
+    private const string ATTR_NAME = 'name';
 
-    private const ATTR_VALUE = 'value';
+    private const string ATTR_VALUE = 'value';
 
     public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {

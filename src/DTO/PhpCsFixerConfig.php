@@ -9,12 +9,12 @@ use Linters\Utils\ConfigValidation;
 
 final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConfigInterface
 {
-    public const PATTERN_NAME = '*.php';
+    public const string PATTERN_NAME = '*.php';
 
     /** @var string[] */
-    public const NOT_NAMES = ['*.blade.php', '_*'];
+    public const array NOT_NAMES = ['*.blade.php', '_*'];
 
-    public const CACHE_NAME = '.php-cs-fixer.cache';
+    public const string CACHE_NAME = '.php-cs-fixer.cache';
 
     /**
      * @param array<string, mixed> $config
