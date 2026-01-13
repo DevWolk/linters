@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Linters\DTO\PhpCsFixerConfig;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * @link https://mlocati.github.io/php-cs-fixer-configurator/
@@ -34,13 +36,8 @@ if ($toolConfig->parallel?->enabled) {
     $config->setParallelConfig($parallelConfig);
 }
 
-if ($toolConfig->cacheDir !== null && $toolConfig->cacheDir !== '') {
-    $cacheFile = sprintf(
-        '%s/%s',
-        rtrim($toolConfig->cacheDir, '/'),
-        PhpCsFixerConfig::CACHE_NAME,
-    );
-
+if (ConfigValidation::isNonEmptyString($toolConfig->cacheDir)) {
+    $cacheFile = Path::join($toolConfig->cacheDir, PhpCsFixerConfig::CACHE_NAME);
     $config->setCacheFile($cacheFile);
 }
 

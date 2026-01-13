@@ -63,13 +63,13 @@ enum Tool: string
     public function documentationUrl(): string
     {
         return match ($this) {
-            self::PHP_STAN        => 'https://phpstan.org/user-guide/getting-started',
-            self::PHP_CS          => 'https://github.com/squizlabs/PHP_CodeSniffer',
-            self::PHP_MD          => 'https://phpmd.org/documentation/index.html',
-            self::RECTOR          => 'https://getrector.com/documentation',
-            self::PHP_CS_FIXER    => 'https://cs.symfony.com/doc/usage.html',
-            self::COMPOSER_UNUSED => 'https://github.com/composer-unused/composer-unused',
-            default               => '',
+            self::PHP_STAN           => 'https://phpstan.org/user-guide/getting-started',
+            self::PHP_CS             => 'https://github.com/squizlabs/PHP_CodeSniffer',
+            self::PHP_MD             => 'https://phpmd.org/documentation/index.html',
+            self::RECTOR             => 'https://getrector.com/documentation',
+            self::PHP_CS_FIXER       => 'https://cs.symfony.com/doc/usage.html',
+            self::COMPOSER_UNUSED    => 'https://github.com/composer-unused/composer-unused',
+            self::COMPOSER_NORMALIZE => 'https://github.com/ergebnis/composer-normalize',
         };
     }
 }
