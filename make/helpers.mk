@@ -38,3 +38,7 @@ composer-validate: ## Perform  composer.json and composer.lock validity analysis
 	composer validate --no-check-all --no-check-publish --no-check-version
 composer-audit: ## Outputs a list of reported security vulnerabilities for the list of packages versions currently installed.
 	composer audit
+composer-unused: ## Find unused composer dependencies.
+	./bin/linters run composer-unused
+composer-normalize: ## Normalize composer.json and composer.lock files.
+	./bin/linters run composer-normalize

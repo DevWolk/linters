@@ -37,6 +37,10 @@ composer-validate: ## Perform  composer.json and composer.lock validity analysis
 	docker-compose exec -T linters_fpm composer validate --no-check-all --no-check-publish --no-check-version
 composer-audit: ## Outputs a list of reported security vulnerabilities for the list of packages versions currently installed.
 	docker-compose exec -T linters_fpm composer audit
+composer-unused: ## Find unused composer dependencies.
+	docker-compose exec -T linters_fpm ./bin/linters run composer-unused
+composer-normalize: ## Normalize composer.json and composer.lock files.
+	docker-compose exec -T linters_fpm ./bin/linters run composer-normalize
 
 config-generate: ## Generate config file
 	printf "${COLOR_COMMENT}Generate config file...${COLOR_RESET}\n"

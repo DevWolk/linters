@@ -64,9 +64,6 @@ final readonly class ToolRunner
         };
     }
 
-    /**
-     * @throws DirException
-     */
     private function buildCommand(Tool $tool, string $target): string
     {
         $bin = $this->resolveBinary($tool->value);

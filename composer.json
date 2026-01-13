@@ -19,7 +19,6 @@
     "ext-dom": "*",
     "ergebnis/composer-normalize": "^2.48",
     "friendsofphp/php-cs-fixer": "^3.89",
-    "icanhazstring/composer-unused": "^0.9.5",
     "phpmd/phpmd": "^2.15",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.1",
@@ -33,11 +32,13 @@
     "symfony/console": "^7.3",
     "symfony/filesystem": "^7.4",
     "thecodingmachine/phpstan-safe-rule": "^1.4",
-    "thecodingmachine/safe": "^3.3"
+    "thecodingmachine/safe": "^3.3",
+    "icanhazstring/composer-unused": "^0.9.5"
   },
   "require-dev": {
-    "phpunit/phpunit": "^11.0",
-    "driftingly/rector-laravel": "^2.1"
+    "driftingly/rector-laravel": "^2.1",
+    "laravel/framework": "^12.47",
+    "phpunit/phpunit": "^11.0"
   },
   "suggest": {
     "driftingly/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel."
@@ -114,14 +115,14 @@
       "rector": {
         "cache_dir": ".cache/rector",
         "parallel": true,
+        "paths": [
+          "src",
+          "tests"
+        ],
         "sets": [
           "laravel11",
           "phpunit11",
           "doctrine"
-        ],
-        "paths": [
-          "src",
-          "tests"
         ],
         "skip_dirs": [
           "vendor"

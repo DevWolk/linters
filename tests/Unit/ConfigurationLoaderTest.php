@@ -62,7 +62,7 @@ final class ConfigurationLoaderTest extends TestCase
                 'linters' => [
                     'rector' => [
                         'paths'      => ['src'],
-                        'frameworks' => ['laravel'],
+                        'frameworks' => ['laravel11'],
                     ],
                 ],
             ],
@@ -160,6 +160,9 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame($this->testDir, $loader->getComposerDir());
     }
 
+    /**
+     * @throws FilesystemException
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -167,6 +170,10 @@ final class ConfigurationLoaderTest extends TestCase
         $this->testDir = $this->createTempDir('linters-test-');
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws DirException
+     */
     protected function tearDown(): void
     {
         parent::tearDown();

@@ -17,8 +17,8 @@ final class Application extends SymfonyApplication
     {
         parent::__construct('Linters', self::getVersionFromComposerJson());
 
-        $this->add(new GenerateConfigCommand());
-        $this->add(new RunCommand());
+        $this->addCommand(new GenerateConfigCommand());
+        $this->addCommand(new RunCommand());
     }
 
     private static function getVersionFromComposerJson(): string
