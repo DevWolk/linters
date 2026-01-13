@@ -16,7 +16,7 @@
         "paths": ["app", "config", "database", "routes", "tests"],
         "skip_dirs": ["bootstrap", "storage", "vendor"],
         "skip_files": [],
-        "frameworks": ["laravel"],
+        "sets": ["laravel"],
         "parallel": true,
         "cache_dir": ".cache/rector"
       },

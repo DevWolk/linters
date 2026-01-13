@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Linters\Tests\Unit;
 
 use JsonException;
+use Linters\Enum\RectorSet;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
@@ -47,6 +48,31 @@ final class ConfigurationLoaderTest extends TestCase
         $config = $loader->getRectorConfig();
 
         self::assertSame(['app', 'src'], $config->paths);
+    }
+
+    /**
+     * @throws JsonException
+     * @throws FilesystemException
+     * @throws DirException
+     */
+    public function testGetRectorConfigReturnsSetsFromFrameworks(): void
+    {
+        $this->createComposerJson([
+            'extra' => [
+                'linters' => [
+                    'rector' => [
+                        'paths'      => ['src'],
+                        'frameworks' => ['laravel'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getRectorConfig();
+
+        self::assertCount(1, $config->sets);
+        self::assertSame(RectorSet::LARAVEL11, $config->sets[0]);
     }
 
     /**

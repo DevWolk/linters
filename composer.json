@@ -114,6 +114,11 @@
       "rector": {
         "cache_dir": ".cache/rector",
         "parallel": true,
+        "sets": [
+          "laravel11",
+          "phpunit11",
+          "doctrine"
+        ],
         "paths": [
           "src",
           "tests"

@@ -6,7 +6,6 @@ namespace Linters\ConfigGenerator;
 
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
-use RuntimeException;
 use Safe\Exceptions\FilesystemException;
 use Symfony\Component\Filesystem\Path;
 

@@ -14,7 +14,6 @@ use Rector\CodingStyle\Rector\PostInc\PostIncDecToPreIncDecRector;
 use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\StaticCall\RemoveParentCallWithoutParentRector;
-use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\Class_\RenamePropertyToMatchTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
@@ -26,7 +25,6 @@ use Rector\Php73\Rector\BooleanOr\IsCountableRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Class_\TypedPropertyFromCreateMockAssignRector;
@@ -36,36 +34,23 @@ use Rector\ValueObject\PhpVersion;
 $composerLoader = new ConfigurationLoader();
 $config = $composerLoader->getRectorConfig();
 
-$frameworkSets = [];
-
-if ($config->isLaravelProject()) {
-    $frameworkSets[] = AppRectorSetList::LARAVEL;
-}
-
-$baseSets = [
+$configuredSets = [
     AppRectorSetList::APP_RULES,
-    AppRectorSetList::DOCTRINE,
-
-    PHPUnitSetList::PHPUNIT_90,
-    PHPUnitSetList::PHPUNIT_100,
-    PHPUnitSetList::PHPUNIT_110,
-    PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-    PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
 
     SetList::CODE_QUALITY,
     SetList::CODING_STYLE,
     SetList::TYPE_DECLARATION,
     SetList::EARLY_RETURN,
 
-    DoctrineSetList::ANNOTATIONS_TO_ATTRIBUTES,
-    DoctrineSetList::GEDMO_ANNOTATIONS_TO_ATTRIBUTES,
-    DoctrineSetList::MONGODB__ANNOTATIONS_TO_ATTRIBUTES,
-    DoctrineSetList::DOCTRINE_CODE_QUALITY,
-
     LevelSetList::UP_TO_PHP_83,
 ];
 
-$configuredSets = array_merge($baseSets, $frameworkSets);
+foreach ($config->sets as $set) {
+    $path = $set->getPath();
+    if ($path !== null && !in_array($path, $configuredSets, true)) {
+        $configuredSets[] = $path;
+    }
+}
 
 $rectorConfig = RectorConfig::configure();
 

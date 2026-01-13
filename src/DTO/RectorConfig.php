@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Linters\DTO;
 
 use InvalidArgumentException;
+use Linters\Enum\RectorSet;
 use Linters\Utils\ConfigValidation;
 
 final readonly class RectorConfig extends BaseToolConfig implements ToolConfigInterface
@@ -13,7 +14,7 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
     public const array FILE_EXTENSIONS = ['php'];
 
     /**
-     * @param string[] $frameworks
+     * @param RectorSet[] $sets
      */
     public function __construct(
         array $paths,
@@ -21,7 +22,7 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         array $skipFiles = [],
         ?ParallelConfig $parallel = null,
         ?string $cacheDir = null,
-        public array $frameworks = [],
+        public array $sets = [],
     ) {
         parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
     }
@@ -41,7 +42,7 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null, true);
         $cacheDir = $config['cache_dir'] ?? null;
-        $frameworks = ConfigValidation::normalizeFrameworks($config['frameworks'] ?? null);
+        $sets = ConfigValidation::normalizeSets($config['sets'] ?? $config['frameworks'] ?? null);
 
         return new self(
             $paths,
@@ -49,17 +50,18 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
             $skipFiles,
             $parallel,
             $cacheDir,
-            $frameworks,
+            $sets,
         );
     }
 
     public function isLaravelProject(): bool
     {
-        return \in_array('laravel', $this->frameworks, true);
+        return \in_array(RectorSet::LARAVEL11, $this->sets, true) ||
+            \in_array(RectorSet::LARAVEL12, $this->sets, true);
     }
 
     public function isSymfonyProject(): bool
     {
-        return \in_array('symfony', $this->frameworks, true);
+        return \in_array(RectorSet::SYMFONY, $this->sets, true);
     }
 }

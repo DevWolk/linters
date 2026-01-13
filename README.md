@@ -33,7 +33,7 @@ Add to `composer.json`:
       "rector": {
         "paths": ["src", "tests"],
         "skip_dirs": ["vendor"],
-        "frameworks": ["laravel"],
+        "sets": ["laravel"],
         "parallel": true,
         "cache_dir": ".cache/rector"
       },
@@ -52,16 +52,16 @@ Add to `composer.json`:
 
 ### Options
 
-| Option          | Type                | Tools                                | Description                          |
-|-----------------|---------------------|--------------------------------------|--------------------------------------|
-| `paths`         | `string[]`          | all*                                 | **Required.** Directories to analyze |
-| `skip_dirs`     | `string[]`          | all*                                 | Directories to exclude               |
-| `skip_files`    | `string[]`          | all*                                 | File patterns to exclude             |
-| `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs | Parallel execution                   |
-| `cache_dir`     | `string`            | rector, php-cs-fixer, phpstan, phpcs | Cache directory                      |
-| `baseline`      | `string`            | phpstan, phpmd                       | Baseline file                        |
-| `frameworks`    | `string[]`          | rector                               | Framework: `laravel`                 |
-| `named-filters` | `string[]`          | composer-unused                      | Packages to ignore                   |
+| Option          | Type                | Tools                                | Description                                                  |
+|-----------------|---------------------|--------------------------------------|--------------------------------------------------------------|
+| `paths`         | `string[]`          | all*                                 | **Required.** Directories to analyze                         |
+| `skip_dirs`     | `string[]`          | all*                                 | Directories to exclude                                       |
+| `skip_files`    | `string[]`          | all*                                 | File patterns to exclude                                     |
+| `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs | Parallel execution                                           |
+| `cache_dir`     | `string`            | rector, php-cs-fixer, phpstan, phpcs | Cache directory                                              |
+| `baseline`      | `string`            | phpstan, phpmd                       | Baseline file                                                |
+| `sets`          | `string[]`          | rector                               | Rector sets: `laravel11`, `laravel12`, `symfony`, `doctrine` |
+| `named-filters` | `string[]`          | composer-unused                      | Packages to ignore                                           |
 
 *except composer-unused and composer-normalize
 
@@ -86,7 +86,7 @@ Add to `composer.json`:
       "rector": {
         "paths": ["app", "config", "database", "routes", "tests"],
         "skip_dirs": ["bootstrap", "storage"],
-        "frameworks": ["laravel"]
+        "sets": ["laravel"]
       }
     }
   }

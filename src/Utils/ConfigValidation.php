@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Linters\Utils;
 
+use Linters\Enum\RectorSet;
+
 final class ConfigValidation
 {
     /**
@@ -29,16 +31,21 @@ final class ConfigValidation
     }
 
     /**
-     * @return string[]
+     * @return RectorSet[]
      */
-    public static function normalizeFrameworks(mixed $frameworks): array
+    public static function normalizeSets(mixed $sets): array
     {
-        $list = self::optionalStringList($frameworks);
-        $list = array_map(
-            strtolower(...),
-            $list,
-        );
+        $list = self::optionalStringList($sets);
+        $result = [];
 
-        return array_values($list);
+        foreach ($list as $set) {
+            $enum = RectorSet::tryFrom(strtolower($set));
+
+            if ($enum !== null) {
+                $result[] = $enum;
+            }
+        }
+
+        return $result;
     }
 }

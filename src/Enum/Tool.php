@@ -50,13 +50,13 @@ enum Tool: string
         };
     }
 
-    public function sourceConfigFileName(): ?string
+    public function sourceConfigFileName(): string
     {
         return match ($this) {
             self::RECTOR          => 'rector.php',
             self::PHP_CS_FIXER    => '.php-cs-fixer.dist.php',
             self::COMPOSER_UNUSED => 'composer-unused.php',
-            default               => throw new RuntimeException(\sprintf('Tool %s does not have a source config', $this->value)),
+            default               => throw new RuntimeException(\sprintf('No source for tool: %s', $this->name)),
         };
     }
 
