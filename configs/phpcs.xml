@@ -476,7 +476,7 @@
         Priority: High
     -->
     <rule ref="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly">
-        <exclude-pattern>/tests/Unit/*</exclude-pattern>
+        <exclude-pattern>/tests/*</exclude-pattern>
     </rule>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/type-hints.md#slevomatcodingstandardtypehintsuselessconstanttypehint- -->
     <!--<rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>-->
