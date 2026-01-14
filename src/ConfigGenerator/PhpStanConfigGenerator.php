@@ -8,6 +8,7 @@ use Linters\DTO\ParallelConfig;
 use Linters\DTO\PhpStanConfig;
 use Linters\Utils\ConfigurationLoader;
 use Linters\Utils\ConfigValidation;
+use Safe\Exceptions\FilesystemException;
 use Safe\Exceptions\PcreException;
 use Symfony\Component\Filesystem\Path;
 
@@ -43,6 +44,10 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
     {
     }
 
+    /**
+     * @throws PcreException
+     * @throws FilesystemException
+     */
     public function generate(string $targetPath): void
     {
         $config = $this->buildConfiguration();
@@ -69,6 +74,8 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
 
     /**
      * @param array<string, mixed> $config
+     *
+     * @throws PcreException
      */
     private function convertToNeon(array $config, int $indent = 0): string
     {

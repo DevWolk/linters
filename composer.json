@@ -89,12 +89,13 @@
           "src",
           "tests"
         ],
+        "rule_excludes": {
+          "Generic.Files.LineLength.TooLong": [
+            "src/CommandBuilder/AbstractConfigurableCommandBuilder.php"
+          ]
+        },
         "skip_dirs": [
           "vendor"
-        ],
-        "skip_files": [
-          "tests/TestCase.php",
-          "*\\.blade\\.php$"
         ]
       },
       "phpmd": {
