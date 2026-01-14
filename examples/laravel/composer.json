@@ -57,27 +57,5 @@
         ]
       }
     }
-  },
-  "scripts": {
-    "rector": "./vendor/bin/linters run rector",
-    "rector-check": [
-      "./vendor/bin/linters generate rector",
-      "./vendor/bin/rector process --config=./rector.php --dry-run"
-    ],
-    "php-cs-fixer": "./vendor/bin/linters run php-cs-fixer",
-    "php-cs-fixer-check": [
-      "./vendor/bin/linters generate php-cs-fixer",
-      "./vendor/bin/php-cs-fixer fix --dry-run --config=./.php-cs-fixer.php --diff"
-    ],
-    "phpstan": "./vendor/bin/linters run phpstan",
-    "phpstan-baseline": [
-      "./vendor/bin/linters generate phpstan",
-      "./vendor/bin/phpstan analyze --configuration=./phpstan.neon --generate-baseline"
-    ],
-    "phpcs": "./vendor/bin/linters run phpcs",
-    "phpmd": "./vendor/bin/linters run phpmd",
-    "composer-unused": "./vendor/bin/linters run composer-unused",
-    "lint": ["@rector-check", "@php-cs-fixer-check", "@phpstan", "@phpcs"],
-    "lint-fix": ["@rector", "@php-cs-fixer"]
   }
 }

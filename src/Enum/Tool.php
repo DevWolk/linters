@@ -8,22 +8,22 @@ use RuntimeException;
 
 enum Tool: string
 {
+    case RECTOR = 'rector';
+    case PHP_CS_FIXER = 'php-cs-fixer';
     case PHP_STAN = 'phpstan';
     case PHP_CS = 'phpcs';
     case PHP_MD = 'phpmd';
-    case RECTOR = 'rector';
-    case PHP_CS_FIXER = 'php-cs-fixer';
     case COMPOSER_UNUSED = 'composer-unused';
     case COMPOSER_NORMALIZE = 'composer-normalize';
 
     public function label(): string
     {
         return match ($this) {
+            self::RECTOR             => 'Rector',
+            self::PHP_CS_FIXER       => 'PHP-CS-Fixer',
             self::PHP_STAN           => 'PHPStan',
             self::PHP_CS             => 'PHPCS',
             self::PHP_MD             => 'PHPMD',
-            self::RECTOR             => 'Rector',
-            self::PHP_CS_FIXER       => 'PHP-CS-Fixer',
             self::COMPOSER_UNUSED    => 'composer-unused',
             self::COMPOSER_NORMALIZE => 'composer-normalize',
         };
@@ -32,11 +32,11 @@ enum Tool: string
     public function generatedTarget(): ?string
     {
         return match ($this) {
+            self::RECTOR             => 'rector.php',
+            self::PHP_CS_FIXER       => '.php-cs-fixer.php',
             self::PHP_STAN           => 'phpstan.neon',
             self::PHP_CS             => 'phpcs.xml',
             self::PHP_MD             => 'phpmd.ruleset.xml',
-            self::RECTOR             => 'rector.php',
-            self::PHP_CS_FIXER       => '.php-cs-fixer.php',
             self::COMPOSER_UNUSED    => 'composer-unused.php',
             self::COMPOSER_NORMALIZE => null,
         };
@@ -63,11 +63,11 @@ enum Tool: string
     public function documentationUrl(): string
     {
         return match ($this) {
+            self::RECTOR             => 'https://getrector.com/documentation',
+            self::PHP_CS_FIXER       => 'https://cs.symfony.com/doc/usage.html',
             self::PHP_STAN           => 'https://phpstan.org/user-guide/getting-started',
             self::PHP_CS             => 'https://github.com/squizlabs/PHP_CodeSniffer',
             self::PHP_MD             => 'https://phpmd.org/documentation/index.html',
-            self::RECTOR             => 'https://getrector.com/documentation',
-            self::PHP_CS_FIXER       => 'https://cs.symfony.com/doc/usage.html',
             self::COMPOSER_UNUSED    => 'https://github.com/composer-unused/composer-unused',
             self::COMPOSER_NORMALIZE => 'https://github.com/ergebnis/composer-normalize',
         };
