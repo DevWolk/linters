@@ -43,7 +43,7 @@
     "phpunit/phpunit": "^12.5"
   },
   "suggest": {
-    "driftingly/rector-laravel": "Enable Laravel Rector sets when rector.frameworks includes laravel."
+    "driftingly/rector-laravel": "Enable Laravel Rector sets when rector.sets includes laravel."
   },
   "minimum-stability": "stable",
   "autoload": {
@@ -125,6 +125,7 @@
           "src",
           "tests"
         ],
+        "phpVersion": "8.4",
         "sets": [
           "laravel12",
           "phpunit12",

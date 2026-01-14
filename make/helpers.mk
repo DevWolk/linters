@@ -10,11 +10,12 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 test-unit: ## Run unit tests
 	vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
 
+syntax: ##  Check code style with php code sniffer tool
+	./bin/linters run phpcs
+
 syntax-fix: ## Fix code style with php code sniffer tool
 	./bin/linters generate phpcs
 	vendor/bin/phpcbf -p --standard=phpcs.xml
-syntax: ##  Check code style with php code sniffer tool
-	./bin/linters run phpcs
 
 rector: ## Fix code style with Rector tool
 	./bin/linters run rector

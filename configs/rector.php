@@ -26,11 +26,9 @@ use Rector\Php73\Rector\BooleanOr\IsCountableRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Class_\TypedPropertyFromCreateMockAssignRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddMethodCallBasedStrictParamTypeRector;
-use Rector\ValueObject\PhpVersion;
 
 $composerLoader = new ConfigurationLoader();
 $config = $composerLoader->getRectorConfig();
@@ -43,7 +41,7 @@ $configuredSets = [
     SetList::TYPE_DECLARATION,
     SetList::EARLY_RETURN,
 
-    LevelSetList::UP_TO_PHP_84,
+    $config->phpVersion->getLevelSetList(),
 ];
 
 foreach ($config->sets as $set) {
@@ -92,7 +90,7 @@ $rectorConfig = $rectorConfig
         phpunit: true,
     )
     ->withSets($configuredSets)
-    ->withPhpVersion(PhpVersion::PHP_84)
+    ->withPhpVersion($config->phpVersion->getRectorPhpVersion())
     ->withPaths($config->paths)
     ->withSkip(
         array_merge(

@@ -14,9 +14,10 @@
     "linters": {
       "rector": {
         "paths": ["app", "config", "database", "routes", "tests"],
+        "phpVersion": "8.4",
         "skip_dirs": ["bootstrap", "storage", "vendor"],
         "skip_files": [],
-        "sets": ["laravel"],
+        "sets": ["laravel12"],
         "parallel": {
           "parallel": true,
           "filesPerProcess": 40,

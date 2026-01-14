@@ -32,6 +32,7 @@ An example of the full `composer.json` configuration:
     "linters": {
       "rector": {
         "paths": ["app", "database", "tests", "routes"],
+        "phpVersion": "8.4",
         "skip_dirs": ["app/Http/Requests"],
         "skip_files": ["app/Providers/AutoWireServiceProvider.php"],
         "sets": [
@@ -75,6 +76,7 @@ An example of the full `composer.json` configuration:
 | Option          | Type                | Tools                                | Description                                                  |
 |-----------------|---------------------|--------------------------------------|--------------------------------------------------------------|
 | `paths`         | `string[]`          | all*                                 | **Required.** Directories to analyze                         |
+| `phpVersion`    | `string`            | rector                               | **Required.** Target PHP version: `8.3`, `8.4`, `8.5`        |
 | `skip_dirs`     | `string[]`          | all*                                 | Directories to exclude                                       |
 | `skip_files`    | `string[]`          | all*                                 | File patterns to exclude                                     |
 | `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs | Parallel execution                                           |

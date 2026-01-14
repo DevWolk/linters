@@ -12,8 +12,12 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 test-unit: ## Run unit tests
 	docker-compose exec -T linters_fpm vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
 
-syntax-fix: ## Fix code style with php code sniffer tool
+syntax: ##  Check code style with php code sniffer tool
 	docker-compose exec -T linters_fpm ./bin/linters run phpcs
+
+syntax-fix: ## Fix code style with php code sniffer tool
+	docker-compose exec -T linters_fpm ./bin/linters generate phpcs
+	docker-compose exec -T linters_fpm vendor/bin/phpcbf -p --standard=phpcs.xml
 
 rector: ## Fix code style with Rector tool
 	docker-compose exec -T linters_fpm ./bin/linters run rector

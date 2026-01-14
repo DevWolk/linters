@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\Tests\Unit;
 
+use Linters\Enum\PhpVersion;
 use Linters\Enum\RectorSet;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
@@ -28,7 +29,8 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths' => ['app', 'src'],
+                'paths'      => ['app', 'src'],
+                'phpVersion' => '8.4',
             ],
         ]);
 
@@ -42,8 +44,9 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths' => ['src'],
-                'sets'  => ['laravel11'],
+                'paths'      => ['src'],
+                'phpVersion' => '8.4',
+                'sets'       => ['laravel11'],
             ],
         ]);
 
@@ -52,6 +55,35 @@ final class ConfigurationLoaderTest extends TestCase
 
         self::assertCount(1, $config->sets);
         self::assertSame(RectorSet::LARAVEL11, $config->sets[0]);
+    }
+
+    public function testGetRectorConfigReturnsPhpVersion(): void
+    {
+        $this->createComposerJson([
+            'rector' => [
+                'paths'      => ['src'],
+                'phpVersion' => '8.3',
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getRectorConfig();
+
+        self::assertSame(PhpVersion::PHP_83, $config->phpVersion);
+    }
+
+    public function testGetRectorConfigDefaultsToPhpVersion84(): void
+    {
+        $this->createComposerJson([
+            'rector' => [
+                'paths' => ['src'],
+            ],
+        ]);
+
+        $loader = new ConfigurationLoader($this->testDir);
+        $config = $loader->getRectorConfig();
+
+        self::assertSame(PhpVersion::PHP_84, $config->phpVersion);
     }
 
     public function testGetPhpStanConfigReturnsParallelFalse(): void

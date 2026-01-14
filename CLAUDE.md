@@ -4,7 +4,7 @@ Instructions for AI assistants working with this codebase.
 
 ## Project Overview
 
-Composer package (`devwolk/linters`) providing centralized PHP linter configurations. Consumers configure only paths/excludes/frameworks - rules are immutable.
+Composer package (`devwolk/linters`) providing centralized PHP linter configurations. Consumers configure only paths/excludes/sets - rules are immutable.
 
 **7 supported tools:** Rector, PHP-CS-Fixer, PHPStan, PHPCS, PHPMD, composer-unused, composer-normalize
 
@@ -66,15 +66,15 @@ Located in `src/Rector/Rules/`:
 
 ## Configuration Matrix
 
-| Tool               | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks | named-filters | rule_excludes |
-|--------------------|:-----:|:---------:|:----------:|:--------:|:---------:|:--------:|:----------:|:-------------:|:-------------:|
-| rector             |  REQ  |    OPT    |    OPT     |   OPT*   |    OPT    |    -     |    OPT     |       -       |       -       |
-| php-cs-fixer       |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |       -       |
-| phpstan            |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |     -      |       -       |       -       |
-| phpcs              |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |      OPT      |
-| phpmd              |  REQ  |    OPT    |    OPT     |    -     |     -     |   OPT    |     -      |       -       |       -       |
-| composer-unused    |   -   |     -     |     -      |    -     |     -     |    -     |     -      |      OPT      |       -       |
-| composer-normalize |   -   |     -     |     -      |    -     |     -     |    -     |     -      |       -       |       -       |
+| Tool               | paths | phpVersion | skip_dirs | skip_files | parallel | cache_dir | baseline | sets | named-filters | rule_excludes |
+|--------------------|:-----:|:----------:|:---------:|:----------:|:--------:|:---------:|:--------:|:----:|:-------------:|:-------------:|
+| rector             |  REQ  |    REQ     |    OPT    |    OPT     |   OPT*   |    OPT    |    -     | OPT  |       -       |       -       |
+| php-cs-fixer       |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |       -       |       -       |
+| phpstan            |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |       -       |       -       |
+| phpcs              |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |       -       |      OPT      |
+| phpmd              |  REQ  |     -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |       -       |       -       |
+| composer-unused    |   -   |     -      |     -     |     -      |    -     |     -     |    -     |  -   |      OPT      |       -       |
+| composer-normalize |   -   |     -      |     -     |     -      |    -     |     -     |    -     |  -   |       -       |       -       |
 
 *parallel enabled by default for rector
 
