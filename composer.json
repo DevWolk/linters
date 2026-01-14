@@ -11,6 +11,8 @@
     "php-cs-fixer",
     "phpcs",
     "phpmd",
+    "composer-unused",
+    "composer-normalize",
     "static-analysis",
     "code-quality"
   ],

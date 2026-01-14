@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer"
-         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer" xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
     <description>PHP Code Style</description>
 
     <arg name="cache" value=".phpcs-cache"/>
@@ -373,7 +372,7 @@
     -->
     <rule ref="PEAR.WhiteSpace.ObjectOperatorIndent">
         <properties>
-            <property name="multilevel" value="true" />
+            <property name="multilevel" value="true"/>
         </properties>
     </rule>
     <!--
@@ -504,14 +503,11 @@
                 <element value="public constants"/>
                 <element value="protected constants"/>
                 <element value="private constants"/>
-                <element
-                    value="public properties, public static properties, protected properties, protected static properties, private properties, private static properties"/>
+                <element value="public properties, public static properties, protected properties, protected static properties, private properties, private static properties"/>
                 <element value="constructor, static constructors"/>
                 <element value="enum cases"/>
-                <element
-                    value="public methods, public final methods, public static methods, public static abstract methods, public static final methods, public abstract methods, protected methods, protected final methods, protected static methods, protected static abstract methods, protected static final methods, protected abstract methods, private methods, private static methods"/>
-                <element
-                    value="protected methods, protected static methods, protected static abstract methods, protected abstract methods, private methods, private static methods"/>
+                <element value="public methods, public final methods, public static methods, public static abstract methods, public static final methods, public abstract methods, protected methods, protected final methods, protected static methods, protected static abstract methods, protected static final methods, protected abstract methods, private methods, private static methods"/>
+                <element value="protected methods, protected static methods, protected static abstract methods, protected abstract methods, private methods, private static methods"/>
                 <element value="private methods, private static methods"/>
                 <element value="magic methods"/>
                 <element value="destructor"/>

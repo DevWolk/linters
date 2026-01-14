@@ -66,15 +66,15 @@ Located in `src/Rector/Rules/`:
 
 ## Configuration Matrix
 
-| Tool               | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks | named-filters |
-|--------------------|:-----:|:---------:|:----------:|:--------:|:---------:|:--------:|:----------:|:-------------:|
-| rector             |  REQ  |    OPT    |    OPT     |   OPT*   |    OPT    |    -     |    OPT     |       -       |
-| php-cs-fixer       |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |
-| phpstan            |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |     -      |       -       |
-| phpcs              |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |
-| phpmd              |  REQ  |    OPT    |    OPT     |    -     |     -     |   OPT    |     -      |       -       |
-| composer-unused    |   -   |     -     |     -      |    -     |     -     |    -     |     -      |      OPT      |
-| composer-normalize |   -   |     -     |     -      |    -     |     -     |    -     |     -      |       -       |
+| Tool               | paths | skip_dirs | skip_files | parallel | cache_dir | baseline | frameworks | named-filters | rule_excludes |
+|--------------------|:-----:|:---------:|:----------:|:--------:|:---------:|:--------:|:----------:|:-------------:|:-------------:|
+| rector             |  REQ  |    OPT    |    OPT     |   OPT*   |    OPT    |    -     |    OPT     |       -       |       -       |
+| php-cs-fixer       |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |       -       |
+| phpstan            |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |     -      |       -       |       -       |
+| phpcs              |  REQ  |    OPT    |    OPT     |   OPT    |    OPT    |    -     |     -      |       -       |      OPT      |
+| phpmd              |  REQ  |    OPT    |    OPT     |    -     |     -     |   OPT    |     -      |       -       |       -       |
+| composer-unused    |   -   |     -     |     -      |    -     |     -     |    -     |     -      |      OPT      |       -       |
+| composer-normalize |   -   |     -     |     -      |    -     |     -     |    -     |     -      |       -       |       -       |
 
 *parallel enabled by default for rector
 

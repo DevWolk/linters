@@ -11,6 +11,24 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
     public const string CACHE_NAME = '.phpcs-cache';
 
     /**
+     * @param string[]                $paths
+     * @param string[]                $skipDirs
+     * @param string[]                $skipFiles
+     * @param array<string, string[]> $ruleExcludes Rule name => array of exclude patterns
+     */
+    public function __construct(
+        array $paths,
+        array $skipDirs = [],
+        array $skipFiles = [],
+        ?ParallelConfig $parallel = null,
+        ?string $cacheDir = null,
+        ?string $baseline = null,
+        public array $ruleExcludes = [],
+    ) {
+        parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir, $baseline);
+    }
+
+    /**
      * @param array<string, mixed> $config
      */
     public static function fromArray(array $config): self
@@ -20,6 +38,7 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
         $cacheDir = $config['cache_dir'] ?? null;
+        $ruleExcludes = self::parseRuleExcludes($config['rule_excludes'] ?? []);
 
         return new self(
             $paths,
@@ -27,6 +46,30 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
             $skipFiles,
             $parallel,
             $cacheDir,
+            null,
+            $ruleExcludes,
         );
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    private static function parseRuleExcludes(mixed $ruleExcludes): array
+    {
+        if (!\is_array($ruleExcludes)) {
+            return [];
+        }
+
+        $result = [];
+
+        foreach ($ruleExcludes as $ruleName => $patterns) {
+            if (!\is_string($ruleName)) {
+                continue;
+            }
+
+            $result[$ruleName] = ConfigValidation::optionalStringList($patterns);
+        }
+
+        return $result;
     }
 }

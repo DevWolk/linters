@@ -18,6 +18,7 @@ use Symfony\Component\Filesystem\Path;
  * - Base template (configs/phpcs.xml)
  * - Paths from composer.json extra.linters.phpcs.paths
  * - Skip patterns from extra.linters.phpcs.skip_dirs/skip_files
+ * - Rule-specific excludes from extra.linters.phpcs.rule_excludes
  */
 class PhpCsConfigGenerator implements ConfigGeneratorInterface
 {
@@ -29,11 +30,15 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
 
     private const string TAG_ARG = 'arg';
 
+    private const string TAG_RULE = 'rule';
+
     private const string CACHE_ARG_NAME = 'cache';
 
     private const string ATTR_NAME = 'name';
 
     private const string ATTR_VALUE = 'value';
+
+    private const string ATTR_REF = 'ref';
 
     public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
     {
@@ -78,6 +83,8 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
             $ruleset?->appendChild($excludeElement);
         }
 
+        $this->addRuleExcludes($dom, $config->ruleExcludes);
+
         $cacheDir = $config->cacheDir;
 
         if (ConfigValidation::isNonEmptyString($cacheDir)) {
@@ -112,5 +119,35 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
         $cacheElement->setAttribute(self::ATTR_VALUE, $cachePath);
 
         $ruleset->appendChild($cacheElement);
+    }
+
+    /**
+     * @param array<string, string[]> $ruleExcludes
+     *
+     * @throws DOMException
+     */
+    private function addRuleExcludes(DOMDocument $dom, array $ruleExcludes): void
+    {
+        $ruleset = $dom->documentElement;
+
+        if ($ruleset === null || $ruleExcludes === []) {
+            return;
+        }
+
+        foreach ($ruleExcludes as $ruleName => $patterns) {
+            if ($patterns === []) {
+                continue;
+            }
+
+            $ruleElement = $dom->createElement(self::TAG_RULE);
+            $ruleElement->setAttribute(self::ATTR_REF, $ruleName);
+
+            foreach ($patterns as $pattern) {
+                $excludeElement = $dom->createElement(self::TAG_EXCLUDE_PATTERN, $pattern);
+                $ruleElement->appendChild($excludeElement);
+            }
+
+            $ruleset->appendChild($ruleElement);
+        }
     }
 }
