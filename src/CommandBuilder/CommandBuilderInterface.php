@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Linters\CommandBuilder;
+
+interface CommandBuilderInterface
+{
+    /**
+     * @param string[] $extraArgs
+     */
+    public function build(array $extraArgs): string;
+}

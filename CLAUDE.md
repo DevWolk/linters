@@ -19,9 +19,10 @@ src/Console/Command/
     ↓
 src/Service/ToolRunner.php          Orchestration: generate → build command → passthru
     ↓
-src/Utils/ConfigurationLoader.php   Reads extra.linters from composer.json → DTOs
+├── src/ConfigGenerator/*           Tool-specific config generators
+└── src/CommandBuilder/*            Tool-specific command builders
     ↓
-src/ConfigGenerator/*               Tool-specific generators
+src/Utils/ConfigurationLoader.php   Reads extra.linters from composer.json → DTOs
     ↓
 configs/*                           Templates and dynamic configs
 ```
@@ -43,20 +44,51 @@ RunCommand → Tool::from() → ToolRunner::run()
     ↓
 requiresGeneration()? → yes → generate() → PhpStanConfigGenerator
     ↓                    no  → skip
-buildCommand() → "phpstan analyze --configuration=./phpstan.neon"
+createCommandBuilder() → PhpStanCommandBuilder
+    ↓
+setConfigPath() → build() → "phpstan analyze --configuration=./phpstan.neon"
     ↓
 passthru() → exit code
 ```
 
 ### Key Classes
 
-| Class                 | Responsibility                                                     |
-|-----------------------|--------------------------------------------------------------------|
-| `ConfigurationLoader` | Reads `extra.linters` from composer.json, returns typed DTOs       |
-| `ToolRunner`          | `generate()` → `buildCommand()` → `passthru()`                     |
-| `Tool` (enum)         | Registry: label, binary, generatedTarget, requiresGeneration       |
-| `BaseToolConfig`      | Base DTO: paths, skipDirs, skipFiles, parallel, cacheDir, baseline |
-| `ParallelConfig`      | Handles bool/int/object parallel config formats                    |
+| Class                                  | Responsibility                                                     |
+|----------------------------------------|--------------------------------------------------------------------|
+| `ConfigurationLoader`                  | Reads `extra.linters` from composer.json, returns typed DTOs       |
+| `ToolRunner`                           | `generate()` → `createCommandBuilder()` → `build()` → `passthru()` |
+| `Tool` (enum)                          | Registry: label, binary, generatedTarget, requiresGeneration       |
+| `BaseToolConfig`                       | Base DTO: paths, skipDirs, skipFiles, parallel, cacheDir, baseline |
+| `ParallelConfig`                       | Handles bool/int/object parallel config formats                    |
+| `CommandBuilderInterface`              | Base interface for command builders                                |
+| `ConfigurableCommandBuilderInterface`  | Interface for builders requiring config file                       |
+| `AbstractCommandBuilder`               | Base class with `resolveBinary()`, `buildExtraArgs()`              |
+| `AbstractConfigurableCommandBuilder`   | Base class with `setConfigPath()`, `getConfigPath()`               |
+
+### CommandBuilder Pattern
+
+Each tool has its own command builder that knows how to construct the CLI command:
+
+```
+src/CommandBuilder/
+├── CommandBuilderInterface.php              # build(array $extraArgs): string
+├── ConfigurableCommandBuilderInterface.php  # + setConfigPath(string $configPath): void
+├── AbstractCommandBuilder.php               # Base: resolveBinary(), buildExtraArgs()
+├── AbstractConfigurableCommandBuilder.php   # + setConfigPath(), getConfigPath()
+├── PhpStanCommandBuilder.php                # analyze --configuration=
+├── PhpCsCommandBuilder.php                  # --standard= --parallel= (phpcs + phpcbf)
+├── PhpMdCommandBuilder.php                  # paths format ruleset --baseline-file=
+├── RectorCommandBuilder.php                 # process --config= --clear-cache
+├── PhpCsFixerCommandBuilder.php             # fix --config= --allow-risky=yes
+├── ComposerUnusedCommandBuilder.php         # --configuration=
+└── ComposerNormalizeCommandBuilder.php      # composer normalize (run-only, no config)
+```
+
+**Key design decisions:**
+- `CommandBuilderInterface` has no `$configPath` parameter — for run-only tools
+- `ConfigurableCommandBuilderInterface` adds `setConfigPath()` — for tools requiring config
+- Each builder resolves its own binary via `$this->resolveBinary()`
+- `PhpCsCommandBuilder` handles both phpcs and phpcbf (same config, same parallel logic)
 
 ### Custom Rector Rules
 
@@ -98,9 +130,10 @@ make test-unit           # PHPUnit tests
 src/
 ├── Console/Command/     GenerateConfigCommand, RunCommand
 ├── Service/             ToolRunner
+├── CommandBuilder/      Command builders (one per tool)
+├── ConfigGenerator/     Config generators (phpstan, phpcs, phpmd, rector, php-cs-fixer, composer-unused)
 ├── DTO/                 BaseToolConfig, ParallelConfig, *Config per tool
 ├── Enum/Tool.php        Tool registry enum
-├── ConfigGenerator/     PhpStan/PhpCs/PhpMd/Rector/PhpCsFixer/ComposerUnused generators
 ├── Utils/               ConfigurationLoader, ConfigValidation
 └── Rector/
     ├── Rules/           Custom Rector rules
@@ -115,9 +148,9 @@ configs/                 Templates (phpstan.neon, phpcs.xml, phpmd.ruleset.xml)
 ### Quick Checklist
 
 1. Add case to `src/Enum/Tool.php` (label, binary, generatedTarget, requiresGeneration)
-2. If it requires generation: create DTO in `src/DTO/`, generator in `src/ConfigGenerator/`, template in `configs/`
-3. Add `buildCommand()` method in `ToolRunner`
-4. Update match expressions in `ToolRunner::createGenerator()` and `buildCommand()`
+2. Create CommandBuilder in `src/CommandBuilder/`
+3. If it requires generation: create DTO in `src/DTO/`, generator in `src/ConfigGenerator/`, template in `configs/`
+4. Update match expressions in `ToolRunner::createGenerator()` and `createCommandBuilder()`
 
 ### Detailed Instructions for Claude Code CLI
 
@@ -160,7 +193,50 @@ public function requiresGeneration(): bool {
 }
 ```
 
-#### Step 3: Create DTO (if tool has config options)
+#### Step 3: Create Command Builder
+
+**For tools requiring config** (most tools):
+
+Create `src/CommandBuilder/NewToolCommandBuilder.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Linters\CommandBuilder;
+
+final class NewToolCommandBuilder extends AbstractConfigurableCommandBuilder
+{
+    public function build(array $extraArgs): string
+    {
+        $command = $this->escapeArg($this->resolveBinary())
+            . ' --config=' . $this->escapeArg($this->getConfigPath());
+
+        return $command . $this->buildExtraArgs($extraArgs);
+    }
+}
+```
+
+**For run-only tools** (no config file):
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Linters\CommandBuilder;
+
+final class NewToolCommandBuilder extends AbstractCommandBuilder
+{
+    public function build(array $extraArgs): string
+    {
+        return 'new-tool-command' . $this->buildExtraArgs($extraArgs);
+    }
+}
+```
+
+#### Step 4: Create DTO (if tool has config options)
 
 Create `src/DTO/NewToolConfig.php`:
 
@@ -177,10 +253,7 @@ final readonly class NewToolConfig extends BaseToolConfig implements ToolConfigI
 {
     public static function fromArray(array $config): self
     {
-        // Use requiredPaths() for tools that need paths
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'new-tool');
-
-        // Or return empty config for tools without required fields
         $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
@@ -192,7 +265,7 @@ final readonly class NewToolConfig extends BaseToolConfig implements ToolConfigI
 }
 ```
 
-#### Step 4: Add Getter to ConfigurationLoader
+#### Step 5: Add Getter to ConfigurationLoader
 
 Edit `src/Utils/ConfigurationLoader.php`:
 
@@ -203,7 +276,7 @@ public function getNewToolConfig(): NewToolConfig
 }
 ```
 
-#### Step 5: Create Config Generator
+#### Step 6: Create Config Generator
 
 **For Generated configs** (XML/NEON template-based):
 
@@ -250,26 +323,21 @@ use Linters\Enum\Tool;
 
 class NewToolConfigGenerator extends AbstractStubConfigGenerator
 {
-    protected function getSourceConfigPath(): string
+    public function __construct(ConfigurationLoader $loader)
     {
-        return Tool::NEW_TOOL->sourceConfigFileName();
-    }
-
-    protected function getToolName(): string
-    {
-        return 'New Tool';
+        parent::__construct(Tool::NEW_TOOL, $loader);
     }
 }
 ```
 
 And add source config path to `Tool::sourceConfigFileName()`.
 
-#### Step 6: Create Template/Config File
+#### Step 7: Create Template/Config File
 
 - For Generated: `configs/new-tool-template.xml`
 - For Dynamic: `configs/new-tool.php` with stub that requires package config
 
-#### Step 7: Update ToolRunner
+#### Step 8: Update ToolRunner
 
 Edit `src/Service/ToolRunner.php`:
 
@@ -277,21 +345,15 @@ Edit `src/Service/ToolRunner.php`:
 // In createGenerator():
 Tool::NEW_TOOL => new NewToolConfigGenerator($this->loader),
 
-// In buildCommand():
-Tool::NEW_TOOL => $this->buildNewToolCommand($bin, $target),
-
-// Add new method:
-private function buildNewToolCommand(string $binary, string $target): string
-{
-    return escapeshellarg($binary) . ' --config=' . escapeshellarg($target);
-}
+// In createCommandBuilder():
+Tool::NEW_TOOL => new NewToolCommandBuilder($tool, $this->loader),
 ```
 
-#### Step 8: Update Configuration Matrix
+#### Step 9: Update Configuration Matrix
 
 Update the table in this file (CLAUDE.md) with new tool's supported options.
 
-#### Step 9: Run Checks
+#### Step 10: Run Checks
 
 ```bash
 make fix-syntax-completely
@@ -304,3 +366,5 @@ make fix-syntax-completely
 - Use `Path::join()` for path construction (not rtrim + concatenation)
 - All DTO classes must be `final readonly`
 - All config classes must implement `ToolConfigInterface`
+- CommandBuilders extending `AbstractConfigurableCommandBuilder` must NOT be `readonly`
+- CommandBuilders extending `AbstractCommandBuilder` (run-only) can be `final class`

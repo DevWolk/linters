@@ -88,7 +88,7 @@ final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
         $cacheDir = $config->cacheDir;
 
         if (ConfigValidation::isNonEmptyString($cacheDir)) {
-            $cachePath = Path::join((string) $cacheDir, PhpCsConfig::CACHE_NAME);
+            $cachePath = Path::join($cacheDir, PhpCsConfig::CACHE_NAME);
             $this->setCachePath($dom, $cachePath);
         }
 

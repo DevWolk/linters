@@ -9,6 +9,9 @@ use Linters\Enum\RectorSet;
 
 final class ConfigValidation
 {
+    /**
+     * @phpstan-assert-if-true non-empty-string $value
+     */
     public static function isNonEmptyString(?string $value): bool
     {
         return $value !== null && $value !== '';

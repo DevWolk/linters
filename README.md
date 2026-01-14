@@ -139,6 +139,23 @@ To exclude a rule entirely, use `*` as the pattern:
 ./vendor/bin/linters run composer-normalize
 ```
 
+## Architecture
+
+```
+src/
+├── Console/Command/     CLI commands (run, generate)
+├── Service/             ToolRunner orchestration
+├── CommandBuilder/      Command builders (one per tool)
+├── ConfigGenerator/     Config file generators
+├── DTO/                 Configuration DTOs
+├── Enum/                Tool registry
+└── Utils/               ConfigurationLoader, validation
+```
+
+Each tool has:
+- **ConfigGenerator** — generates config files (phpstan.neon, phpcs.xml, etc.)
+- **CommandBuilder** — builds CLI command with proper arguments
+
 ## Rector for Laravel
 
 Requires: `composer require --dev driftingly/rector-laravel`

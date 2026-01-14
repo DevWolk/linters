@@ -164,7 +164,7 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
         $includes = [$packageConfigPath];
 
         if (ConfigValidation::isNonEmptyString($config->baseline)) {
-            $includes[] = (string) $config->baseline;
+            $includes[] = $config->baseline;
         }
 
         return $includes;

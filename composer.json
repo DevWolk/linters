@@ -89,8 +89,13 @@
           "src",
           "tests"
         ],
-        "skip_dirs": ["vendor"],
-        "skip_files": ["tests/TestCase.php", "*\\.blade\\.php$"]
+        "skip_dirs": [
+          "vendor"
+        ],
+        "skip_files": [
+          "tests/TestCase.php",
+          "*\\.blade\\.php$"
+        ]
       },
       "phpmd": {
         "paths": [
@@ -116,10 +121,10 @@
       "rector": {
         "cache_dir": ".cache/rector",
         "parallel": {
-          "parallel": true,
           "filesPerProcess": 40,
-          "timeout":360,
-          "maxProcesses": 2
+          "maxProcesses": 2,
+          "parallel": true,
+          "timeout": 360
         },
         "paths": [
           "src",
