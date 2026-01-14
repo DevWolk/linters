@@ -15,11 +15,17 @@ use Throwable;
 
 abstract class AbstractToolCommand extends Command
 {
+    private InputInterface $input;
+
     abstract protected function getCommandName(): string;
 
     abstract protected function getCommandDescription(): string;
 
-    abstract protected function doExecute(Tool $tool, ToolRunner $runner, OutputInterface $output): int;
+    abstract protected function doExecute(
+        Tool $tool,
+        ToolRunner $runner,
+        OutputInterface $output,
+    ): int;
 
     protected function configure(): void
     {
@@ -31,12 +37,14 @@ abstract class AbstractToolCommand extends Command
         $this
             ->setName($this->getCommandName())
             ->setDescription($this->getCommandDescription())
-            ->addArgument('tool', InputArgument::REQUIRED, $tools);
+            ->addArgument('tool', InputArgument::REQUIRED, $tools)
+            ->addArgument('extra', InputArgument::IS_ARRAY, 'Extra arguments to pass to the tool (use -- before them)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
+            $this->input = $input;
             $toolName = strtolower((string) $input->getArgument('tool'));
             $tool = Tool::from($toolName);
 
@@ -53,5 +61,15 @@ abstract class AbstractToolCommand extends Command
 
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * Get extra arguments passed after -- separator.
+     *
+     * @return string[]
+     */
+    protected function getExtraArgs(): array
+    {
+        return $this->input->getArgument('extra');
     }
 }

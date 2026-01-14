@@ -10,36 +10,32 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 test-unit: ## Run unit tests
 	vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
 
-syntax: ##  Check code style with php code sniffer tool
+syntax: ## Check code style with PHPCS
 	./bin/linters run phpcs
 
-syntax-fix: ## Fix code style with php code sniffer tool
-	./bin/linters generate phpcs
-	vendor/bin/phpcbf -p --standard=phpcs.xml
+syntax-fix: ## Fix code style with PHPCBF
+	./bin/linters run phpcbf
 
-rector: ## Fix code style with Rector tool
+rector: ## Fix code style with Rector
 	./bin/linters run rector
-rector-dry-run: ## Check code style with Rector tool
-	./bin/linters generate rector
-	vendor/bin/rector process --config=rector.php --clear-cache --dry-run
+rector-dry-run: ## Check code style with Rector (dry-run)
+	./bin/linters run rector -- --dry-run
 
-php-cs-fixer: ## Fix code style with PHP-CS-Fixer tool
+php-cs-fixer: ## Fix code style with PHP-CS-Fixer
 	./bin/linters run php-cs-fixer
-php-cs-fixer-check: ## Check code style with PHP-CS-Fixer tool
-	./bin/linters generate php-cs-fixer
-	vendor/bin/php-cs-fixer fix --dry-run --config=.php-cs-fixer.php --diff -vv --allow-risky=yes --using-cache=no
+php-cs-fixer-check: ## Check code style with PHP-CS-Fixer (dry-run)
+	./bin/linters run php-cs-fixer -- --dry-run --diff
 
-phpstan: ## Check code style with PHPStan tool
+phpstan: ## Static analysis with PHPStan
 	./bin/linters run phpstan
-phpstan-baseline: ## Check code style with PHPStan tool and generate baseline
-	./bin/linters generate phpstan
-	vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M --generate-baseline --allow-empty-baseline -vv
+phpstan-baseline: ## Generate PHPStan baseline
+	./bin/linters run phpstan -- --generate-baseline --allow-empty-baseline
 
-composer-validate: ## Perform  composer.json and composer.lock validity analysis.
+composer-validate: ## Validate composer.json
 	composer validate --no-check-all --no-check-publish --no-check-version
-composer-audit: ## Outputs a list of reported security vulnerabilities for the list of packages versions currently installed.
+composer-audit: ## Check security vulnerabilities
 	composer audit
-composer-unused: ## Find unused composer dependencies.
+composer-unused: ## Find unused composer dependencies
 	./bin/linters run composer-unused
-composer-normalize: ## Normalize composer.json and composer.lock files.
+composer-normalize: ## Normalize composer.json
 	./bin/linters run composer-normalize

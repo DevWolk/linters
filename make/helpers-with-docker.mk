@@ -12,38 +12,34 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 test-unit: ## Run unit tests
 	docker-compose exec -T linters_fpm vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
 
-syntax: ##  Check code style with php code sniffer tool
+syntax: ## Check code style with PHPCS
 	docker-compose exec -T linters_fpm ./bin/linters run phpcs
 
-syntax-fix: ## Fix code style with php code sniffer tool
-	docker-compose exec -T linters_fpm ./bin/linters generate phpcs
-	docker-compose exec -T linters_fpm vendor/bin/phpcbf -p --standard=phpcs.xml
+syntax-fix: ## Fix code style with PHPCBF
+	docker-compose exec -T linters_fpm ./bin/linters run phpcbf
 
-rector: ## Fix code style with Rector tool
+rector: ## Fix code style with Rector
 	docker-compose exec -T linters_fpm ./bin/linters run rector
-rector-dry-run: ## Check code style with Rector tool
-	docker-compose exec -T linters_fpm ./bin/linters generate rector
-	docker-compose exec -T linters_fpm vendor/bin/rector process --config=rector.php --clear-cache --dry-run
+rector-dry-run: ## Check code style with Rector (dry-run)
+	docker-compose exec -T linters_fpm ./bin/linters run rector -- --dry-run
 
-php-cs-fixer: ## Fix code style with PHP-CS-Fixer tool
+php-cs-fixer: ## Fix code style with PHP-CS-Fixer
 	docker-compose exec -T linters_fpm ./bin/linters run php-cs-fixer
-php-cs-fixer-check: ## Check code style with PHP-CS-Fixer tool
-	docker-compose exec -T linters_fpm ./bin/linters generate php-cs-fixer
-	docker-compose exec -T linters_fpm vendor/bin/php-cs-fixer fix --dry-run --config=.php-cs-fixer.php --diff -vv --allow-risky=yes --using-cache=no
+php-cs-fixer-check: ## Check code style with PHP-CS-Fixer (dry-run)
+	docker-compose exec -T linters_fpm ./bin/linters run php-cs-fixer -- --dry-run --diff
 
-phpstan: ## Check code style with PHPStan tool
+phpstan: ## Static analysis with PHPStan
 	docker-compose exec -T linters_fpm ./bin/linters run phpstan
-phpstan-baseline: ## Check code style with PHPStan tool and generate baseline
-	docker-compose exec -T linters_fpm ./bin/linters generate phpstan
-	docker-compose exec -T linters_fpm vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M --generate-baseline --allow-empty-baseline -vv
+phpstan-baseline: ## Generate PHPStan baseline
+	docker-compose exec -T linters_fpm ./bin/linters run phpstan -- --generate-baseline --allow-empty-baseline
 
-composer-validate: ## Perform  composer.json and composer.lock validity analysis.
+composer-validate: ## Validate composer.json
 	docker-compose exec -T linters_fpm composer validate --no-check-all --no-check-publish --no-check-version
-composer-audit: ## Outputs a list of reported security vulnerabilities for the list of packages versions currently installed.
+composer-audit: ## Check security vulnerabilities
 	docker-compose exec -T linters_fpm composer audit
-composer-unused: ## Find unused composer dependencies.
+composer-unused: ## Find unused composer dependencies
 	docker-compose exec -T linters_fpm ./bin/linters run composer-unused
-composer-normalize: ## Normalize composer.json and composer.lock files.
+composer-normalize: ## Normalize composer.json
 	docker-compose exec -T linters_fpm ./bin/linters run composer-normalize
 
 config-generate: ## Generate config file

@@ -24,8 +24,11 @@ final class RunCommand extends AbstractToolCommand
     /**
      * @throws DirException
      */
-    protected function doExecute(Tool $tool, ToolRunner $runner, OutputInterface $output): int
-    {
-        return $runner->run($tool, $output);
+    protected function doExecute(
+        Tool $tool,
+        ToolRunner $runner,
+        OutputInterface $output,
+    ): int {
+        return $runner->run($tool, $output, $this->getExtraArgs());
     }
 }

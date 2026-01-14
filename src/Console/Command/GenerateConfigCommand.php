@@ -21,8 +21,11 @@ final class GenerateConfigCommand extends AbstractToolCommand
         return 'Generate tool configuration from extra.linters';
     }
 
-    protected function doExecute(Tool $tool, ToolRunner $runner, OutputInterface $output): int
-    {
+    protected function doExecute(
+        Tool $tool,
+        ToolRunner $runner,
+        OutputInterface $output,
+    ): int {
         $target = $runner->generate($tool);
         $output->writeln('Generated: ' . $target);
 
