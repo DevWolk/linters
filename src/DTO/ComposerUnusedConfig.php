@@ -22,6 +22,6 @@ final readonly class ComposerUnusedConfig implements ToolConfigInterface
     {
         $filters = ConfigValidation::optionalStringList($config['named-filters'] ?? null);
 
-        return new self($filters);
+        return new self(namedFilters: $filters);
     }
 }

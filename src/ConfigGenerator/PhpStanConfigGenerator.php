@@ -23,7 +23,7 @@ use function Safe\preg_match;
  * - Skip patterns from extra.linters.phpstan.skip_dirs/skip_files
  * - Baseline from extra.linters.phpstan.baseline
  */
-class PhpStanConfigGenerator implements ConfigGeneratorInterface
+final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
 {
     private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpstan.neon';
 
@@ -39,7 +39,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
 
     private const string KEY_PARALLEL = 'parallel';
 
-    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
+    public function __construct(private ConfigurationLoader $loader)
     {
     }
 
@@ -54,7 +54,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
     /**
      * @return array<string, mixed>
      */
-    protected function buildConfiguration(): array
+    private function buildConfiguration(): array
     {
         $config = $this->loader->getPhpStanConfig();
 
@@ -70,7 +70,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function convertToNeon(array $config, int $indent = 0): string
+    private function convertToNeon(array $config, int $indent = 0): string
     {
         $neon = '';
         $indentStr = str_repeat('    ', $indent);
@@ -85,7 +85,7 @@ class PhpStanConfigGenerator implements ConfigGeneratorInterface
     /**
      * @throws PcreException
      */
-    protected function formatValue(mixed $value): string
+    private function formatValue(mixed $value): string
     {
         if (\is_bool($value)) {
             return $value ? 'true' : 'false';

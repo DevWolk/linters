@@ -21,12 +21,12 @@ final readonly class PhpStanConfig extends BaseToolConfig implements ToolConfigI
         $baseline = $config['baseline'] ?? null;
 
         return new self(
-            $paths,
-            $skipDirs,
-            $skipFiles,
-            $parallel,
-            $cacheDir,
-            $baseline,
+            paths: $paths,
+            skipDirs: $skipDirs,
+            skipFiles: $skipFiles,
+            parallel: $parallel,
+            cacheDir: $cacheDir,
+            baseline: $baseline,
         );
     }
 }

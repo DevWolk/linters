@@ -42,8 +42,8 @@ final readonly class ParallelConfig
         return new self(
             enabled: (bool) ($value['enabled'] ?? $defaultEnabled),
             timeout: self::toInt($value['timeout'] ?? null),
-            maxProcesses: self::toInt($value['max_processes'] ?? null),
-            filesPerProcess: self::toInt($value['files_per_process'] ?? null),
+            maxProcesses: self::toInt($value['maxProcesses'] ?? null),
+            filesPerProcess: self::toInt($value['filesPerProcess'] ?? null),
         );
     }
 

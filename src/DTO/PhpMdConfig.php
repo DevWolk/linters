@@ -19,12 +19,10 @@ final readonly class PhpMdConfig extends BaseToolConfig implements ToolConfigInt
         $baseline = $config['baseline'] ?? null;
 
         return new self(
-            $paths,
-            $skipDirs,
-            $skipFiles,
-            null,
-            null,
-            $baseline,
+            paths: $paths,
+            skipDirs: $skipDirs,
+            skipFiles: $skipFiles,
+            baseline: $baseline,
         );
     }
 }

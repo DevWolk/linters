@@ -42,8 +42,8 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths'      => ['src'],
-                'frameworks' => ['laravel11'],
+                'paths' => ['src'],
+                'sets'  => ['laravel11'],
             ],
         ]);
 

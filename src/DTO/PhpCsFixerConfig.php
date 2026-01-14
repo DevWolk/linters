@@ -27,11 +27,11 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
         $cacheDir = $config['cache_dir'] ?? null;
 
         return new self(
-            $paths,
-            $skipDirs,
-            $skipFiles,
-            $parallel,
-            $cacheDir,
+            paths: $paths,
+            skipDirs: $skipDirs,
+            skipFiles: $skipFiles,
+            parallel: $parallel,
+            cacheDir: $cacheDir,
         );
     }
 }

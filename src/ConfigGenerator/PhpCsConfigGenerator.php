@@ -20,7 +20,7 @@ use Symfony\Component\Filesystem\Path;
  * - Skip patterns from extra.linters.phpcs.skip_dirs/skip_files
  * - Rule-specific excludes from extra.linters.phpcs.rule_excludes
  */
-class PhpCsConfigGenerator implements ConfigGeneratorInterface
+final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
 {
     private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpcs.xml';
 
@@ -40,7 +40,7 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
 
     private const string ATTR_REF = 'ref';
 
-    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
+    public function __construct(private ConfigurationLoader $loader)
     {
     }
 
@@ -60,7 +60,7 @@ class PhpCsConfigGenerator implements ConfigGeneratorInterface
     /**
      * @throws DOMException
      */
-    protected function buildConfiguration(): DOMDocument
+    private function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load(self::PACKAGE_CONFIG_PATH);

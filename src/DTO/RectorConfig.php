@@ -36,15 +36,15 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
         $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null, true);
         $cacheDir = $config['cache_dir'] ?? null;
-        $sets = ConfigValidation::normalizeSets($config['sets'] ?? $config['frameworks'] ?? null);
+        $sets = ConfigValidation::normalizeSets($config['sets'] ?? null);
 
         return new self(
-            $paths,
-            $skipDirs,
-            $skipFiles,
-            $parallel,
-            $cacheDir,
-            $sets,
+            paths: $paths,
+            skipDirs: $skipDirs,
+            skipFiles: $skipFiles,
+            parallel: $parallel,
+            cacheDir: $cacheDir,
+            sets: $sets,
         );
     }
 

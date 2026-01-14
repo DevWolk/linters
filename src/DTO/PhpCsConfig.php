@@ -41,13 +41,12 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
         $ruleExcludes = self::parseRuleExcludes($config['rule_excludes'] ?? []);
 
         return new self(
-            $paths,
-            $skipDirs,
-            $skipFiles,
-            $parallel,
-            $cacheDir,
-            null,
-            $ruleExcludes,
+            paths: $paths,
+            skipDirs: $skipDirs,
+            skipFiles: $skipFiles,
+            parallel: $parallel,
+            cacheDir: $cacheDir,
+            ruleExcludes: $ruleExcludes,
         );
     }
 

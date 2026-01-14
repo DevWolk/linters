@@ -18,13 +18,13 @@ use Linters\Utils\ConfigurationLoader;
  * - Paths from composer.json extra.linters.phpmd.paths
  * - Skip patterns from extra.linters.phpmd.skip_dirs/skip_files
  */
-class PhpMdConfigGenerator implements ConfigGeneratorInterface
+final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
 {
     private const string PACKAGE_CONFIG_PATH = __DIR__ . '/../../configs/phpmd.ruleset.xml';
 
     private const string TAG_EXCLUDE_PATTERN = 'exclude-pattern';
 
-    public function __construct(protected ConfigurationLoader $loader = new ConfigurationLoader())
+    public function __construct(private ConfigurationLoader $loader)
     {
     }
 
@@ -44,7 +44,7 @@ class PhpMdConfigGenerator implements ConfigGeneratorInterface
     /**
      * @throws DOMException
      */
-    protected function buildConfiguration(): DOMDocument
+    private function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load(self::PACKAGE_CONFIG_PATH);
@@ -64,7 +64,7 @@ class PhpMdConfigGenerator implements ConfigGeneratorInterface
     /**
      * @throws DOMException
      */
-    protected function addExcludes(
+    private function addExcludes(
         DOMDocument $dom,
         DOMElement $ruleset,
         PhpMdConfig $config,
