@@ -10,37 +10,37 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 	-@make test-unit
 
 test-unit: ## Run unit tests
-	docker-compose exec -T linters_fpm vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
+	docker compose exec -T linters_fpm vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
 
 syntax: ## Check code style with PHPCS
-	docker-compose exec -T linters_fpm ./bin/linters run phpcs
+	docker compose exec -T linters_fpm ./bin/linters run phpcs
 
 syntax-fix: ## Fix code style with PHPCBF
-	docker-compose exec -T linters_fpm ./bin/linters run phpcbf
+	docker compose exec -T linters_fpm ./bin/linters run phpcbf
 
 rector: ## Fix code style with Rector
-	docker-compose exec -T linters_fpm ./bin/linters run rector
+	docker compose exec -T linters_fpm ./bin/linters run rector
 rector-dry-run: ## Check code style with Rector (dry-run)
-	docker-compose exec -T linters_fpm ./bin/linters run rector -- --dry-run
+	docker compose exec -T linters_fpm ./bin/linters run rector -- --dry-run
 
 php-cs-fixer: ## Fix code style with PHP-CS-Fixer
-	docker-compose exec -T linters_fpm ./bin/linters run php-cs-fixer
+	docker compose exec -T linters_fpm ./bin/linters run php-cs-fixer
 php-cs-fixer-check: ## Check code style with PHP-CS-Fixer (dry-run)
-	docker-compose exec -T linters_fpm ./bin/linters run php-cs-fixer -- --dry-run --diff
+	docker compose exec -T linters_fpm ./bin/linters run php-cs-fixer -- --dry-run --diff
 
 phpstan: ## Static analysis with PHPStan
-	docker-compose exec -T linters_fpm ./bin/linters run phpstan
+	docker compose exec -T linters_fpm ./bin/linters run phpstan
 phpstan-baseline: ## Generate PHPStan baseline
-	docker-compose exec -T linters_fpm ./bin/linters run phpstan -- --generate-baseline --allow-empty-baseline
+	docker compose exec -T linters_fpm ./bin/linters run phpstan -- --generate-baseline --allow-empty-baseline
 
 composer-validate: ## Validate composer.json
-	docker-compose exec -T linters_fpm composer validate --no-check-all --no-check-publish --no-check-version
+	docker compose exec -T linters_fpm composer validate --no-check-all --no-check-publish --no-check-version
 composer-audit: ## Check security vulnerabilities
-	docker-compose exec -T linters_fpm composer audit
+	docker compose exec -T linters_fpm composer audit
 composer-unused: ## Find unused composer dependencies
-	docker-compose exec -T linters_fpm ./bin/linters run composer-unused
+	docker compose exec -T linters_fpm ./bin/linters run composer-unused
 composer-normalize: ## Normalize composer.json
-	docker-compose exec -T linters_fpm ./bin/linters run composer-normalize
+	docker compose exec -T linters_fpm ./bin/linters run composer-normalize
 
 config-generate: ## Generate config file
 	printf "${COLOR_COMMENT}Generate config file...${COLOR_RESET}\n"
