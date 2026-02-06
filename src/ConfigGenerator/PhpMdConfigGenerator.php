@@ -7,6 +7,7 @@ namespace Linters\ConfigGenerator;
 use DOMDocument;
 use DOMElement;
 use DOMException;
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\DTO\PhpMdConfig;
 use Linters\Utils\ConfigurationLoader;
 

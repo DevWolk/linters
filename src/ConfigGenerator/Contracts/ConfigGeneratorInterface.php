@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Linters\ConfigGenerator;
+namespace Linters\ConfigGenerator\Contracts;
 
 interface ConfigGeneratorInterface
 {

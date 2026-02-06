@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<phpmd-baseline>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="src/CommandBuilder/Contracts/AbstractConfigurableCommandBuilder.php"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="src/ConfigGenerator/Contracts/AbstractStubConfigGenerator.php"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="src/DTO/Contracts/AbstractToolConfig.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/DTO/Contracts/AbstractToolConfig.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/DTO/PhpCsConfig.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/DTO/RectorConfig.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Service/ToolRunner.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Utils/ConfigurationLoader.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Utils/ParallelConfigOptions.php"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="tests/TestCase.php"/>
+</phpmd-baseline>

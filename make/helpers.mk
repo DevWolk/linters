@@ -5,6 +5,8 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 	-@make phpstan
 	-@make composer-validate
 	-@make composer-audit
+	-@make composer-normalize
+	#-@make composer-unused
 	-@make test-unit
 
 test-unit: ## Run unit tests
@@ -22,9 +24,9 @@ rector-dry-run: ## Check code style with Rector (dry-run)
 	./bin/linters run rector -- --dry-run
 
 php-cs-fixer: ## Fix code style with PHP-CS-Fixer
-	./bin/linters run php-cs-fixer
+	./bin/linters run php-cs-fixer -- --allow-unsupported-php-version=yes
 php-cs-fixer-check: ## Check code style with PHP-CS-Fixer (dry-run)
-	./bin/linters run php-cs-fixer -- --dry-run --diff
+	./bin/linters run php-cs-fixer -- --allow-unsupported-php-version=yes --dry-run --diff
 
 phpstan: ## Static analysis with PHPStan
 	./bin/linters run phpstan

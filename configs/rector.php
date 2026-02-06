@@ -136,4 +136,8 @@ if ($config->parallel?->enabled) {
     );
 }
 
+if (ConfigValidation::isNonEmptyString($config->memoryLimit)) {
+    $rectorConfig = $rectorConfig->withMemoryLimit($config->memoryLimit);
+}
+
 return $rectorConfig;

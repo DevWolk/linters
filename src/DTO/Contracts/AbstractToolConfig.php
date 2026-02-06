@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Linters\DTO;
+namespace Linters\DTO\Contracts;
 
-abstract readonly class BaseToolConfig
+use Linters\Utils\ParallelConfigOptions;
+
+abstract readonly class AbstractToolConfig
 {
     /**
      * @param string[] $paths
@@ -15,7 +17,7 @@ abstract readonly class BaseToolConfig
         public array $paths,
         public array $skipDirs = [],
         public array $skipFiles = [],
-        public ?ParallelConfig $parallel = null,
+        public ?ParallelConfigOptions $parallel = null,
         public ?string $cacheDir = null,
         public ?string $baseline = null,
     ) {

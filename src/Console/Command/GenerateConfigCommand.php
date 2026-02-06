@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\Console\Command;
 
+use Linters\Console\Command\Contracts\AbstractToolCommand;
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
 use Symfony\Component\Console\Command\Command;

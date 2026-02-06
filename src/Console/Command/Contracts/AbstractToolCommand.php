@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Linters\Console\Command;
+namespace Linters\Console\Command\Contracts;
 
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;

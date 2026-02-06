@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Linters\DTO;
+namespace Linters\DTO\Contracts;
 
 interface ToolConfigInterface
 {

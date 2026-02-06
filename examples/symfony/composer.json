@@ -13,47 +13,49 @@
     "linters": {
       "rector": {
         "paths": ["src", "tests"],
-        "phpVersion": "8.4",
-        "skip_dirs": ["var", "vendor"],
-        "skip_files": ["src/Kernel.php"],
+        "php-version": "8.4",
+        "skip-dirs": ["var", "vendor"],
+        "skip-files": ["src/Kernel.php"],
         "sets": ["symfony"],
         "parallel": {
-          "parallel": true,
-          "filesPerProcess": 40,
-          "timeout":360,
-          "maxProcesses": 2
+          "enabled": true,
+          "files-per-process": 40,
+          "timeout": 360,
+          "max-processes": 2
         },
-        "cache_dir": ".cache/rector"
+        "cache-dir": ".cache/rector"
       },
       "php-cs-fixer": {
         "paths": ["src"],
-        "skip_dirs": ["templates"],
-        "skip_files": [],
+        "skip-dirs": ["templates"],
+        "skip-files": [],
         "parallel": true,
-        "cache_dir": ".cache/php-cs-fixer"
+        "cache-dir": ".cache/php-cs-fixer"
       },
       "phpstan": {
         "paths": ["src", "tests"],
-        "skip_dirs": ["vendor", "var"],
-        "skip_files": [],
+        "skip-dirs": ["vendor", "var"],
+        "skip-files": [],
         "parallel": true,
-        "cache_dir": ".cache/phpstan"
+        "cache-dir": ".cache/phpstan"
       },
       "phpcs": {
         "paths": ["src"],
-        "skip_dirs": ["templates"],
-        "skip_files": [],
+        "skip-dirs": ["templates"],
+        "skip-files": [],
         "parallel": 4,
-        "cache_dir": ".cache/phpcs"
+        "cache-dir": ".cache/phpcs"
       },
       "phpmd": {
         "paths": ["src"],
-        "skip_dirs": [],
-        "skip_files": []
+        "skip-dirs": [],
+        "skip-files": []
       },
       "composer-unused": {
         "named-filters": [
-          "wikimedia/composer-merge-plugin"
+          "friendsofphp/php-cs-fixer",
+          "slevomat/coding-standard",
+          "squizlabs/php_codesniffer"
         ]
       }
     }

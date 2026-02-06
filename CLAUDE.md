@@ -58,8 +58,8 @@ passthru() → exit code
 | `ConfigurationLoader`                  | Reads `extra.linters` from composer.json, returns typed DTOs       |
 | `ToolRunner`                           | `generate()` → `createCommandBuilder()` → `build()` → `passthru()` |
 | `Tool` (enum)                          | Registry: label, binary, generatedTarget, requiresGeneration       |
-| `BaseToolConfig`                       | Base DTO: paths, skipDirs, skipFiles, parallel, cacheDir, baseline |
-| `ParallelConfig`                       | Handles bool/int/object parallel config formats                    |
+| `AbstractToolConfig`                   | Base DTO: paths, skipDirs, skipFiles, parallel, cacheDir, baseline |
+| `ParallelConfigOptions`                | Handles bool/int/object parallel config formats                    |
 | `CommandBuilderInterface`              | Base interface for command builders                                |
 | `ConfigurableCommandBuilderInterface`  | Interface for builders requiring config file                       |
 | `AbstractCommandBuilder`               | Base class with `resolveBinary()`, `buildExtraArgs()`              |
@@ -98,17 +98,18 @@ Located in `src/Rector/Rules/`:
 
 ## Configuration Matrix
 
-| Tool               | paths | phpVersion | skip_dirs | skip_files | parallel | cache_dir | baseline | sets | named-filters | rule_excludes |
-|--------------------|:-----:|:----------:|:---------:|:----------:|:--------:|:---------:|:--------:|:----:|:-------------:|:-------------:|
-| rector             |  REQ  |    REQ     |    OPT    |    OPT     |   OPT*   |    OPT    |    -     | OPT  |       -       |       -       |
-| php-cs-fixer       |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |       -       |       -       |
-| phpstan            |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |       -       |       -       |
-| phpcs              |  REQ  |     -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |       -       |      OPT      |
-| phpmd              |  REQ  |     -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |       -       |       -       |
-| composer-unused    |   -   |     -      |     -     |     -      |    -     |     -     |    -     |  -   |      OPT      |       -       |
-| composer-normalize |   -   |     -      |     -     |     -      |    -     |     -     |    -     |  -   |       -       |       -       |
+| Tool               | paths | php-version | skip-dirs | skip-files | parallel | cache-dir | baseline | sets | memory-limit | named-filters | rule-excludes |
+|--------------------|:-----:|:-----------:|:---------:|:----------:|:--------:|:---------:|:--------:|:----:|:------------:|:-------------:|:-------------:|
+| rector             |  REQ  |    OPT**    |    OPT    |    OPT     |   OPT*   |    OPT    |    -     | OPT  |     OPT      |       -       |       -       |
+| php-cs-fixer       |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |       -       |
+| phpstan            |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |      -       |       -       |       -       |
+| phpcs              |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |      OPT      |
+| phpmd              |  REQ  |      -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |      -       |       -       |       -       |
+| composer-unused    |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |      OPT      |       -       |
+| composer-normalize |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |       -       |       -       |
 
 *parallel enabled by default for rector
+**php-version defaults to 8.4 if not specified
 
 ## Development Commands
 
@@ -132,7 +133,7 @@ src/
 ├── Service/             ToolRunner
 ├── CommandBuilder/      Command builders (one per tool)
 ├── ConfigGenerator/     Config generators (phpstan, phpcs, phpmd, rector, php-cs-fixer, composer-unused)
-├── DTO/                 BaseToolConfig, ParallelConfig, *Config per tool
+├── DTO/                 AbstractToolConfig, *Config per tool
 ├── Enum/Tool.php        Tool registry enum
 ├── Utils/               ConfigurationLoader, ConfigValidation
 └── Rector/
@@ -206,6 +207,8 @@ declare(strict_types=1);
 
 namespace Linters\CommandBuilder;
 
+use Linters\CommandBuilder\Contracts\AbstractConfigurableCommandBuilder;
+
 final class NewToolCommandBuilder extends AbstractConfigurableCommandBuilder
 {
     public function build(array $extraArgs): string
@@ -227,6 +230,8 @@ declare(strict_types=1);
 
 namespace Linters\CommandBuilder;
 
+use Linters\CommandBuilder\Contracts\AbstractCommandBuilder;
+
 final class NewToolCommandBuilder extends AbstractCommandBuilder
 {
     public function build(array $extraArgs): string
@@ -247,17 +252,20 @@ declare(strict_types=1);
 
 namespace Linters\DTO;
 
+use Linters\DTO\Contracts\AbstractToolConfig;
+use Linters\DTO\Contracts\ToolConfigInterface;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ParallelConfigOptions;
 
-final readonly class NewToolConfig extends BaseToolConfig implements ToolConfigInterface
+final readonly class NewToolConfig extends AbstractToolConfig implements ToolConfigInterface
 {
     public static function fromArray(array $config): self
     {
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'new-tool');
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
-        $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
-        $cacheDir = $config['cache_dir'] ?? null;
+        $skipDirs = ConfigValidation::optionalStringList($config['skip-dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip-files'] ?? null);
+        $parallel = ParallelConfigOptions::fromMixed($config['parallel'] ?? null);
+        $cacheDir = $config['cache-dir'] ?? null;
         $baseline = $config['baseline'] ?? null;
 
         return new self($paths, $skipDirs, $skipFiles, $parallel, $cacheDir, $baseline);
@@ -289,6 +297,7 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\Utils\ConfigurationLoader;
 
 class NewToolConfigGenerator implements ConfigGeneratorInterface
@@ -319,6 +328,7 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
+use Linters\ConfigGenerator\Contracts\AbstractStubConfigGenerator;
 use Linters\Enum\Tool;
 
 class NewToolConfigGenerator extends AbstractStubConfigGenerator
@@ -368,3 +378,18 @@ make fix-syntax-completely
 - All config classes must implement `ToolConfigInterface`
 - CommandBuilders extending `AbstractConfigurableCommandBuilder` must NOT be `readonly`
 - CommandBuilders extending `AbstractCommandBuilder` (run-only) can be `final class`
+
+### Design Notes
+
+**Testing strategy:**
+- Unit tests cover ConfigurationLoader, ConfigGenerators (phpstan, phpcs, phpmd)
+- Integration tests cover ToolRunner with mock binaries
+- No tests for Rector rules — real usage is the test
+- No tests for simple DTOs like `ComposerUnusedConfig` — trivial code
+
+**Inheritance in DTOs:**
+- `PhpMdConfig` inherits `parallel` and `cacheDir` from `AbstractToolConfig` but doesn't use them — acceptable trade-off for unified API
+- `ComposerUnusedConfig` doesn't extend `AbstractToolConfig` — has completely different structure (only `namedFilters`)
+
+**ConfigValidation::normalizeSets():**
+- Silently ignores unknown set names — acceptable for internal library, experienced devs will notice typos

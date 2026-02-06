@@ -17,8 +17,8 @@ final class PhpStanConfigGeneratorTest extends TestCase
         $this->createComposerJson([
             'phpstan' => [
                 'paths'     => ['src', 'tests'],
-                'skip_dirs' => ['vendor'],
-                'cache_dir' => '.cache/phpstan',
+                'skip-dirs' => ['vendor'],
+                'cache-dir' => '.cache/phpstan',
             ],
         ]);
 

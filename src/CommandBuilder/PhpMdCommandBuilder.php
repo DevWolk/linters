@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Linters\CommandBuilder;
 
+use Linters\CommandBuilder\Contracts\AbstractConfigurableCommandBuilder;
 use Linters\Utils\ConfigValidation;
 
 final class PhpMdCommandBuilder extends AbstractConfigurableCommandBuilder

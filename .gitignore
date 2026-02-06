@@ -9,6 +9,7 @@
 /_ide_helper.php
 .DS_Store
 docker-compose.yml
+composer.lock
 
 # Cache directory
 /.cache/

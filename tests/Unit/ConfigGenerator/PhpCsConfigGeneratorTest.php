@@ -16,8 +16,8 @@ final class PhpCsConfigGeneratorTest extends TestCase
         $this->createComposerJson([
             'phpcs' => [
                 'paths'     => ['src', 'tests'],
-                'skip_dirs' => ['vendor'],
-                'cache_dir' => '.cache/phpcs',
+                'skip-dirs' => ['vendor'],
+                'cache-dir' => '.cache/phpcs',
             ],
         ]);
 

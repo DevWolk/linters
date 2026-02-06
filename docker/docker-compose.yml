@@ -1,18 +1,19 @@
 services:
-  linters_fpm:
+  php:
     build:
       context: ../
       dockerfile: docker/Dockerfile
+    image: ${COMPOSE_PROJECT_NAME:-linters}_php:latest
     deploy:
       resources:
         limits:
           cpus: 1.99
           memory: 2G
     restart: unless-stopped
-    container_name: linters_fpm
-    hostname: linters_fpm
+    container_name: ${COMPOSE_PROJECT_NAME:-linters}_php
+    hostname: ${COMPOSE_PROJECT_NAME:-linters}_php
     ports:
-      - '9001:9000'
+      - '${PHP_FPM_PORT:-9001}:9000'
     volumes:
       - ../:/var/www
     environment:
@@ -20,8 +21,9 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
-      - filter_network
+      - app_network
 
 networks:
-  filter_network:
+  app_network:
+    name: ${COMPOSE_PROJECT_NAME:-linters}_network
     driver: bridge

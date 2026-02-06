@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Linters\Console\Command;
 
+use Linters\Console\Command\Contracts\AbstractToolCommand;
 use Linters\Enum\Tool;
 use Linters\Service\ToolRunner;
-use Safe\Exceptions\DirException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class RunCommand extends AbstractToolCommand
@@ -21,9 +21,6 @@ final class RunCommand extends AbstractToolCommand
         return 'Generate config and run a tool from extra.linters';
     }
 
-    /**
-     * @throws DirException
-     */
     protected function doExecute(
         Tool $tool,
         ToolRunner $runner,

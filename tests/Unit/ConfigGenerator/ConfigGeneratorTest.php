@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Linters\Tests\Unit\ConfigGenerator;
 
 use InvalidArgumentException;
-use Linters\ConfigGenerator\ConfigGeneratorInterface;
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
 use Linters\ConfigGenerator\PhpStanConfigGenerator;
@@ -26,7 +26,7 @@ final class ConfigGeneratorTest extends TestCase
     ): void {
         $this->createComposerJson([
             $toolKey => [
-                'skip_dirs' => ['vendor'],
+                'skip-dirs' => ['vendor'],
             ],
         ]);
 

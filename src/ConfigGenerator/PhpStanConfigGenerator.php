@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Linters\ConfigGenerator;
 
-use Linters\DTO\ParallelConfig;
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\DTO\PhpStanConfig;
 use Linters\Utils\ConfigurationLoader;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ParallelConfigOptions;
 use Safe\Exceptions\FilesystemException;
 use Safe\Exceptions\PcreException;
 use Symfony\Component\Filesystem\Path;
@@ -141,19 +142,23 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
     /**
      * @return array<string, int|float>
      */
-    private function buildParallelConfig(?ParallelConfig $parallel): array
+    private function buildParallelConfig(?ParallelConfigOptions $parallel): array
     {
-        if ($parallel?->enabled !== true) {
+        if ($parallel === null) {
+            return [];
+        }
+
+        if ($parallel->enabled !== true) {
             return [];
         }
 
         $config = [];
 
-        if ($parallel?->maxProcesses !== null) {
+        if ($parallel->maxProcesses !== null) {
             $config['maximumNumberOfProcesses'] = $parallel->maxProcesses;
         }
 
-        if ($parallel?->timeout !== null) {
+        if ($parallel->timeout !== null) {
             $config['processTimeout'] = $parallel->timeout;
         }
 

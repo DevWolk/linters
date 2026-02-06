@@ -6,6 +6,7 @@ namespace Linters\ConfigGenerator;
 
 use DOMDocument;
 use DOMException;
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\DTO\PhpCsConfig;
 use Linters\Utils\ConfigurationLoader;
 use Linters\Utils\ConfigValidation;

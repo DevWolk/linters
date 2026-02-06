@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Linters\DTO;
 
+use Linters\DTO\Contracts\AbstractToolConfig;
+use Linters\DTO\Contracts\ToolConfigInterface;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ParallelConfigOptions;
 
-final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInterface
+final readonly class PhpCsConfig extends AbstractToolConfig implements ToolConfigInterface
 {
     public const string CACHE_NAME = '.phpcs-cache';
 
@@ -20,12 +23,11 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
         array $paths,
         array $skipDirs = [],
         array $skipFiles = [],
-        ?ParallelConfig $parallel = null,
+        ?ParallelConfigOptions $parallel = null,
         ?string $cacheDir = null,
-        ?string $baseline = null,
         public array $ruleExcludes = [],
     ) {
-        parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir, $baseline);
+        parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
     }
 
     /**
@@ -34,11 +36,11 @@ final readonly class PhpCsConfig extends BaseToolConfig implements ToolConfigInt
     public static function fromArray(array $config): self
     {
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'phpcs');
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
-        $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
-        $cacheDir = $config['cache_dir'] ?? null;
-        $ruleExcludes = self::parseRuleExcludes($config['rule_excludes'] ?? []);
+        $skipDirs = ConfigValidation::optionalStringList($config['skip-dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip-files'] ?? null);
+        $parallel = ParallelConfigOptions::fromMixed($config['parallel'] ?? null);
+        $cacheDir = $config['cache-dir'] ?? null;
+        $ruleExcludes = self::parseRuleExcludes($config['rule-excludes'] ?? []);
 
         return new self(
             paths: $paths,

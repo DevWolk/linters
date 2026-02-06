@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Linters\DTO;
 
+use Linters\DTO\Contracts\AbstractToolConfig;
+use Linters\DTO\Contracts\ToolConfigInterface;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ParallelConfigOptions;
 
-final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConfigInterface
+final readonly class PhpCsFixerConfig extends AbstractToolConfig implements ToolConfigInterface
 {
     public const string PATTERN_NAME = '*.php';
 
@@ -21,10 +24,10 @@ final readonly class PhpCsFixerConfig extends BaseToolConfig implements ToolConf
     public static function fromArray(array $config): self
     {
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'php-cs-fixer');
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
-        $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null);
-        $cacheDir = $config['cache_dir'] ?? null;
+        $skipDirs = ConfigValidation::optionalStringList($config['skip-dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip-files'] ?? null);
+        $parallel = ParallelConfigOptions::fromMixed($config['parallel'] ?? null);
+        $cacheDir = $config['cache-dir'] ?? null;
 
         return new self(
             paths: $paths,

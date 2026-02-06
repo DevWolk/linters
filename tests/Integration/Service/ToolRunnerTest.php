@@ -120,8 +120,8 @@ final class ToolRunnerTest extends TestCase
             'phpcs' => [
                 'paths'    => ['src'],
                 'parallel' => [
-                    'enabled'      => true,
-                    'maxProcesses' => 4,
+                    'enabled'       => true,
+                    'max-processes' => 4,
                 ],
             ],
         ]);

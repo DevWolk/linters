@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Linters\CommandBuilder;
+namespace Linters\CommandBuilder\Contracts;
 
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;

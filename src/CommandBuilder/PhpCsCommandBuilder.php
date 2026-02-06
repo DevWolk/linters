@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Linters\CommandBuilder;
 
+use Linters\CommandBuilder\Contracts\AbstractConfigurableCommandBuilder;
+
 final class PhpCsCommandBuilder extends AbstractConfigurableCommandBuilder
 {
     public function build(array $extraArgs): string

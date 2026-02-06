@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Linters\DTO;
 
+use Linters\DTO\Contracts\AbstractToolConfig;
+use Linters\DTO\Contracts\ToolConfigInterface;
 use Linters\Enum\PhpVersion;
 use Linters\Enum\RectorSet;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ParallelConfigOptions;
 
-final readonly class RectorConfig extends BaseToolConfig implements ToolConfigInterface
+final readonly class RectorConfig extends AbstractToolConfig implements ToolConfigInterface
 {
     /** @var string[] */
     public const array FILE_EXTENSIONS = ['php'];
@@ -20,10 +23,11 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
         array $paths,
         array $skipDirs,
         array $skipFiles,
-        ?ParallelConfig $parallel,
+        ?ParallelConfigOptions $parallel,
         ?string $cacheDir,
         public PhpVersion $phpVersion,
         public array $sets = [],
+        public ?string $memoryLimit = null,
     ) {
         parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
     }
@@ -34,12 +38,13 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
     public static function fromArray(array $config): self
     {
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'rector');
-        $skipDirs = ConfigValidation::optionalStringList($config['skip_dirs'] ?? null);
-        $skipFiles = ConfigValidation::optionalStringList($config['skip_files'] ?? null);
-        $parallel = ParallelConfig::fromMixed($config['parallel'] ?? null, true);
-        $cacheDir = $config['cache_dir'] ?? null;
-        $phpVersion = PhpVersion::from($config['phpVersion'] ?? PhpVersion::PHP_84->value);
+        $skipDirs = ConfigValidation::optionalStringList($config['skip-dirs'] ?? null);
+        $skipFiles = ConfigValidation::optionalStringList($config['skip-files'] ?? null);
+        $parallel = ParallelConfigOptions::fromMixed($config['parallel'] ?? null, true);
+        $cacheDir = $config['cache-dir'] ?? null;
+        $phpVersion = PhpVersion::from($config['php-version'] ?? PhpVersion::PHP_84->value);
         $sets = ConfigValidation::normalizeSets($config['sets'] ?? null);
+        $memoryLimit = $config['memory-limit'] ?? null;
 
         return new self(
             paths: $paths,
@@ -49,6 +54,7 @@ final readonly class RectorConfig extends BaseToolConfig implements ToolConfigIn
             cacheDir: $cacheDir,
             phpVersion: $phpVersion,
             sets: $sets,
+            memoryLimit: $memoryLimit,
         );
     }
 

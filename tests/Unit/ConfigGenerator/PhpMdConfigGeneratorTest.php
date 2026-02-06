@@ -11,12 +11,12 @@ use Linters\Utils\ConfigurationLoader;
 
 final class PhpMdConfigGeneratorTest extends TestCase
 {
-    public function testGenerateAddsExcludes(): void
+    public function testGenerateWritesConfiguration(): void
     {
         $this->createComposerJson([
             'phpmd' => [
                 'paths'     => ['src'],
-                'skip_dirs' => ['vendor'],
+                'skip-dirs' => ['vendor'],
             ],
         ]);
 

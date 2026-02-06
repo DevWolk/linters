@@ -4,57 +4,59 @@
   "type": "project",
   "require": {
     "php": "^8.4",
-    "laravel/framework": "^11.0"
+    "laravel/framework": "^12.0"
   },
   "require-dev": {
     "devwolk/linters": "^0.0.1",
-      "driftingly/rector-laravel": "^2.1"
+    "driftingly/rector-laravel": "^2.1"
   },
   "extra": {
     "linters": {
       "rector": {
         "paths": ["app", "config", "database", "routes", "tests"],
-        "phpVersion": "8.4",
-        "skip_dirs": ["bootstrap", "storage", "vendor"],
-        "skip_files": [],
+        "php-version": "8.4",
+        "skip-dirs": ["bootstrap", "storage", "vendor"],
+        "skip-files": [],
         "sets": ["laravel12"],
         "parallel": {
-          "parallel": true,
-          "filesPerProcess": 40,
-          "timeout":360,
-          "maxProcesses": 2
+          "enabled": true,
+          "files-per-process": 40,
+          "timeout": 360,
+          "max-processes": 2
         },
-        "cache_dir": ".cache/rector"
+        "cache-dir": ".cache/rector"
       },
       "php-cs-fixer": {
         "paths": ["app", "config", "database", "routes"],
-        "skip_dirs": ["resources/views"],
-        "skip_files": [],
+        "skip-dirs": ["resources/views"],
+        "skip-files": [],
         "parallel": true,
-        "cache_dir": ".cache/php-cs-fixer"
+        "cache-dir": ".cache/php-cs-fixer"
       },
       "phpstan": {
         "paths": ["app", "tests"],
-        "skip_dirs": ["vendor", "storage", "bootstrap/cache"],
-        "skip_files": [],
+        "skip-dirs": ["vendor", "storage", "bootstrap/cache"],
+        "skip-files": [],
         "parallel": true,
-        "cache_dir": ".cache/phpstan"
+        "cache-dir": ".cache/phpstan"
       },
       "phpcs": {
         "paths": ["app", "config"],
-        "skip_dirs": ["resources/views"],
-        "skip_files": [],
+        "skip-dirs": ["resources/views"],
+        "skip-files": [],
         "parallel": 4,
-        "cache_dir": ".cache/phpcs"
+        "cache-dir": ".cache/phpcs"
       },
       "phpmd": {
         "paths": ["app"],
-        "skip_dirs": [],
-        "skip_files": []
+        "skip-dirs": [],
+        "skip-files": []
       },
       "composer-unused": {
         "named-filters": [
-          "wikimedia/composer-merge-plugin"
+          "friendsofphp/php-cs-fixer",
+          "slevomat/coding-standard",
+          "squizlabs/php_codesniffer"
         ]
       }
     }

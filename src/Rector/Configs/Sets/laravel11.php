@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelLevelSetList;
 use RectorLaravel\Set\LaravelSetList;
 
@@ -17,5 +18,8 @@ return static function (RectorConfig $rectorConfig): void {
         LaravelSetList::LARAVEL_110,
         LaravelSetList::LARAVEL_CODE_QUALITY,
         LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
+    ]);
+    $rectorConfig->skip([
+        CarbonToDateFacadeRector::class,
     ]);
 };

@@ -52,6 +52,9 @@ enum Tool: string
         };
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function sourceConfigFileName(): string
     {
         return match ($this) {

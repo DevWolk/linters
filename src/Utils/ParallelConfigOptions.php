@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Linters\DTO;
+namespace Linters\Utils;
 
-final readonly class ParallelConfig
+final readonly class ParallelConfigOptions
 {
     public function __construct(
         public bool $enabled,
@@ -15,9 +15,9 @@ final readonly class ParallelConfig
     }
 
     /**
-     * @param bool|string|int|array<string, mixed>|null $value
+     * @param bool|int|array<string, mixed>|null $value
      */
-    public static function fromMixed(null|bool|string|int|array $value, bool $defaultEnabled = false): self
+    public static function fromMixed(null|bool|int|array $value, bool $defaultEnabled = false): self
     {
         if ($value === null) {
             return new self($defaultEnabled);
@@ -28,7 +28,7 @@ final readonly class ParallelConfig
         }
 
         if (is_numeric($value)) {
-            return new self(true, maxProcesses: (int) $value);
+            return new self(true, maxProcesses: $value);
         }
 
         return self::fromArray($value, $defaultEnabled);
@@ -42,8 +42,8 @@ final readonly class ParallelConfig
         return new self(
             enabled: (bool) ($value['enabled'] ?? $defaultEnabled),
             timeout: self::toInt($value['timeout'] ?? null),
-            maxProcesses: self::toInt($value['maxProcesses'] ?? null),
-            filesPerProcess: self::toInt($value['filesPerProcess'] ?? null),
+            maxProcesses: self::toInt($value['max-processes'] ?? null),
+            filesPerProcess: self::toInt($value['files-per-process'] ?? null),
         );
     }
 

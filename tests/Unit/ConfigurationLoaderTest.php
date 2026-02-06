@@ -9,8 +9,6 @@ use Linters\Enum\RectorSet;
 use Linters\Tests\TestCase;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
-use Safe\Exceptions\FilesystemException;
-use Safe\Exceptions\JsonException;
 
 use function Safe\file_put_contents;
 use function Safe\json_encode;
@@ -61,8 +59,8 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths'      => ['src'],
-                'phpVersion' => '8.3',
+                'paths'       => ['src'],
+                'php-version' => '8.3',
             ],
         ]);
 
@@ -116,10 +114,6 @@ final class ConfigurationLoaderTest extends TestCase
         self::assertSame(['src'], $config->paths);
     }
 
-    /**
-     * @throws JsonException
-     * @throws FilesystemException
-     */
     public function testConstructorUsesCustomExtraKey(): void
     {
         $json = json_encode([

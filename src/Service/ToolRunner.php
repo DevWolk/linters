@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Linters\Service;
 
-use Linters\CommandBuilder\CommandBuilderInterface;
 use Linters\CommandBuilder\ComposerNormalizeCommandBuilder;
 use Linters\CommandBuilder\ComposerUnusedCommandBuilder;
-use Linters\CommandBuilder\ConfigurableCommandBuilderInterface;
+use Linters\CommandBuilder\Contracts\CommandBuilderInterface;
+use Linters\CommandBuilder\Contracts\ConfigurableCommandBuilderInterface;
 use Linters\CommandBuilder\PhpCsCommandBuilder;
 use Linters\CommandBuilder\PhpCsFixerCommandBuilder;
 use Linters\CommandBuilder\PhpMdCommandBuilder;
 use Linters\CommandBuilder\PhpStanCommandBuilder;
 use Linters\CommandBuilder\RectorCommandBuilder;
 use Linters\ConfigGenerator\ComposerUnusedConfigGenerator;
-use Linters\ConfigGenerator\ConfigGeneratorInterface;
+use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\ConfigGenerator\PhpCsConfigGenerator;
 use Linters\ConfigGenerator\PhpCsFixerConfigGenerator;
 use Linters\ConfigGenerator\PhpMdConfigGenerator;
@@ -23,7 +23,6 @@ use Linters\ConfigGenerator\RectorConfigGenerator;
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
 use RuntimeException;
-use Safe\Exceptions\DirException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Path;
 
@@ -44,8 +43,6 @@ final readonly class ToolRunner
 
     /**
      * @param string[] $extraArgs
-     *
-     * @throws DirException
      */
     public function run(Tool $tool, OutputInterface $output, array $extraArgs = []): int
     {
