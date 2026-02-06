@@ -3,7 +3,6 @@
   "description": "Centralized PHP linter configurations and static analysis tools for PHP projects",
   "license": "MIT",
   "type": "library",
-  "version": "0.0.1",
   "keywords": [
     "linter",
     "phpstan",
