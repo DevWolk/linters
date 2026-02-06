@@ -19,7 +19,6 @@ use function Safe\mkdir;
 
 final class ToolRunnerTest extends TestCase
 {
-    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
