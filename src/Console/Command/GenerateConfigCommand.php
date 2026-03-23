@@ -27,6 +27,15 @@ final class GenerateConfigCommand extends AbstractToolCommand
         ToolRunner $runner,
         OutputInterface $output,
     ): int {
+        if ($tool->requiresGeneration() === false) {
+            $output->writeln(\sprintf(
+                '<comment>Tool %s does not use a generated config file. Nothing to generate.</comment>',
+                $tool->value,
+            ));
+
+            return Command::SUCCESS;
+        }
+
         $target = $runner->generate($tool);
         $output->writeln('Generated: ' . $target);
 

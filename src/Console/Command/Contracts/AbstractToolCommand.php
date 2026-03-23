@@ -38,7 +38,15 @@ abstract class AbstractToolCommand extends Command
             ->setName($this->getCommandName())
             ->setDescription($this->getCommandDescription())
             ->addArgument('tool', InputArgument::REQUIRED, $tools)
-            ->addArgument('extra', InputArgument::IS_ARRAY, 'Extra arguments to pass to the tool (use -- before them)');
+            ->addArgument('extra', InputArgument::IS_ARRAY, 'Extra arguments to pass to the tool (use -- before them)')
+            ->setHelp(<<<'HELP'
+                Usage examples:
+                  linters run phpstan
+                  linters run rector -- --dry-run
+                  linters generate phpcs
+
+                Extra arguments after -- are passed directly to the underlying tool.
+                HELP);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -46,7 +54,18 @@ abstract class AbstractToolCommand extends Command
         try {
             $this->input = $input;
             $toolName = strtolower((string) $input->getArgument('tool'));
-            $tool = Tool::from($toolName);
+            $tool = Tool::tryFrom($toolName);
+
+            if ($tool === null) {
+                $available = implode(', ', array_map(
+                    static fn (Tool $t): string => $t->value,
+                    Tool::cases(),
+                ));
+
+                throw new \InvalidArgumentException(
+                    \sprintf('Unknown tool "%s". Available tools: %s', $toolName, $available)
+                );
+            }
 
             $loader = new ConfigurationLoader();
             $runner = new ToolRunner($loader);

@@ -74,8 +74,7 @@
           "friendsofphp/php-cs-fixer",
           "slevomat/coding-standard",
           "squizlabs/php_codesniffer",
-          "thecodingmachine/phpstan-safe-rule",
-          "roave/security-advisories"
+          "thecodingmachine/phpstan-safe-rule"
         ]
       },
       "php-cs-fixer": {
@@ -125,6 +124,12 @@
         ]
       },
       "rector": {
+        "import-names": {
+          "import-doc-block-names": false,
+          "import-names": true,
+          "import-short-classes": false,
+          "remove-unused-imports": true
+        },
         "parallel": {
           "enabled": true,
           "files-per-process": 80,
@@ -143,7 +148,10 @@
         ],
         "skip-dirs": [
           "vendor"
-        ]
+        ],
+        "unsafe": {
+          "treat-classes-as-final": true
+        }
       }
     }
   }

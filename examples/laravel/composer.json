@@ -7,7 +7,7 @@
     "laravel/framework": "^12.0"
   },
   "require-dev": {
-    "devwolk/linters": "^0.0.1",
+    "devwolk/linters": "^0.0.3",
     "driftingly/rector-laravel": "^2.1"
   },
   "extra": {
@@ -18,6 +18,12 @@
         "skip-dirs": ["bootstrap", "storage", "vendor"],
         "skip-files": [],
         "sets": ["laravel12"],
+        "import-names": {
+          "import-names": true,
+          "import-doc-block-names": false,
+          "import-short-classes": false,
+          "remove-unused-imports": true
+        },
         "parallel": {
           "enabled": true,
           "files-per-process": 40,

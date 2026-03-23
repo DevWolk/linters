@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use RectorLaravel\Rector\FuncCall\SleepFuncToSleepStaticCallRector;
 use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelLevelSetList;
 use RectorLaravel\Set\LaravelSetList;
@@ -21,5 +22,6 @@ return static function (RectorConfig $rectorConfig): void {
     ]);
     $rectorConfig->skip([
         CarbonToDateFacadeRector::class,
+        SleepFuncToSleepStaticCallRector::class,
     ]);
 };

@@ -18,8 +18,8 @@ use Symfony\Component\Filesystem\Path;
  * This class generates phpcs.xml dynamically from:
  * - Base template (configs/phpcs.xml)
  * - Paths from composer.json extra.linters.phpcs.paths
- * - Skip patterns from extra.linters.phpcs.skip_dirs/skip_files
- * - Rule-specific excludes from extra.linters.phpcs.rule_excludes
+ * - Skip patterns from extra.linters.phpcs.skip-dirs/skip-files
+ * - Rule-specific excludes from extra.linters.phpcs.rule-excludes
  */
 final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
 {
@@ -55,7 +55,9 @@ final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
 
-        $dom->save($targetPath);
+        if ($dom->save($targetPath) === false) {
+            throw new \RuntimeException('Failed to write PHPCS config to: ' . $targetPath);
+        }
     }
 
     /**
@@ -64,14 +66,21 @@ final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
     private function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
-        $dom->load(self::PACKAGE_CONFIG_PATH);
+
+        if ($dom->load(self::PACKAGE_CONFIG_PATH) === false) {
+            throw new \RuntimeException('Failed to load PHPCS template: ' . self::PACKAGE_CONFIG_PATH);
+        }
 
         $config = $this->loader->getPhpCsConfig();
         $ruleset = $dom->documentElement;
 
+        if ($ruleset === null) {
+            throw new \RuntimeException('Invalid PHPCS base template: missing root element');
+        }
+
         foreach ($config->paths as $path) {
             $fileElement = $dom->createElement(self::TAG_FILE, $path);
-            $ruleset?->appendChild($fileElement);
+            $ruleset->appendChild($fileElement);
         }
 
         $excludePatterns = array_merge(
@@ -81,7 +90,7 @@ final readonly class PhpCsConfigGenerator implements ConfigGeneratorInterface
 
         foreach ($excludePatterns as $exclude) {
             $excludeElement = $dom->createElement(self::TAG_EXCLUDE_PATTERN, $exclude);
-            $ruleset?->appendChild($excludeElement);
+            $ruleset->appendChild($excludeElement);
         }
 
         $this->addRuleExcludes($dom, $config->ruleExcludes);

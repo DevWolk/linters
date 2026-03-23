@@ -37,9 +37,9 @@ final class ConfigValidation
         $paths = self::stringList($value);
 
         if ($paths === []) {
-            throw new InvalidArgumentException(
-                \sprintf('Missing required config: extra.linters.%s.paths', $toolName)
-            );
+            $message = 'Missing required "paths" in extra.linters.%s. Example: "paths": ["src"]';
+
+            throw new InvalidArgumentException(\sprintf($message, $toolName));
         }
 
         return $paths;

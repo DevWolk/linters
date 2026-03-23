@@ -20,10 +20,10 @@ enum RectorSet: string
         return match ($this) {
             self::LARAVEL11 => AppRectorSetList::LARAVEL11,
             self::LARAVEL12 => AppRectorSetList::LARAVEL12,
-            self::DOCTRINE  => AppRectorSetList::DOCTRINE,
+            self::DOCTRINE => AppRectorSetList::DOCTRINE,
             self::PHPUNIT11 => AppRectorSetList::PHPUNIT11,
             self::PHPUNIT12 => AppRectorSetList::PHPUNIT12,
-            self::SYMFONY   => AppRectorSetList::SYMFONY,
+            self::SYMFONY => AppRectorSetList::SYMFONY,
         };
     }
 }

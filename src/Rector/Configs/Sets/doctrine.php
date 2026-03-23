@@ -8,6 +8,10 @@ use Rector\Doctrine\Orm214\Rector\Param\ReplaceLifecycleEventArgsByDedicatedEven
 use Rector\Doctrine\Set\DoctrineSetList;
 
 return static function (RectorConfig $rectorConfig): void {
+    if (class_exists(DoctrineSetList::class) === false) {
+        return;
+    }
+
     $rectorConfig->rules([
         ReplaceFetchAllMethodCallRector::class,
         ReplaceLifecycleEventArgsByDedicatedEventArgsRector::class,

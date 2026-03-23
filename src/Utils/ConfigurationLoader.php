@@ -42,7 +42,7 @@ final readonly class ConfigurationLoader
         $this->composerDir = $composerDir ?? getcwd();
 
         if (!file_exists($this->composerDir . self::COMPOSER_FILE)) {
-            throw new RuntimeException(self::COMPOSER_FILE . ' file not found');
+            throw new RuntimeException(\sprintf('composer.json not found in %s', $this->composerDir));
         }
 
         $content = file_get_contents($this->composerDir . self::COMPOSER_FILE);

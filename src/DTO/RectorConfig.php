@@ -9,7 +9,9 @@ use Linters\DTO\Contracts\ToolConfigInterface;
 use Linters\Enum\PhpVersion;
 use Linters\Enum\RectorSet;
 use Linters\Utils\ConfigValidation;
+use Linters\Utils\ImportNamesOptions;
 use Linters\Utils\ParallelConfigOptions;
+use Linters\Utils\UnsafeOptions;
 
 final readonly class RectorConfig extends AbstractToolConfig implements ToolConfigInterface
 {
@@ -28,6 +30,9 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
         public PhpVersion $phpVersion,
         public array $sets = [],
         public ?string $memoryLimit = null,
+        public bool $clearCache = true,
+        public ImportNamesOptions $importNames = new ImportNamesOptions(),
+        public UnsafeOptions $unsafe = new UnsafeOptions(),
     ) {
         parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
     }
@@ -45,6 +50,9 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
         $phpVersion = PhpVersion::from($config['php-version'] ?? PhpVersion::PHP_84->value);
         $sets = ConfigValidation::normalizeSets($config['sets'] ?? null);
         $memoryLimit = $config['memory-limit'] ?? null;
+        $clearCache = $config['clear-cache'] ?? true;
+        $importNames = ImportNamesOptions::fromMixed($config['import-names'] ?? null);
+        $unsafe = UnsafeOptions::fromMixed($config['unsafe'] ?? null);
 
         return new self(
             paths: $paths,
@@ -55,6 +63,9 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
             phpVersion: $phpVersion,
             sets: $sets,
             memoryLimit: $memoryLimit,
+            clearCache: $clearCache,
+            importNames: $importNames,
+            unsafe: $unsafe,
         );
     }
 

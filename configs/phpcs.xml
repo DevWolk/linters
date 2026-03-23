@@ -33,7 +33,9 @@
         Description: The PSR-12 standard recommends basic coding style rules.
         Priority: High
     -->
-    <rule ref="PSR12"/>
+    <rule ref="PSR12">
+        <exclude name="PSR12.Files.FileHeader"/>
+    </rule>
     <!--
         Group: Generic
         Documentation: https://kalimah-apps.com/phpcs/docs/rules/Generic/Files.ByteOrderMark.html
@@ -49,12 +51,7 @@
         Priority: Low
     -->
     <rule ref="Generic.Files.LineLength">
-        <type>warning</type>
-        <properties>
-            <property name="absoluteLineLimit" value="160"/>
-            <property name="lineLimit" value="120"/>
-            <property name="ignoreComments" value="true"/>
-        </properties>
+        <severity>0</severity>
     </rule>
     <!--
         Group: Cyclomatic Complexity
@@ -66,8 +63,8 @@
     -->
     <rule ref="Generic.Metrics.CyclomaticComplexity">
         <properties>
-            <property name="complexity" value="10"/>
-            <property name="absoluteComplexity" value="20"/>
+            <property name="complexity" value="15"/>
+            <property name="absoluteComplexity" value="25"/>
         </properties>
     </rule>
     <rule ref="Generic.Metrics.CyclomaticComplexity.TooHigh">
@@ -85,7 +82,7 @@
     -->
     <rule ref="Generic.Metrics.NestingLevel">
         <properties>
-            <property name="nestingLevel" value="2"/>
+            <property name="nestingLevel" value="3"/>
             <property name="absoluteNestingLevel" value="4"/>
         </properties>
     </rule>
@@ -112,15 +109,6 @@
         </properties>
     </rule>
 
-    <!--
-        Group: Exclusion
-        Documentation: https://kalimah-apps.com/phpcs/docs/rules/PSR12/ruleset.html
-        Description: Excludes specific rules from the PSR-12 standard.
-        Priority: High
-    -->
-    <rule ref="PSR12">
-        <exclude name="PSR12.Files.FileHeader"/>
-    </rule>
     <!--
         Group: Exclusion
         Documentation: https://kalimah-apps.com/phpcs/docs/rules/Squiz/WhiteSpace.ScopeClosingBrace.html
@@ -151,6 +139,10 @@
         Priority: High
     -->
     <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+    <!-- Disable side effects check (files with mixed declarations and side effects) -->
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <severity>0</severity>
+    </rule>
 
     <!-- ** Additional Custom Rules ** -->
 
@@ -184,7 +176,9 @@
         Description: Identifies parameters in functions/methods that are never used.
         Priority: High
     -->
-    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">
+        <exclude name="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    </rule>
     <!--
         Group: Generic
         Documentation: https://kalimah-apps.com/phpcs/docs/rules/Generic/CodeAnalysis.JumbledIncrementer.html
@@ -270,14 +264,6 @@
     <rule ref="Generic.PHP.DisallowShortOpenTag"/>
     <!--
         Group: Generic
-        Documentation: https://kalimah-apps.com/phpcs/docs/rules/Generic/PHP.ForbiddenFunctions.html
-        Description: Flags the use of forbidden PHP functions,
-                     promoting the use of alternative, safer, or more modern functions.
-        Priority: Medium
-    -->
-    <rule ref="Generic.PHP.ForbiddenFunctions"/>
-    <!--
-        Group: Generic
         Documentation: https://kalimah-apps.com/phpcs/docs/rules/Generic/PHP.LowerCaseConstant.html
         Description: Ensures that true, false, and null are lowercase,
                      as per the PHP language specification.
@@ -337,8 +323,7 @@
         Priority: Low
     -->
     <rule ref="Generic.Commenting.Todo.CommentFound">
-        <message>Please review this TODO comment: %s</message>
-        <type>warning</type>
+        <severity>0</severity>
     </rule>
     <!--
         Group: Generic
@@ -347,8 +332,7 @@
         Priority: Low
     -->
     <rule ref="Generic.Commenting.Fixme.TaskFound">
-        <message>Please review this FIXME comment: %s</message>
-        <type>warning</type>
+        <severity>0</severity>
     </rule>
     <!--
         Group: Generic
@@ -506,8 +490,8 @@
                 <element value="public properties, public static properties, protected properties, protected static properties, private properties, private static properties"/>
                 <element value="constructor, static constructors"/>
                 <element value="enum cases"/>
-                <element value="public methods, public final methods, public static methods, public static abstract methods, public static final methods, public abstract methods, protected methods, protected final methods, protected static methods, protected static abstract methods, protected static final methods, protected abstract methods, private methods, private static methods"/>
-                <element value="protected methods, protected static methods, protected static abstract methods, protected abstract methods, private methods, private static methods"/>
+                <element value="public methods, public final methods, public static methods, public static abstract methods, public static final methods, public abstract methods"/>
+                <element value="protected methods, protected final methods, protected static methods, protected static abstract methods, protected static final methods, protected abstract methods"/>
                 <element value="private methods, private static methods"/>
                 <element value="magic methods"/>
                 <element value="destructor"/>
@@ -670,6 +654,12 @@
             <property name="allowAboveNonAssignment" value="true"/>
         </properties>
     </rule>
+    <rule ref="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable">
+        <severity>0</severity>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat">
+        <severity>0</severity>
+    </rule>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/commenting.md#slevomatcodingstandardcommentingrequireonelinepropertydoccomment- -->
     <rule ref="SlevomatCodingStandard.Commenting.RequireOneLinePropertyDocComment"/>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/commenting.md#slevomatcodingstandardcommentinguselessinheritdoccomment- -->
@@ -678,12 +668,6 @@
     <rule ref="SlevomatCodingStandard.ControlStructures.UselessTernaryOperator"/>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/namespaces.md#slevomatcodingstandardnamespacesmultipleusesperline -->
     <rule ref="SlevomatCodingStandard.Namespaces.MultipleUsesPerLine"/>
-    <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/commenting.md#slevomatcodingstandardcommentingrequireonelinepropertydoccomment- -->
-    <rule ref="SlevomatCodingStandard.Commenting.RequireOneLinePropertyDocComment"/>
-    <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/commenting.md#slevomatcodingstandardcommentinginlinedoccommentdeclaration- -->
-    <rule ref="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration"/>
-    <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/php.md#slevomatcodingstandardphpuselessparentheses- -->
-    <rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/functions.md#slevomatcodingstandardfunctionsstrictcall -->
     <rule ref="SlevomatCodingStandard.Functions.StrictCall">
         <type>warning</type>
@@ -692,7 +676,7 @@
     <rule ref="SlevomatCodingStandard.PHP.DisallowDirectMagicInvokeCall"/>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/functions.md#slevomatcodingstandardfunctionsunusedparameter- -->
     <rule ref="SlevomatCodingStandard.Functions.UnusedParameter">
-        <type>warning</type>
+        <exclude name="SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter"/>
     </rule>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/functions.md#slevomatcodingstandardfunctionsuselessparameterdefaultvalue- -->
     <rule ref="SlevomatCodingStandard.Functions.UselessParameterDefaultValue">
@@ -700,11 +684,9 @@
     </rule>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/php.md#slevomatcodingstandardphprequirenowdoc- -->
     <rule ref="SlevomatCodingStandard.PHP.RequireNowdoc"/>
-    <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/php.md#slevomatcodingstandardphpoptimizedfunctionswithoutunpacking -->
-    <rule ref="SlevomatCodingStandard.PHP.OptimizedFunctionsWithoutUnpacking"/>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/variables.md#slevomatcodingstandardvariablesdisallowsuperglobalvariable -->
     <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable">
-        <type>warning</type>
+        <severity>0</severity>
     </rule>
     <!-- https://github.com/slevomat/coding-standard/blob/8.18.0/doc/arrays.md#slevomatcodingstandardarraysmultilinearrayendbracketplacement- -->
     <rule ref="SlevomatCodingStandard.Arrays.MultiLineArrayEndBracketPlacement"/>

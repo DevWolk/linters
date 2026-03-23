@@ -98,15 +98,15 @@ Located in `src/Rector/Rules/`:
 
 ## Configuration Matrix
 
-| Tool               | paths | php-version | skip-dirs | skip-files | parallel | cache-dir | baseline | sets | memory-limit | named-filters | rule-excludes |
-|--------------------|:-----:|:-----------:|:---------:|:----------:|:--------:|:---------:|:--------:|:----:|:------------:|:-------------:|:-------------:|
-| rector             |  REQ  |    OPT**    |    OPT    |    OPT     |   OPT*   |    OPT    |    -     | OPT  |     OPT      |       -       |       -       |
-| php-cs-fixer       |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |       -       |
-| phpstan            |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |      -       |       -       |       -       |
-| phpcs              |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |      OPT      |
-| phpmd              |  REQ  |      -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |      -       |       -       |       -       |
-| composer-unused    |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |      OPT      |       -       |
-| composer-normalize |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |       -       |       -       |
+| Tool               | paths | php-version | skip-dirs | skip-files | parallel | cache-dir | baseline | sets | memory-limit | named-filters | rule-excludes | import-names |
+|--------------------|:-----:|:-----------:|:---------:|:----------:|:--------:|:---------:|:--------:|:----:|:------------:|:-------------:|:-------------:|:------------:|
+| rector             |  REQ  |    OPT**    |    OPT    |    OPT     |   OPT*   |    OPT    |    -     | OPT  |     OPT      |       -       |       -       |     OPT      |
+| php-cs-fixer       |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |       -       |      -       |
+| phpstan            |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |      -       |       -       |       -       |      -       |
+| phpcs              |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |      OPT      |      -       |
+| phpmd              |  REQ  |      -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |      -       |       -       |       -       |      -       |
+| composer-unused    |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |      OPT      |       -       |      -       |
+| composer-normalize |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |       -       |       -       |      -       |
 
 *parallel enabled by default for rector
 **php-version defaults to 8.4 if not specified
@@ -393,3 +393,27 @@ make fix-syntax-completely
 
 **ConfigValidation::normalizeSets():**
 - Silently ignores unknown set names — acceptable for internal library, experienced devs will notice typos
+
+## Codebase Documentation
+
+This project has hierarchical AGENTS.md documentation. Start from the root:
+
+- [`AGENTS.md`](AGENTS.md) -- Project overview and full directory map
+
+### Key Areas
+
+| Directory | AGENTS.md | Description |
+|-----------|-----------|-------------|
+| `src/` | [`src/AGENTS.md`](src/AGENTS.md) | Application source code |
+| `src/CommandBuilder/` | [`src/CommandBuilder/AGENTS.md`](src/CommandBuilder/AGENTS.md) | Command builders (Strategy pattern) |
+| `src/ConfigGenerator/` | [`src/ConfigGenerator/AGENTS.md`](src/ConfigGenerator/AGENTS.md) | Config generators (template + stub) |
+| `src/Service/` | [`src/Service/AGENTS.md`](src/Service/AGENTS.md) | ToolRunner orchestration |
+| `src/DTO/` | [`src/DTO/AGENTS.md`](src/DTO/AGENTS.md) | Tool configuration DTOs |
+| `src/Enum/` | [`src/Enum/AGENTS.md`](src/Enum/AGENTS.md) | Tool, RectorSet, PhpVersion enums |
+| `src/Utils/` | [`src/Utils/AGENTS.md`](src/Utils/AGENTS.md) | ConfigurationLoader, validation |
+| `src/Console/` | [`src/Console/AGENTS.md`](src/Console/AGENTS.md) | CLI commands |
+| `src/Rector/` | [`src/Rector/AGENTS.md`](src/Rector/AGENTS.md) | Custom Rector rules and sets |
+| `configs/` | [`configs/AGENTS.md`](configs/AGENTS.md) | Templates and dynamic configs |
+| `tests/` | [`tests/AGENTS.md`](tests/AGENTS.md) | Unit and integration tests |
+
+Each AGENTS.md contains a `<!-- Parent: -->` tag linking to its parent. Follow the hierarchy to navigate.

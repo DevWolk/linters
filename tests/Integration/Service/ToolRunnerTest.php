@@ -84,7 +84,7 @@ final class ToolRunnerTest extends TestCase
 
         $this->createComposerJson([
             'phpmd' => [
-                'paths'    => ['src'],
+                'paths' => ['src'],
                 'baseline' => 'phpmd-baseline.xml',
             ],
         ]);
@@ -117,9 +117,9 @@ final class ToolRunnerTest extends TestCase
 
         $this->createComposerJson([
             'phpcs' => [
-                'paths'    => ['src'],
+                'paths' => ['src'],
                 'parallel' => [
-                    'enabled'       => true,
+                    'enabled' => true,
                     'max-processes' => 4,
                 ],
             ],

@@ -16,8 +16,10 @@ final class PhpCsCommandBuilder extends AbstractConfigurableCommandBuilder
         $config = $this->loader->getPhpCsConfig();
         $parallel = $config->parallel;
 
-        if ($parallel?->enabled === true && $parallel->maxProcesses !== null) {
-            $command .= ' --parallel=' . $parallel->maxProcesses;
+        if ($parallel?->enabled === true) {
+            $command .= $parallel->maxProcesses !== null
+                ? ' --parallel=' . $parallel->maxProcesses
+                : ' --parallel';
         }
 
         return $command . $this->buildExtraArgs($extraArgs);

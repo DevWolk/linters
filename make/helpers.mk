@@ -6,7 +6,7 @@ fix-syntax-completely: ## Fix code style by all code style instruments
 	-@make composer-validate
 	-@make composer-audit
 	-@make composer-normalize
-	#-@make composer-unused
+	-@make composer-unused
 	-@make test-unit
 
 test-unit: ## Run unit tests

@@ -47,6 +47,12 @@ An example of the full `composer.json` configuration:
           "timeout": 360,
           "max-processes": 2
         },
+        "import-names": {
+          "import-names": true,
+          "import-doc-block-names": false,
+          "import-short-classes": false,
+          "remove-unused-imports": true
+        },
         "cache-dir": ".cache/rector",
         "memory-limit": "2048M"
       },
@@ -86,10 +92,42 @@ An example of the full `composer.json` configuration:
 | `baseline`      | `string`            | phpstan, phpmd                       | Baseline file                                                |
 | `sets`          | `string[]`          | rector                               | Rector sets: `laravel11`, `laravel12`, `symfony`, `doctrine` |
 | `memory-limit`  | `string`            | rector                               | Memory limit (e.g., `2048M`, `4G`)                           |
+| `import-names`  | `object`            | rector                               | Import names configuration (see below)                       |
 | `rule-excludes` | `object`            | phpcs                                | Rule-specific exclude patterns (see below)                   |
 | `named-filters` | `string[]`          | composer-unused                      | Packages to ignore                                           |
 
 *except composer-unused and composer-normalize
+
+### Rector Import Names
+
+The `import-names` option controls how Rector handles `use` import statements:
+
+```json
+{
+  "extra": {
+    "linters": {
+      "rector": {
+        "paths": ["src"],
+        "import-names": {
+          "import-names": true,
+          "import-doc-block-names": false,
+          "import-short-classes": false,
+          "remove-unused-imports": true
+        }
+      }
+    }
+  }
+}
+```
+
+| Key                      | Type   | Default | Description                                       |
+|--------------------------|--------|---------|---------------------------------------------------|
+| `import-names`           | `bool` | `true`  | Add `use` imports for fully qualified class names |
+| `import-doc-block-names` | `bool` | `false` | Add `use` imports for docblock type hints         |
+| `import-short-classes`   | `bool` | `false` | Import short class names (e.g., `DateTime`)       |
+| `remove-unused-imports`  | `bool` | `true`  | Remove unused `use` imports                       |
+
+All fields are optional. Omitted fields use their default values. If `import-names` is not specified at all, all defaults apply.
 
 ### PHPCS Rule Excludes
 

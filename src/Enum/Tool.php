@@ -12,7 +12,7 @@ enum Tool: string
     case PHP_CS_FIXER = 'php-cs-fixer';
     case PHP_STAN = 'phpstan';
     case PHP_CS = 'phpcs';
-    case PHP_CBF = 'phpcbf';
+    case PHP_CBF = 'phpcbf'; // Shares configuration with PHP_CS (same phpcs.xml)
     case PHP_MD = 'phpmd';
     case COMPOSER_UNUSED = 'composer-unused';
     case COMPOSER_NORMALIZE = 'composer-normalize';
@@ -20,13 +20,13 @@ enum Tool: string
     public function label(): string
     {
         return match ($this) {
-            self::RECTOR             => 'Rector',
-            self::PHP_CS_FIXER       => 'PHP-CS-Fixer',
-            self::PHP_STAN           => 'PHPStan',
-            self::PHP_CS             => 'PHPCS',
-            self::PHP_CBF            => 'PHPCBF',
-            self::PHP_MD             => 'PHPMD',
-            self::COMPOSER_UNUSED    => 'composer-unused',
+            self::RECTOR => 'Rector',
+            self::PHP_CS_FIXER => 'PHP-CS-Fixer',
+            self::PHP_STAN => 'PHPStan',
+            self::PHP_CS => 'PHPCS',
+            self::PHP_CBF => 'PHPCBF',
+            self::PHP_MD => 'PHPMD',
+            self::COMPOSER_UNUSED => 'composer-unused',
             self::COMPOSER_NORMALIZE => 'composer-normalize',
         };
     }
@@ -34,12 +34,12 @@ enum Tool: string
     public function generatedTarget(): ?string
     {
         return match ($this) {
-            self::RECTOR       => 'rector.php',
+            self::RECTOR => 'rector.php',
             self::PHP_CS_FIXER => '.php-cs-fixer.php',
-            self::PHP_STAN     => 'phpstan.neon',
+            self::PHP_STAN => 'phpstan.neon',
             self::PHP_CS, self::PHP_CBF => 'phpcs.xml',
-            self::PHP_MD             => 'phpmd.ruleset.xml',
-            self::COMPOSER_UNUSED    => 'composer-unused.php',
+            self::PHP_MD => 'phpmd.ruleset.xml',
+            self::COMPOSER_UNUSED => 'composer-unused.php',
             self::COMPOSER_NORMALIZE => null,
         };
     }
@@ -48,7 +48,7 @@ enum Tool: string
     {
         return match ($this) {
             self::COMPOSER_NORMALIZE => false,
-            default                  => true,
+            default => true,
         };
     }
 
@@ -58,22 +58,22 @@ enum Tool: string
     public function sourceConfigFileName(): string
     {
         return match ($this) {
-            self::RECTOR          => 'rector.php',
-            self::PHP_CS_FIXER    => '.php-cs-fixer.dist.php',
+            self::RECTOR => 'rector.php',
+            self::PHP_CS_FIXER => '.php-cs-fixer.dist.php',
             self::COMPOSER_UNUSED => 'composer-unused.php',
-            default               => throw new RuntimeException(\sprintf('No source for tool: %s', $this->name)),
+            default => throw new RuntimeException(\sprintf('No source for tool: %s', $this->name)),
         };
     }
 
     public function documentationUrl(): string
     {
         return match ($this) {
-            self::RECTOR       => 'https://getrector.com/documentation',
+            self::RECTOR => 'https://getrector.com/documentation',
             self::PHP_CS_FIXER => 'https://cs.symfony.com/doc/usage.html',
-            self::PHP_STAN     => 'https://phpstan.org/user-guide/getting-started',
+            self::PHP_STAN => 'https://phpstan.org/user-guide/getting-started',
             self::PHP_CS, self::PHP_CBF => 'https://github.com/squizlabs/PHP_CodeSniffer',
-            self::PHP_MD             => 'https://phpmd.org/documentation/index.html',
-            self::COMPOSER_UNUSED    => 'https://github.com/composer-unused/composer-unused',
+            self::PHP_MD => 'https://phpmd.org/documentation/index.html',
+            self::COMPOSER_UNUSED => 'https://github.com/composer-unused/composer-unused',
             self::COMPOSER_NORMALIZE => 'https://github.com/ergebnis/composer-normalize',
         };
     }

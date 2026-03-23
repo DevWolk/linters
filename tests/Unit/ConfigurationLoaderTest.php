@@ -18,7 +18,7 @@ final class ConfigurationLoaderTest extends TestCase
     public function testConstructorThrowsExceptionWhenComposerJsonNotFound(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('composer.json file not found');
+        $this->expectExceptionMessage('composer.json not found in');
 
         new ConfigurationLoader('/nonexistent/path');
     }
@@ -27,7 +27,7 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths'      => ['app', 'src'],
+                'paths' => ['app', 'src'],
                 'phpVersion' => '8.4',
             ],
         ]);
@@ -42,9 +42,9 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths'      => ['src'],
+                'paths' => ['src'],
                 'phpVersion' => '8.4',
-                'sets'       => ['laravel11'],
+                'sets' => ['laravel11'],
             ],
         ]);
 
@@ -59,7 +59,7 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'rector' => [
-                'paths'       => ['src'],
+                'paths' => ['src'],
                 'php-version' => '8.3',
             ],
         ]);
@@ -88,7 +88,7 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths'    => ['src'],
+                'paths' => ['src'],
                 'parallel' => false,
             ],
         ]);
@@ -103,7 +103,7 @@ final class ConfigurationLoaderTest extends TestCase
     {
         $this->createComposerJson([
             'phpstan' => [
-                'paths'       => ['src'],
+                'paths' => ['src'],
                 'unknown_key' => ['anything'],
             ],
         ]);

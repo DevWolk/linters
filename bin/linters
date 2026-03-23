@@ -31,7 +31,7 @@ $application->setAutoExit(false);
 
 try {
     exit($application->run());
-} catch (Exception $exception) {
-    fwrite(STDERR, '[ERROR] ' . $exception->getMessage() . "\n");
+} catch (Throwable $throwable) {
+    fwrite(STDERR, '[ERROR] ' . $throwable->getMessage() . "\n");
     exit(1);
 }

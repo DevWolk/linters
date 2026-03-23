@@ -60,9 +60,9 @@ return $config
         'simplified_null_return'                      => false, // disabled by Shift
         'standardize_not_equals'                      => true,
         'simple_to_complex_string_variable'           => true,
-        'declare_strict_types'                        => true, // thinking about it
-        'void_return'                                 => false, // thinking about it
-        'is_null'                                     => false, // thinking about it
+        'declare_strict_types'                        => true, // Enforced: strict types improve type safety
+        'void_return'                                 => false, // Handled by Rector type declarations instead
+        'is_null'                                     => false, // Preserves is_null() for readability over === null
         'strict_comparison'                           => true,
         'strict_param'                                => true, // https://mlocati.github.io/php-cs-fixer-configurator/#version:3.2|fixer:strict_param
         'ordered_traits'                              => true,
@@ -99,11 +99,11 @@ return $config
 
         // Spacing/New Lines:
         'concat_space'                                => ['spacing' => 'one'],
-        'cast_spaces'                                 => false,
+        'cast_spaces'                                 => ['space' => 'single'],
         'unary_operator_spaces'                       => false,
         'linebreak_after_opening_tag'                 => true,
         'blank_line_after_opening_tag'                => true,
-        'binary_operator_spaces'                      => ['default' => 'at_least_single_space', 'operators' => ['=>' => 'align_single_space_minimal']],
+        'binary_operator_spaces'                      => ['default' => 'at_least_single_space', 'operators' => ['=>' => 'single_space']],
         'blank_line_before_statement'                 => ['statements' => ['return', 'do', 'exit', 'if', 'switch', 'try']],
         'no_extra_blank_lines'                        => ['tokens' => ['extra', 'throw', 'use']],
         'class_attributes_separation'                 => ['elements' => ['const' => 'one', 'method' => 'one', 'property' => 'one', 'trait_import' => 'none']],
@@ -150,5 +150,5 @@ return $config
         'phpdoc_var_without_name'                     => true,
         'phpdoc_separation'                           => true,
         'phpdoc_align'                                => ['align' => 'vertical', 'tags' => ['param', 'property', 'property-read', 'property-write', 'return', 'throws', 'type', 'var', 'method']],
-        'no_superfluous_phpdoc_tags'                  => true, // thinking about it
+        'no_superfluous_phpdoc_tags'                  => true, // Enforced: removes redundant @param/@return when types are declared
     ])->setFinder($finder);

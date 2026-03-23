@@ -25,7 +25,13 @@ use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php73\Rector\BooleanOr\IsCountableRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
+use Rector\Php84\Rector\FuncCall\AddEscapeArgumentRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
+use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\BareCreateMockAssignToDirectUseRector;
+use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\NoSetupWithParentCallOverrideRector;
+use Rector\PHPUnit\PHPUnit120\Rector\CallLike\CreateStubOverCreateMockArgRector;
+use Rector\PHPUnit\PHPUnit120\Rector\Class_\PropertyCreateMockToCreateStubRector;
+use Rector\PHPUnit\PHPUnit120\Rector\ClassMethod\ExpressionCreateMockToCreateStubRector;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\Class_\TypedPropertyFromCreateMockAssignRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddMethodCallBasedStrictParamTypeRector;
@@ -62,8 +68,13 @@ if (ConfigValidation::isNonEmptyString($config->cacheDir)) {
 
 $rectorConfig = $rectorConfig
     ->withRootFiles()
-    ->withImportNames(importDocBlockNames: false, importShortClasses: false)
-    ->withPreparedSets(
+    ->withIndent(' ', 4)
+    ->withImportNames(
+        importNames: $config->importNames->importNames,
+        importDocBlockNames: $config->importNames->importDocBlockNames,
+        importShortClasses: $config->importNames->importShortClasses,
+        removeUnusedImports: $config->importNames->removeUnusedImports,
+    )->withPreparedSets(
         deadCode: true,
         codeQuality: true,
         codingStyle: true,
@@ -72,7 +83,7 @@ $rectorConfig = $rectorConfig
         naming: true,
         instanceOf: true,
         earlyReturn: true,
-        carbon: true,
+        carbon: false, // Breaks JSON serialization (Carbon vs DateTime output differs)
         rectorPreset: true,
         phpunitCodeQuality: true,
     )
@@ -97,29 +108,35 @@ $rectorConfig = $rectorConfig
             $config->skipDirs,
             $config->skipFiles,
             [
-                SimplifyBoolIdenticalTrueRector::class, // it's breaks the Routers
-                IsCountableRector::class, // this rule does not fit, a lot of where it goes wrong
-                RestoreDefaultNullToNullableTypePropertyRector::class, // don't work with DTO nullable parameter
-                RemoveExtraParametersRector::class, // catting an argument in dump() function
-                ClosureToArrowFunctionRector::class, // it's breaks the Routers
-                SeparateMultiUseImportsRector::class, // it's breaks the using multiple Traits
-                LocallyCalledStaticMethodToNonStaticRector::class,
-                PreferPHPUnitThisCallRector::class, // it's breaks with phpstan
-                RenamePropertyToMatchTypeRector::class, // it's breaks the Entity
-                RenameVariableToMatchMethodCallReturnTypeRector::class, // it's redundant
-                RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class, // it's redundant
-                RenameForeachValueVariableToMatchExprVariableRector::class, // it's breaks the unit tests
-                TypedPropertyFromCreateMockAssignRector::class, // it's breaks the unit tests
-                RenameVariableToMatchNewTypeRector::class, // it's breaks the unit tests
+                NoSetupWithParentCallOverrideRector::class, // Conflicts with AddOverrideAttributeToOverriddenMethodsRector — phantom changes on every run
+                SimplifyBoolIdenticalTrueRector::class, // Breaks Laravel route closure detection
+                IsCountableRector::class, // Produces incorrect results with custom collection types
+                RestoreDefaultNullToNullableTypePropertyRector::class, // Conflicts with DTO nullable property patterns
+                RemoveExtraParametersRector::class, // Removes arguments from dump() and similar variadic functions
+                ClosureToArrowFunctionRector::class, // Breaks Laravel route closure definitions
+                SeparateMultiUseImportsRector::class, // Breaks classes using multiple Traits on one line
+                LocallyCalledStaticMethodToNonStaticRector::class, // Overly aggressive static-to-instance conversion
+                PreferPHPUnitThisCallRector::class, // Conflicts with PHPStan static analysis expectations
+                RenamePropertyToMatchTypeRector::class, // Breaks Doctrine entity property naming conventions
+                RenameVariableToMatchMethodCallReturnTypeRector::class, // Produces overly verbose variable names
+                RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class, // Produces overly verbose variable names
+                RenameForeachValueVariableToMatchExprVariableRector::class, // Breaks PHPUnit test variable naming
+                TypedPropertyFromCreateMockAssignRector::class, // Breaks PHPUnit mock property type declarations
+                RenameVariableToMatchNewTypeRector::class, // Breaks PHPUnit test variable naming
 
-                //        THINKING
-                AddMethodCallBasedStrictParamTypeRector::class, // it's breaks the using multiple Traits
-                FlipTypeControlToUseExclusiveTypeRector::class,
-                IssetOnPropertyObjectToPropertyExistsRector::class,
-                RenameParamToMatchTypeRector::class,
-                PostIncDecToPreIncDecRector::class,
+                // Under review — may be re-enabled in future versions
+                AddMethodCallBasedStrictParamTypeRector::class, // Breaks classes using multiple Traits
+                FlipTypeControlToUseExclusiveTypeRector::class, // Produces less readable conditionals
+                IssetOnPropertyObjectToPropertyExistsRector::class, // Breaks nullable property checks
+                RenameParamToMatchTypeRector::class, // Produces overly verbose parameter names
+                PostIncDecToPreIncDecRector::class, // Conflicts with post-increment style convention
+                AddEscapeArgumentRector::class, // Breaks functions with variadic arguments and no defined parameters
+                PropertyCreateMockToCreateStubRector::class, // Expectations configured on test doubles that are created as test stubs are no longer verified since PHPUnit 10
+                CreateStubOverCreateMockArgRector::class, // Expectations configured on test doubles that are created as test stubs are no longer verified since PHPUnit 10
+                ExpressionCreateMockToCreateStubRector::class, // Expectations configured on test doubles that are created as test stubs are no longer verified since PHPUnit 10
+                BareCreateMockAssignToDirectUseRector::class, // Expectations configured on test doubles that are created as test stubs are no longer verified since PHPUnit 10
 
-                //        WAITING FIX
+                // Known upstream issues — waiting for Rector fixes
                 MakeInheritedMethodVisibilitySameAsParentRector::class,
                 RemoveParentCallWithoutParentRector::class,
             ],
@@ -127,12 +144,16 @@ $rectorConfig = $rectorConfig
     )
     ->withFileExtensions(\Linters\DTO\RectorConfig::FILE_EXTENSIONS);
 
+if ($config->unsafe->treatClassesAsFinal) {
+    $rectorConfig = $rectorConfig->withTreatClassesAsFinal();
+}
+
 if ($config->parallel?->enabled) {
     // https://getrector.com/documentation/troubleshooting-parallel
     $rectorConfig = $rectorConfig->withParallel(
-        $config->parallel->timeout,
-        $config->parallel->maxProcesses,
-        $config->parallel->filesPerProcess,
+        $config->parallel->timeout ?? 120,
+        $config->parallel->maxProcesses ?? 16,
+        $config->parallel->filesPerProcess ?? 15,
     );
 }
 

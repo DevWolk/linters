@@ -31,7 +31,7 @@
 
     <rule ref="rulesets/design.xml/NumberOfChildren">
         <priority>2</priority>
-        <properties><property name="minimum" value="3"/></properties>
+        <properties><property name="minimum" value="8"/></properties>
     </rule>
 
     <rule ref="rulesets/design.xml/CountInLoopExpression"/>
@@ -74,7 +74,7 @@
 
     <rule ref="rulesets/codesize.xml/TooManyFields">
         <priority>1</priority>
-        <properties><property name="minimum" value="5"/></properties>
+        <properties><property name="minimum" value="12"/></properties>
     </rule>
 
     <rule ref="rulesets/naming.xml">

@@ -17,7 +17,7 @@ use Linters\Utils\ConfigurationLoader;
  * This class generates phpmd.ruleset.xml dynamically from:
  * - Base template
  * - Paths from composer.json extra.linters.phpmd.paths
- * - Skip patterns from extra.linters.phpmd.skip_dirs/skip_files
+ * - Skip patterns from extra.linters.phpmd.skip-dirs/skip-files
  */
 final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
 {
@@ -39,7 +39,9 @@ final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
 
-        $dom->save($targetPath);
+        if ($dom->save($targetPath) === false) {
+            throw new \RuntimeException('Failed to write PHPMD config to: ' . $targetPath);
+        }
     }
 
     /**
@@ -48,12 +50,15 @@ final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
     private function buildConfiguration(): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
-        $dom->load(self::PACKAGE_CONFIG_PATH);
+
+        if ($dom->load(self::PACKAGE_CONFIG_PATH) === false) {
+            throw new \RuntimeException('Failed to load PHPMD template: ' . self::PACKAGE_CONFIG_PATH);
+        }
 
         $ruleset = $dom->documentElement;
 
         if (!$ruleset instanceof DOMElement) {
-            return $dom;
+            throw new \RuntimeException('Invalid PHPMD base template: missing root element');
         }
 
         $config = $this->loader->getPhpMdConfig();

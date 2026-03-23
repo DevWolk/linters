@@ -22,6 +22,7 @@ use Linters\ConfigGenerator\PhpStanConfigGenerator;
 use Linters\ConfigGenerator\RectorConfigGenerator;
 use Linters\Enum\Tool;
 use Linters\Utils\ConfigurationLoader;
+use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Path;
@@ -63,10 +64,10 @@ final readonly class ToolRunner
         return match ($tool) {
             Tool::PHP_STAN => new PhpStanConfigGenerator($this->loader),
             Tool::PHP_CS, Tool::PHP_CBF => new PhpCsConfigGenerator($this->loader),
-            Tool::PHP_MD             => new PhpMdConfigGenerator($this->loader),
-            Tool::RECTOR             => new RectorConfigGenerator($this->loader),
-            Tool::PHP_CS_FIXER       => new PhpCsFixerConfigGenerator($this->loader),
-            Tool::COMPOSER_UNUSED    => new ComposerUnusedConfigGenerator($this->loader),
+            Tool::PHP_MD => new PhpMdConfigGenerator($this->loader),
+            Tool::RECTOR => new RectorConfigGenerator($this->loader),
+            Tool::PHP_CS_FIXER => new PhpCsFixerConfigGenerator($this->loader),
+            Tool::COMPOSER_UNUSED => new ComposerUnusedConfigGenerator($this->loader),
             Tool::COMPOSER_NORMALIZE => throw new RuntimeException('No generator for this tool'),
         };
     }
@@ -76,10 +77,10 @@ final readonly class ToolRunner
         return match ($tool) {
             Tool::PHP_STAN => new PhpStanCommandBuilder($tool, $this->loader),
             Tool::PHP_CS, Tool::PHP_CBF => new PhpCsCommandBuilder($tool, $this->loader),
-            Tool::PHP_MD             => new PhpMdCommandBuilder($tool, $this->loader),
-            Tool::RECTOR             => new RectorCommandBuilder($tool, $this->loader),
-            Tool::PHP_CS_FIXER       => new PhpCsFixerCommandBuilder($tool, $this->loader),
-            Tool::COMPOSER_UNUSED    => new ComposerUnusedCommandBuilder($tool, $this->loader),
+            Tool::PHP_MD => new PhpMdCommandBuilder($tool, $this->loader),
+            Tool::RECTOR => new RectorCommandBuilder($tool, $this->loader),
+            Tool::PHP_CS_FIXER => new PhpCsFixerCommandBuilder($tool, $this->loader),
+            Tool::COMPOSER_UNUSED => new ComposerUnusedCommandBuilder($tool, $this->loader),
             Tool::COMPOSER_NORMALIZE => new ComposerNormalizeCommandBuilder($tool, $this->loader),
         };
     }
@@ -93,6 +94,11 @@ final readonly class ToolRunner
 
         if ($configPath !== null && $builder instanceof ConfigurableCommandBuilderInterface) {
             $builder->setConfigPath($configPath);
+        } elseif ($configPath !== null) {
+            throw new LogicException(\sprintf(
+                'Tool %s generated a config but its builder does not implement ConfigurableCommandBuilderInterface',
+                $tool->value,
+            ));
         }
 
         return $builder->build($extraArgs);

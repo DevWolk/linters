@@ -15,7 +15,7 @@ final class PhpMdConfigGeneratorTest extends TestCase
     {
         $this->createComposerJson([
             'phpmd' => [
-                'paths'     => ['src'],
+                'paths' => ['src'],
                 'skip-dirs' => ['vendor'],
             ],
         ]);

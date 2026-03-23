@@ -22,7 +22,7 @@ use function Safe\preg_match;
  * This class generates phpstan.neon dynamically from:
  * - Base template
  * - Paths from composer.json extra.linters.phpstan.paths
- * - Skip patterns from extra.linters.phpstan.skip_dirs/skip_files
+ * - Skip patterns from extra.linters.phpstan.skip-dirs/skip-files
  * - Baseline from extra.linters.phpstan.baseline
  */
 final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
@@ -69,7 +69,7 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
 
         return [
             self::KEY_PARAMETERS => $parameters,
-            self::KEY_INCLUDES   => $includes,
+            self::KEY_INCLUDES => $includes,
         ];
     }
 
@@ -108,7 +108,7 @@ final readonly class PhpStanConfigGenerator implements ConfigGeneratorInterface
             return $value;
         }
 
-        return (string)$value;
+        return (string) $value;
     }
 
     /**

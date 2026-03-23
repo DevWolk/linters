@@ -19,6 +19,18 @@ parameters:
 			path: src/Rector/Configs/Sets/laravel11.php
 
 		-
+			message: '#^Class RectorLaravel\\Rector\\FuncCall\\SleepFuncToSleepStaticCallRector not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Rector/Configs/Sets/laravel11.php
+
+		-
+			message: '#^Class RectorLaravel\\Rector\\StaticCall\\CarbonToDateFacadeRector not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Rector/Configs/Sets/laravel11.php
+
+		-
 			message: '#^Access to constant LARAVEL_120 on an unknown class RectorLaravel\\Set\\LaravelSetList\.$#'
 			identifier: class.notFound
 			count: 1
@@ -32,6 +44,18 @@ parameters:
 
 		-
 			message: '#^Access to constant LARAVEL_CODE_QUALITY on an unknown class RectorLaravel\\Set\\LaravelSetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Rector/Configs/Sets/laravel12.php
+
+		-
+			message: '#^Class RectorLaravel\\Rector\\FuncCall\\SleepFuncToSleepStaticCallRector not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Rector/Configs/Sets/laravel12.php
+
+		-
+			message: '#^Class RectorLaravel\\Rector\\StaticCall\\CarbonToDateFacadeRector not found\.$#'
 			identifier: class.notFound
 			count: 1
 			path: src/Rector/Configs/Sets/laravel12.php

@@ -7,7 +7,7 @@
     "symfony/framework-bundle": "^7.0"
   },
   "require-dev": {
-    "devwolk/linters": "^0.0.1"
+    "devwolk/linters": "^0.0.3"
   },
   "extra": {
     "linters": {
@@ -17,6 +17,12 @@
         "skip-dirs": ["var", "vendor"],
         "skip-files": ["src/Kernel.php"],
         "sets": ["symfony"],
+        "import-names": {
+          "import-names": true,
+          "import-doc-block-names": false,
+          "import-short-classes": false,
+          "remove-unused-imports": true
+        },
         "parallel": {
           "enabled": true,
           "files-per-process": 40,
