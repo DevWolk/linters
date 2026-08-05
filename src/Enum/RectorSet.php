@@ -12,6 +12,7 @@ enum RectorSet: string
     case LARAVEL12 = 'laravel12';
     case PHPUNIT11 = 'phpunit11';
     case PHPUNIT12 = 'phpunit12';
+    case PHPUNIT13 = 'phpunit13';
     case DOCTRINE = 'doctrine';
     case SYMFONY = 'symfony';
 
@@ -23,6 +24,7 @@ enum RectorSet: string
             self::DOCTRINE => AppRectorSetList::DOCTRINE,
             self::PHPUNIT11 => AppRectorSetList::PHPUNIT11,
             self::PHPUNIT12 => AppRectorSetList::PHPUNIT12,
+            self::PHPUNIT13 => AppRectorSetList::PHPUNIT13,
             self::SYMFONY => AppRectorSetList::SYMFONY,
         };
     }

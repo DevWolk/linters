@@ -20,7 +20,7 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets([
         DoctrineSetList::ANNOTATIONS_TO_ATTRIBUTES,
         DoctrineSetList::GEDMO_ANNOTATIONS_TO_ATTRIBUTES,
-        DoctrineSetList::MONGODB__ANNOTATIONS_TO_ATTRIBUTES,
+        DoctrineSetList::MONGODB_ANNOTATIONS_TO_ATTRIBUTES,
         DoctrineSetList::DOCTRINE_CODE_QUALITY,
     ]);
 };
