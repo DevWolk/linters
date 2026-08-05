@@ -22,6 +22,3 @@ composer.lock
 /phpstan.neon
 /phpcs.xml
 /phpmd.ruleset.xml
-
-.omc/
-AGENTS.md
