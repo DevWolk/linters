@@ -10,6 +10,9 @@ use DOMException;
 use Linters\ConfigGenerator\Contracts\ConfigGeneratorInterface;
 use Linters\DTO\PhpMdConfig;
 use Linters\Utils\ConfigurationLoader;
+use Linters\Utils\ConfigValidation;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * Generator for PHPMD XML ruleset files.
@@ -34,7 +37,10 @@ final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
      */
     public function generate(string $targetPath): void
     {
-        $dom = $this->buildConfiguration();
+        $config = $this->loader->getPhpMdConfig();
+        $this->createCacheDirectory($config);
+
+        $dom = $this->buildConfiguration($config);
 
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
@@ -47,7 +53,7 @@ final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
     /**
      * @throws DOMException
      */
-    private function buildConfiguration(): DOMDocument
+    private function buildConfiguration(PhpMdConfig $config): DOMDocument
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
 
@@ -61,10 +67,19 @@ final readonly class PhpMdConfigGenerator implements ConfigGeneratorInterface
             throw new \RuntimeException('Invalid PHPMD base template: missing root element');
         }
 
-        $config = $this->loader->getPhpMdConfig();
         $this->addExcludes($dom, $ruleset, $config);
 
         return $dom;
+    }
+
+    private function createCacheDirectory(PhpMdConfig $config): void
+    {
+        if (!ConfigValidation::isNonEmptyString($config->cacheDir)) {
+            return;
+        }
+
+        $cacheDirectory = Path::makeAbsolute($config->cacheDir, $this->loader->getComposerDir());
+        new Filesystem()->mkdir($cacheDirectory);
     }
 
     /**

@@ -8,7 +8,7 @@ Centralized PHP linter configurations. Rules are bundled - you configure only pa
 composer require --dev devwolk/linters
 ```
 
-**Requirements:** PHP 8.4+
+**Requirements:** PHP 8.4.1+
 
 ## Supported Tools
 
@@ -37,8 +37,8 @@ An example of the full `composer.json` configuration:
         "skip-dirs": ["app/Http/Requests"],
         "skip-files": ["app/Providers/AutoWireServiceProvider.php"],
         "sets": [
-          "laravel12",
-          "phpunit12",
+          "laravel13",
+          "phpunit13",
           "doctrine"
         ],
         "parallel": {
@@ -73,6 +73,12 @@ An example of the full `composer.json` configuration:
           "Generic.Metrics.CyclomaticComplexity.TooHigh": ["tests/*", "src/Utils/ConfigurationLoader.php"],
           "Squiz.WhiteSpace.ScopeClosingBrace": ["tests/*", "src/Utils/ConfigurationLoader.php"]
         }
+      },
+      "phpmd": {
+        "paths": ["app", "tests"],
+        "skip-dirs": ["vendor", "storage"],
+        "parallel": 4,
+        "cache-dir": ".cache/phpmd"
       }
     }
   }
@@ -87,10 +93,10 @@ An example of the full `composer.json` configuration:
 | `php-version`   | `string`            | rector                               | Target PHP version: `8.3`, `8.4`, `8.5` (default: `8.4`)     |
 | `skip-dirs`     | `string[]`          | all*                                 | Directories to exclude                                       |
 | `skip-files`    | `string[]`          | all*                                 | File patterns to exclude                                     |
-| `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs | Parallel execution                                           |
-| `cache-dir`     | `string`            | rector, php-cs-fixer, phpstan, phpcs | Cache directory                                              |
+| `parallel`      | `bool\|int\|object` | rector, php-cs-fixer, phpstan, phpcs, phpmd | Parallel execution                                    |
+| `cache-dir`     | `string`            | rector, php-cs-fixer, phpstan, phpcs, phpmd | Cache directory                                       |
 | `baseline`      | `string`            | phpstan, phpmd                       | Baseline file                                                |
-| `sets`          | `string[]`          | rector                               | Rector sets: `laravel11`, `laravel12`, `symfony`, `doctrine` |
+| `sets`          | `string[]`          | rector                               | Rector sets: `laravel11`-`laravel13`, `phpunit11`-`phpunit13`, `symfony`, `doctrine` |
 | `memory-limit`  | `string`            | rector                               | Memory limit (e.g., `2048M`, `4G`)                           |
 | `import-names`  | `object`            | rector                               | Import names configuration (see below)                       |
 | `rule-excludes` | `object`            | phpcs                                | Rule-specific exclude patterns (see below)                   |
@@ -208,7 +214,7 @@ Each tool has:
 
 ## Rector for Laravel
 
-Requires: `composer require --dev driftingly/rector-laravel`
+Requires: `composer require --dev driftingly/rector-laravel:^2.5`
 
 ## Baseline
 

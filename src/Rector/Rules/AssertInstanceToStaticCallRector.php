@@ -16,9 +16,6 @@ use Symplify\RuleDocGenerator\Exception\PoorDocumentationException;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 
-/**
- * @implements MinPhpVersionInterface<Node>
- */
 final class AssertInstanceToStaticCallRector extends AbstractRector implements MinPhpVersionInterface
 {
     /** @var string[] */
@@ -100,9 +97,13 @@ CODE_SAMPLE
 
     /**
      * @param MethodCall $node
+     *
+     * @phpstan-param Node $node
      */
     public function refactor(Node $node): ?Node
     {
+        $node = self::requireMethodCall($node);
+
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
             return null;
         }
@@ -117,13 +118,22 @@ CODE_SAMPLE
 
         return new StaticCall(
             new Name('self'),
-            $this->getName($node->name),
-            $node->args
+            $node->name,
+            $node->args,
         );
     }
 
     public function provideMinPhpVersion(): int
     {
         return PhpVersion::PHP_82;
+    }
+
+    private static function requireMethodCall(Node $node): MethodCall
+    {
+        if (!$node instanceof MethodCall) {
+            throw new \LogicException('Rector dispatched an unsupported node type');
+        }
+
+        return $node;
     }
 }

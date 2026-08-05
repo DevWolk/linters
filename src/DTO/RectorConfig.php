@@ -6,6 +6,7 @@ namespace Linters\DTO;
 
 use Linters\DTO\Contracts\AbstractToolConfig;
 use Linters\DTO\Contracts\ToolConfigInterface;
+use Linters\Enum\ParallelConfigDefault;
 use Linters\Enum\PhpVersion;
 use Linters\Enum\RectorSet;
 use Linters\Utils\ConfigValidation;
@@ -18,23 +19,35 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
     /** @var string[] */
     public const array FILE_EXTENSIONS = ['php'];
 
-    /**
-     * @param RectorSet[] $sets
-     */
+    public PhpVersion $phpVersion;
+
+    /** @var RectorSet[] */
+    public array $sets;
+
+    public ?string $memoryLimit;
+
+    public bool $clearCache;
+
+    public ImportNamesOptions $importNames;
+
+    public UnsafeOptions $unsafe;
+
     public function __construct(
         array $paths,
         array $skipDirs,
         array $skipFiles,
         ?ParallelConfigOptions $parallel,
         ?string $cacheDir,
-        public PhpVersion $phpVersion,
-        public array $sets = [],
-        public ?string $memoryLimit = null,
-        public bool $clearCache = true,
-        public ImportNamesOptions $importNames = new ImportNamesOptions(),
-        public UnsafeOptions $unsafe = new UnsafeOptions(),
+        RectorConfigOptions $options,
     ) {
         parent::__construct($paths, $skipDirs, $skipFiles, $parallel, $cacheDir);
+
+        $this->phpVersion = $options->phpVersion;
+        $this->sets = $options->sets;
+        $this->memoryLimit = $options->memoryLimit;
+        $this->clearCache = $options->clearCache;
+        $this->importNames = $options->importNames;
+        $this->unsafe = $options->unsafe;
     }
 
     /**
@@ -45,7 +58,10 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
         $paths = ConfigValidation::requiredPaths($config['paths'] ?? [], 'rector');
         $skipDirs = ConfigValidation::optionalStringList($config['skip-dirs'] ?? null);
         $skipFiles = ConfigValidation::optionalStringList($config['skip-files'] ?? null);
-        $parallel = ParallelConfigOptions::fromMixed($config['parallel'] ?? null, true);
+        $parallel = ParallelConfigOptions::fromMixed(
+            $config['parallel'] ?? null,
+            ParallelConfigDefault::ENABLED,
+        );
         $cacheDir = $config['cache-dir'] ?? null;
         $phpVersion = PhpVersion::from($config['php-version'] ?? PhpVersion::PHP_84->value);
         $sets = ConfigValidation::normalizeSets($config['sets'] ?? null);
@@ -60,19 +76,22 @@ final readonly class RectorConfig extends AbstractToolConfig implements ToolConf
             skipFiles: $skipFiles,
             parallel: $parallel,
             cacheDir: $cacheDir,
-            phpVersion: $phpVersion,
-            sets: $sets,
-            memoryLimit: $memoryLimit,
-            clearCache: $clearCache,
-            importNames: $importNames,
-            unsafe: $unsafe,
+            options: new RectorConfigOptions(
+                phpVersion: $phpVersion,
+                sets: $sets,
+                memoryLimit: $memoryLimit,
+                clearCache: $clearCache,
+                importNames: $importNames,
+                unsafe: $unsafe,
+            ),
         );
     }
 
     public function isLaravelProject(): bool
     {
         return \in_array(RectorSet::LARAVEL11, $this->sets, true) ||
-            \in_array(RectorSet::LARAVEL12, $this->sets, true);
+            \in_array(RectorSet::LARAVEL12, $this->sets, true) ||
+            \in_array(RectorSet::LARAVEL13, $this->sets, true);
     }
 
     public function isSymfonyProject(): bool

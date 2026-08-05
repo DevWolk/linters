@@ -10,6 +10,7 @@ enum RectorSet: string
 {
     case LARAVEL11 = 'laravel11';
     case LARAVEL12 = 'laravel12';
+    case LARAVEL13 = 'laravel13';
     case PHPUNIT11 = 'phpunit11';
     case PHPUNIT12 = 'phpunit12';
     case PHPUNIT13 = 'phpunit13';
@@ -21,6 +22,7 @@ enum RectorSet: string
         return match ($this) {
             self::LARAVEL11 => AppRectorSetList::LARAVEL11,
             self::LARAVEL12 => AppRectorSetList::LARAVEL12,
+            self::LARAVEL13 => AppRectorSetList::LARAVEL13,
             self::DOCTRINE => AppRectorSetList::DOCTRINE,
             self::PHPUNIT11 => AppRectorSetList::PHPUNIT11,
             self::PHPUNIT12 => AppRectorSetList::PHPUNIT12,

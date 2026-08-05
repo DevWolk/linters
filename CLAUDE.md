@@ -104,7 +104,7 @@ Located in `src/Rector/Rules/`:
 | php-cs-fixer       |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |       -       |      -       |
 | phpstan            |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |      -       |       -       |       -       |      -       |
 | phpcs              |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |    -     |  -   |      -       |       -       |      OPT      |      -       |
-| phpmd              |  REQ  |      -      |    OPT    |    OPT     |    -     |     -     |   OPT    |  -   |      -       |       -       |       -       |      -       |
+| phpmd              |  REQ  |      -      |    OPT    |    OPT     |   OPT    |    OPT    |   OPT    |  -   |      -       |       -       |       -       |      -       |
 | composer-unused    |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |      OPT      |       -       |      -       |
 | composer-normalize |   -   |      -      |     -     |     -      |    -     |     -     |    -     |  -   |      -       |       -       |       -       |      -       |
 
@@ -138,7 +138,7 @@ src/
 ├── Utils/               ConfigurationLoader, ConfigValidation
 └── Rector/
     ├── Rules/           Custom Rector rules
-    └── Configs/Sets/    app-rules.php, doctrine.php, laravel.php
+    └── Configs/Sets/    app-rules.php, doctrine.php, Laravel 11-13, PHPUnit 11-13
 
 configs/                 Templates (phpstan.neon, phpcs.xml, phpmd.ruleset.xml)
                          Dynamic configs (rector.php, .php-cs-fixer.dist.php, composer-unused.php)

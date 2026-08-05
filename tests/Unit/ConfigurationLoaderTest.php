@@ -18,7 +18,7 @@ final class ConfigurationLoaderTest extends TestCase
     public function testConstructorThrowsExceptionWhenComposerJsonNotFound(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('composer.json not found in');
+        $this->expectExceptionMessageIsOrContains('composer.json not found in');
 
         new ConfigurationLoader('/nonexistent/path');
     }

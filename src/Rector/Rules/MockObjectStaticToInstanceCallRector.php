@@ -16,13 +16,10 @@ use Symplify\RuleDocGenerator\Exception\PoorDocumentationException;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 
-/**
- * @implements MinPhpVersionInterface<Node>
- */
 final class MockObjectStaticToInstanceCallRector extends AbstractRector implements MinPhpVersionInterface
 {
     /** @var string[] */
-    private const array MOCK_METHODS = ['any', 'once', 'never', 'atLeast', 'atLeastOnce', 'atMost', 'exactly'];
+    private const array MOCK_METHODS = ['once', 'never', 'atLeast', 'atLeastOnce', 'atMost', 'exactly'];
 
     public function __construct(
         private readonly TestsNodeAnalyzer $testsNodeAnalyzer,
@@ -35,7 +32,7 @@ final class MockObjectStaticToInstanceCallRector extends AbstractRector implemen
     public function getRuleDefinition(): RuleDefinition
     {
         return new RuleDefinition(
-            'Changes PHPUnit MockObject static calls like self::any() to instance calls like $this->any()',
+            'Changes PHPUnit MockObject static calls like self::once() to instance calls like $this->once()',
             [
                 new CodeSample(
                     <<<'CODE_SAMPLE'
@@ -46,7 +43,7 @@ final class SomeTest extends TestCase
     public function test(): void
     {
         $mock = $this->createMock(Something::class);
-        $mock->expects(self::any())
+        $mock->expects(self::atLeastOnce())
             ->method('someMethod')
             ->willReturn(true);
             
@@ -64,7 +61,7 @@ final class SomeTest extends TestCase
     public function test(): void
     {
         $mock = $this->createMock(Something::class);
-        $mock->expects($this->any())
+        $mock->expects($this->atLeastOnce())
             ->method('someMethod')
             ->willReturn(true);
             
@@ -88,9 +85,13 @@ CODE_SAMPLE
 
     /**
      * @param StaticCall $node
+     *
+     * @phpstan-param Node $node
      */
     public function refactor(Node $node): ?Node
     {
+        $node = self::requireStaticCall($node);
+
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
             return null;
         }
@@ -106,12 +107,21 @@ CODE_SAMPLE
         return new MethodCall(
             new Variable('this'),
             $node->name,
-            $node->args
+            $node->args,
         );
     }
 
     public function provideMinPhpVersion(): int
     {
         return PhpVersion::PHP_82;
+    }
+
+    private static function requireStaticCall(Node $node): StaticCall
+    {
+        if (!$node instanceof StaticCall) {
+            throw new \LogicException('Rector dispatched an unsupported node type');
+        }
+
+        return $node;
     }
 }

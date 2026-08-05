@@ -1,14 +1,15 @@
 {
   "name": "example/laravel-project",
   "description": "Example Laravel project with devwolk/linters",
+  "license": "proprietary",
   "type": "project",
   "require": {
-    "php": "^8.4",
-    "laravel/framework": "^12.0"
+    "php": "^8.4.1",
+    "laravel/framework": "^13.0"
   },
   "require-dev": {
     "devwolk/linters": "^0.0.3",
-    "driftingly/rector-laravel": "^2.1"
+    "driftingly/rector-laravel": "^2.5"
   },
   "extra": {
     "linters": {
@@ -17,7 +18,7 @@
         "php-version": "8.4",
         "skip-dirs": ["bootstrap", "storage", "vendor"],
         "skip-files": [],
-        "sets": ["laravel12"],
+        "sets": ["laravel13", "phpunit13"],
         "import-names": {
           "import-names": true,
           "import-doc-block-names": false,
@@ -54,6 +55,8 @@
         "cache-dir": ".cache/phpcs"
       },
       "phpmd": {
+        "cache-dir": ".cache/phpmd",
+        "parallel": 4,
         "paths": ["app"],
         "skip-dirs": [],
         "skip-files": []

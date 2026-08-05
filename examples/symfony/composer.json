@@ -1,10 +1,11 @@
 {
   "name": "example/symfony-project",
   "description": "Example Symfony project with devwolk/linters",
+  "license": "proprietary",
   "type": "project",
   "require": {
-    "php": "^8.4",
-    "symfony/framework-bundle": "^7.0"
+    "php": "^8.4.1",
+    "symfony/framework-bundle": "^8.1"
   },
   "require-dev": {
     "devwolk/linters": "^0.0.3"
@@ -16,7 +17,7 @@
         "php-version": "8.4",
         "skip-dirs": ["var", "vendor"],
         "skip-files": ["src/Kernel.php"],
-        "sets": ["symfony"],
+        "sets": ["symfony", "phpunit13"],
         "import-names": {
           "import-names": true,
           "import-doc-block-names": false,
@@ -53,6 +54,8 @@
         "cache-dir": ".cache/phpcs"
       },
       "phpmd": {
+        "cache-dir": ".cache/phpmd",
+        "parallel": 4,
         "paths": ["src"],
         "skip-dirs": [],
         "skip-files": []

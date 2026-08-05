@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Linters\Utils;
 
+use Linters\Enum\ParallelConfigDefault;
+
 final readonly class ParallelConfigOptions
 {
     public function __construct(
@@ -17,10 +19,12 @@ final readonly class ParallelConfigOptions
     /**
      * @param bool|int|array<string, mixed>|null $value
      */
-    public static function fromMixed(null|bool|int|array $value, bool $defaultEnabled = false): self
-    {
+    public static function fromMixed(
+        null|bool|int|array $value,
+        ParallelConfigDefault $default = ParallelConfigDefault::DISABLED,
+    ): self {
         if ($value === null) {
-            return new self($defaultEnabled);
+            return new self($default->isEnabled());
         }
 
         if (\is_bool($value)) {
@@ -31,16 +35,16 @@ final readonly class ParallelConfigOptions
             return new self(true, maxProcesses: $value);
         }
 
-        return self::fromArray($value, $defaultEnabled);
+        return self::fromArray($value, $default);
     }
 
     /**
      * @param array<string, mixed> $value
      */
-    private static function fromArray(array $value, bool $defaultEnabled): self
+    private static function fromArray(array $value, ParallelConfigDefault $default): self
     {
         return new self(
-            enabled: (bool) ($value['enabled'] ?? $defaultEnabled),
+            enabled: (bool) ($value['enabled'] ?? $default->isEnabled()),
             timeout: self::toInt($value['timeout'] ?? null),
             maxProcesses: self::toInt($value['max-processes'] ?? null),
             filesPerProcess: self::toInt($value['files-per-process'] ?? null),

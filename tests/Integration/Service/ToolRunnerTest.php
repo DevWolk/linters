@@ -71,8 +71,12 @@ final class ToolRunnerTest extends TestCase
         $targetPath = $this->testDir . '/phpmd.ruleset.xml';
         $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
         self::assertSame([
-            'src,tests',
+            'analyze',
+            'src',
+            'tests',
+            '--format',
             'text',
+            '--ruleset',
             $targetPath,
         ], $loggedArgs);
     }
@@ -86,6 +90,8 @@ final class ToolRunnerTest extends TestCase
             'phpmd' => [
                 'paths' => ['src'],
                 'baseline' => 'phpmd-baseline.xml',
+                'cache-dir' => '.cache/phpmd',
+                'parallel' => 4,
             ],
         ]);
 
@@ -99,14 +105,21 @@ final class ToolRunnerTest extends TestCase
 
         self::assertSame(0, $exitCode);
         self::assertFileExists($logPath);
+        self::assertDirectoryExists($this->testDir . '/.cache/phpmd');
 
         $targetPath = $this->testDir . '/phpmd.ruleset.xml';
         $loggedArgs = file($logPath, FILE_IGNORE_NEW_LINES);
         self::assertSame([
+            'analyze',
             'src',
+            '--format',
             'text',
+            '--ruleset',
             $targetPath,
             '--baseline-file=phpmd-baseline.xml',
+            '--threads=4',
+            '--cache',
+            '--cache-file=.cache/phpmd/phpmd.result-cache.php',
         ], $loggedArgs);
     }
 

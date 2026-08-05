@@ -6,15 +6,19 @@ env-init: ## Copy .env.example to .env if .env doesn't exist
 	-@test -f $(DOCKER_ENV) || cp $(DOCKER_ENV_EXAMPLE) $(DOCKER_ENV)
 
 fix-syntax-completely: ## Fix code style by all code style instruments
-	-@make syntax-fix
-	-@make rector
-	-@make php-cs-fixer
-	-@make phpstan
-	-@make composer-validate
-	-@make composer-audit
-	-@make composer-normalize
-	-@make composer-unused
-	-@make test-unit
+	$(MAKE) syntax-fix
+	$(MAKE) rector
+	$(MAKE) php-cs-fixer
+	$(MAKE) syntax
+	$(MAKE) rector-dry-run
+	$(MAKE) php-cs-fixer-check
+	$(MAKE) phpmd
+	$(MAKE) phpstan
+	$(MAKE) composer-validate
+	$(MAKE) composer-audit
+	$(MAKE) composer-normalize
+	$(MAKE) composer-unused
+	$(MAKE) test-unit
 
 test-unit: ## Run unit tests
 	docker compose exec -T php vendor/bin/phpunit -d memory_limit=512M --order-by=random --colors=always
@@ -31,17 +35,20 @@ rector-dry-run: ## Check code style with Rector (dry-run)
 	docker compose exec -T php ./bin/linters run rector -- --dry-run
 
 php-cs-fixer: ## Fix code style with PHP-CS-Fixer
-	docker compose exec -T php ./bin/linters run php-cs-fixer -- --allow-unsupported-php-version=yes
+	docker compose exec -T php ./bin/linters run php-cs-fixer
 php-cs-fixer-check: ## Check code style with PHP-CS-Fixer (dry-run)
-	docker compose exec -T php ./bin/linters run php-cs-fixer -- --allow-unsupported-php-version=yes --dry-run --diff
+	docker compose exec -T php ./bin/linters run php-cs-fixer -- --dry-run --diff
 
 phpstan: ## Static analysis with PHPStan
 	docker compose exec -T php ./bin/linters run phpstan
 phpstan-baseline: ## Generate PHPStan baseline
 	docker compose exec -T php ./bin/linters run phpstan -- --generate-baseline --allow-empty-baseline
 
+phpmd: ## Detect code quality issues with PHPMD
+	docker compose exec -T php ./bin/linters run phpmd
+
 composer-validate: ## Validate composer.json
-	docker compose exec -T php composer validate --no-check-all --no-check-publish --no-check-version
+	docker compose exec -T php composer validate --strict
 composer-audit: ## Check security vulnerabilities
 	docker compose exec -T php composer audit
 composer-unused: ## Find unused composer dependencies

@@ -36,7 +36,7 @@ final class ConfigGeneratorTest extends TestCase
         $generator = new $generatorClass($loader);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
+        $this->expectExceptionMessageIsOrContains(
             \sprintf('Missing required "paths" in extra.linters.%s', $toolKey),
         );
 

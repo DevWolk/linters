@@ -14,6 +14,8 @@ final class AppRectorSetList
 
     public const string LARAVEL12 = __DIR__ . '/../Configs/Sets/laravel12.php';
 
+    public const string LARAVEL13 = __DIR__ . '/../Configs/Sets/laravel13.php';
+
     public const string PHPUNIT11 = __DIR__ . '/../Configs/Sets/phpunit11.php';
 
     public const string PHPUNIT12 = __DIR__ . '/../Configs/Sets/phpunit12.php';

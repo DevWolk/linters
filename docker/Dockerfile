@@ -1,7 +1,7 @@
-FROM public.ecr.aws/docker/library/php:8.4-fpm-bullseye
+FROM public.ecr.aws/docker/library/php:8.4-fpm-trixie
 
-RUN apt update \
-    && apt install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     git \
     zip \
     unzip \
@@ -16,8 +16,8 @@ RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     zip
 
-RUN pecl channel-update pecl.php.net && \
-    pecl install xdebug-3.5.0 \
+RUN pecl channel-update pecl.php.net \
+    && pecl install xdebug-3.5.0 \
     && docker-php-ext-enable xdebug
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
